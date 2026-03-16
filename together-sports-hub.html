@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Together Sports — Ops Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root {
+    --bg: #0a0a08;
+    --surface: #111110;
+    --surface2: #1a1a18;
+    --surface3: #222220;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --text: #f0ede6;
+    --text2: #8a8880;
+    --text3: #555450;
+    --accent: #c8f060;
+    --accent2: #a8d040;
+    --accent-dim: rgba(200,240,96,0.1);
+    --accent-dim2: rgba(200,240,96,0.05);
+    --red: #ff6b5a;
+    --amber: #f0b429;
+    --blue: #60a5fa;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* Layout */
+  .shell { display: flex; min-height: 100vh; }
+
+  /* Sidebar */
+  .sidebar {
+    width: 220px;
+    min-height: 100vh;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo-mark {
+    font-family: 'Instrument Serif', serif;
+    font-size: 20px;
+    color: var(--accent);
+    display: block;
+    line-height: 1.1;
+  }
+  .logo-sub {
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  .nav { padding: 16px 12px; flex: 1; }
+  .nav-section { font-size: 10px; color: var(--text3); letter-spacing: 0.1em; text-transform: uppercase; padding: 0 8px; margin: 16px 0 6px; }
+  .nav-section:first-child { margin-top: 0; }
+
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 10px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    color: var(--text2);
+    font-size: 13px;
+    font-weight: 400;
+    transition: all 0.15s;
+    border: none; background: none; width: 100%; text-align: left;
+  }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: var(--accent-dim); color: var(--accent); font-weight: 500; }
+  .nav-item .icon { font-size: 15px; width: 18px; text-align: center; flex-shrink: 0; }
+
+  .sidebar-footer {
+    padding: 16px 20px;
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--text3);
+  }
+  .sidebar-footer strong { color: var(--text2); display: block; margin-bottom: 2px; }
+
+  /* Main */
+  .main { margin-left: 220px; flex: 1; padding: 36px 40px; max-width: 1100px; }
+
+  /* Page header */
+  .page-header { margin-bottom: 32px; }
+  .page-header h1 {
+    font-family: 'Instrument Serif', serif;
+    font-size: 30px;
+    font-weight: 400;
+    color: var(--text);
+    line-height: 1.2;
+  }
+  .page-header p { color: var(--text2); margin-top: 6px; font-size: 13px; }
+
+  /* Tabs (pages) */
+  .tab { display: none; }
+  .tab.active { display: block; }
+
+  /* Metrics */
+  .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+  .metric {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    transition: border-color 0.2s;
+  }
+  .metric:hover { border-color: var(--border2); }
+  .metric-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+  .metric-value { font-family: 'DM Mono', monospace; font-size: 32px; font-weight: 500; color: var(--text); line-height: 1; }
+  .metric-value.accent { color: var(--accent); }
+  .metric-sub { font-size: 11px; color: var(--text3); margin-top: 6px; }
+  .metric-delta { font-size: 11px; color: var(--accent); margin-top: 4px; }
+
+  /* Cards */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+  .card-title {
+    font-size: 12px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .card-title span { color: var(--text3); }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+  /* Table rows */
+  .row {
+    display: flex; align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    gap: 12px;
+  }
+  .row:last-child { border-bottom: none; padding-bottom: 0; }
+  .row:first-child { padding-top: 0; }
+
+  /* Badges */
+  .badge {
+    display: inline-flex; align-items: center;
+    padding: 3px 10px;
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .badge-green { background: rgba(200,240,96,0.12); color: var(--accent); }
+  .badge-amber { background: rgba(240,180,41,0.12); color: var(--amber); }
+  .badge-red { background: rgba(255,107,90,0.1); color: var(--red); }
+  .badge-blue { background: rgba(96,165,250,0.1); color: var(--blue); }
+  .badge-gray { background: var(--surface2); color: var(--text2); }
+
+  /* Forms */
+  .form-group { margin-bottom: 14px; }
+  label { display: block; font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+  input, select, textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.15s;
+    -webkit-appearance: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+  input::placeholder, textarea::placeholder { color: var(--text3); }
+  textarea { resize: vertical; min-height: 80px; }
+  select option { background: var(--surface2); }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 20px;
+    border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+  }
+  .btn-primary { background: var(--accent); color: #0a0a08; }
+  .btn-primary:hover { background: var(--accent2); }
+  .btn-ghost { background: transparent; color: var(--text2); border: 1px solid var(--border); }
+  .btn-ghost:hover { background: var(--surface2); color: var(--text); border-color: var(--border2); }
+  .btn-danger { background: rgba(255,107,90,0.1); color: var(--red); border: 1px solid rgba(255,107,90,0.2); }
+
+  /* Chart */
+  .chart-wrap { position: relative; height: 200px; width: 100%; }
+
+  /* Session list */
+  .session-item {
+    display: grid;
+    grid-template-columns: 90px 1fr 80px 100px 90px;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .session-item:last-child { border-bottom: none; }
+  .session-item.header { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; padding-bottom: 10px; }
+
+  /* School tracker */
+  .school-item {
+    display: grid;
+    grid-template-columns: 1fr 90px 110px 90px 36px;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .school-item:last-child { border-bottom: none; }
+  .school-item.header { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; padding-bottom: 8px; }
+  .school-name { color: var(--text); font-weight: 400; }
+  .school-contact { font-size: 11px; color: var(--text3); margin-top: 1px; }
+
+  /* People */
+  .people-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+  .person-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 16px;
+    text-align: center;
+    transition: border-color 0.2s;
+  }
+  .person-card:hover { border-color: var(--border2); }
+  .avatar {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: var(--accent-dim);
+    border: 1px solid rgba(200,240,96,0.2);
+    color: var(--accent);
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 12px;
+  }
+  .person-name { font-size: 13px; font-weight: 500; color: var(--text); }
+  .person-role { font-size: 11px; color: var(--text3); margin-top: 3px; }
+  .person-org { font-size: 10px; color: var(--text3); margin-top: 2px; opacity: 0.7; }
+
+  /* Report output */
+  .report-out {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    line-height: 1.8;
+    color: var(--text2);
+    white-space: pre-wrap;
+    margin-top: 16px;
+    display: none;
+  }
+  .report-out.visible { display: block; }
+
+  /* Programs */
+  .program-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    transition: border-color 0.2s;
+  }
+  .program-card:hover { border-color: var(--border2); }
+  .program-icon { font-size: 24px; margin-bottom: 12px; }
+  .program-name { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+  .program-stats { font-size: 12px; color: var(--text3); margin-top: 8px; }
+  .program-stat { display: flex; justify-content: space-between; margin-top: 6px; }
+  .program-stat span:last-child { color: var(--text2); font-family: 'DM Mono', monospace; }
+
+  /* Notification */
+  .toast {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    background: var(--accent);
+    color: #0a0a08;
+    padding: 12px 20px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 500;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: all 0.2s;
+    pointer-events: none;
+    z-index: 999;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  /* Delete button */
+  .del-btn {
+    background: none; border: none; cursor: pointer;
+    color: var(--text3); font-size: 14px; padding: 4px;
+    border-radius: 4px; transition: color 0.15s;
+  }
+  .del-btn:hover { color: var(--red); }
+
+  /* Divider */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+  /* Status dot */
+  .dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+  .dot-green { background: var(--accent); }
+  .dot-amber { background: var(--amber); }
+  .dot-gray { background: var(--text3); }
+
+  /* Attendance bar viz */
+  .att-bar-wrap { display: flex; align-items: flex-end; gap: 8px; height: 80px; margin-top: 12px; }
+  .att-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .att-bar { width: 100%; background: var(--accent); border-radius: 3px 3px 0 0; transition: height 0.3s; min-height: 2px; }
+  .att-bar-label { font-size: 9px; color: var(--text3); text-align: center; }
+  .att-bar-val { font-size: 10px; color: var(--text2); font-family: 'DM Mono', monospace; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 3px; }
+
+  @media (max-width: 768px) {
+    .sidebar { width: 100%; position: relative; min-height: auto; flex-direction: row; }
+    .main { margin-left: 0; padding: 20px; }
+    .metrics { grid-template-columns: 1fr 1fr; }
+    .grid-2, .grid-3, .form-row, .form-row-3 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="logo">
+      <span class="logo-mark">Together Sports</span>
+      <span class="logo-sub">Ops Hub</span>
+    </div>
+    <div class="nav">
+      <div class="nav-section">Overview</div>
+      <button class="nav-item active" onclick="goTo('impact', this)">
+        <span class="icon">◈</span> Impact dashboard
+      </button>
+      <button class="nav-item" onclick="goTo('programs', this)">
+        <span class="icon">◉</span> Programs
+      </button>
+
+      <div class="nav-section">Operations</div>
+      <button class="nav-item" onclick="goTo('sessions', this)">
+        <span class="icon">◷</span> Sessions
+      </button>
+      <button class="nav-item" onclick="goTo('outreach', this)">
+        <span class="icon">◎</span> School outreach
+      </button>
+      <button class="nav-item" onclick="goTo('team', this)">
+        <span class="icon">◐</span> Team
+      </button>
+
+      <div class="nav-section">Tools</div>
+      <button class="nav-item" onclick="goTo('report', this)">
+        <span class="icon">◧</span> Report generator
+      </button>
+    </div>
+    <div class="sidebar-footer">
+      <strong>Harry Honig</strong>
+      Founder & Head Coach
+    </div>
+  </nav>
+
+  <!-- Main -->
+  <main class="main">
+
+    <!-- IMPACT -->
+    <div id="tab-impact" class="tab active">
+      <div class="page-header">
+        <h1>Impact dashboard</h1>
+        <p>Together Sports — live metrics from your sessions and programs.</p>
+      </div>
+
+      <div class="metrics">
+        <div class="metric">
+          <div class="metric-label">Sessions completed</div>
+          <div class="metric-value accent" id="m-sessions">6</div>
+          <div class="metric-sub">All Together Tennis</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Youth reached</div>
+          <div class="metric-value accent" id="m-youth">28</div>
+          <div class="metric-delta">↑ Growing each session</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Completion rate</div>
+          <div class="metric-value" id="m-completion">83%</div>
+          <div class="metric-sub">5 of 6 completed</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Last session</div>
+          <div class="metric-value" style="font-size:20px;padding-top:6px">Mar 1</div>
+          <div class="metric-sub">9 attendees — largest yet</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Attendance over time</div>
+          <div class="chart-wrap">
+            <canvas id="attChart"></canvas>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Session breakdown</div>
+          <div class="att-bar-wrap" id="barViz"></div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Locations</div>
+          <div class="row">
+            <div style="flex:1">
+              <div style="font-weight:500;color:var(--text)">Stadium Tennis Center</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:2px">Primary location</div>
+            </div>
+            <span class="badge badge-green">5 sessions</span>
+          </div>
+          <div class="row">
+            <div style="flex:1">
+              <div style="font-weight:500;color:var(--text)">Court 16, Long Island City</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:2px">Feb 22, 2026</div>
+            </div>
+            <span class="badge badge-gray">1 session</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Quick stats</div>
+          <div class="row">
+            <span style="flex:1;color:var(--text2)">Avg attendance per session</span>
+            <span style="font-family:'DM Mono',monospace;color:var(--accent)">4.7</span>
+          </div>
+          <div class="row">
+            <span style="flex:1;color:var(--text2)">Most recent session size</span>
+            <span style="font-family:'DM Mono',monospace;color:var(--accent)">9</span>
+          </div>
+          <div class="row">
+            <span style="flex:1;color:var(--text2)">Active coaches</span>
+            <span style="font-family:'DM Mono',monospace;color:var(--accent)">4</span>
+          </div>
+          <div class="row">
+            <span style="flex:1;color:var(--text2)">Active programs</span>
+            <span style="font-family:'DM Mono',monospace;color:var(--accent)">1</span>
+          </div>
+          <div class="row">
+            <span style="flex:1;color:var(--text2)">Schools contacted</span>
+            <span style="font-family:'DM Mono',monospace;color:var(--accent)" id="m-schools">10</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROGRAMS -->
+    <div id="tab-programs" class="tab">
+      <div class="page-header">
+        <h1>Programs</h1>
+        <p>Together Sports programs — active and in development.</p>
+      </div>
+      <div class="grid-2">
+        <div class="program-card" style="border-color:rgba(200,240,96,0.2)">
+          <div class="program-icon">🎾</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <div class="program-name">Together Tennis</div>
+            <span class="badge badge-green">Active</span>
+          </div>
+          <div style="font-size:12px;color:var(--text3)">Stadium Tennis Center · Together Sports</div>
+          <div class="program-stats">
+            <div class="program-stat"><span>Sessions</span><span>6</span></div>
+            <div class="program-stat"><span>Youth reached</span><span>28</span></div>
+            <div class="program-stat"><span>Completion rate</span><span>83%</span></div>
+            <div class="program-stat"><span>Last session</span><span>Mar 1, 2026</span></div>
+          </div>
+        </div>
+        <div class="program-card">
+          <div class="program-icon">🏀</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <div class="program-name">Together Basketball</div>
+            <span class="badge badge-gray">Planned</span>
+          </div>
+          <div style="font-size:12px;color:var(--text3)">Location TBD · Together Sports</div>
+          <div class="program-stats">
+            <div class="program-stat"><span>Sessions</span><span>0</span></div>
+            <div class="program-stat"><span>Status</span><span>In development</span></div>
+          </div>
+        </div>
+        <div class="program-card">
+          <div class="program-icon">⚽</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <div class="program-name">Together Football</div>
+            <span class="badge badge-gray">Planned</span>
+          </div>
+          <div style="font-size:12px;color:var(--text3)">Location TBD · Together Sports</div>
+          <div class="program-stats">
+            <div class="program-stat"><span>Sessions</span><span>0</span></div>
+            <div class="program-stat"><span>Status</span><span>In development</span></div>
+          </div>
+        </div>
+        <div class="program-card">
+          <div class="program-icon">⛳</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <div class="program-name">Together Golf</div>
+            <span class="badge badge-gray">Planned</span>
+          </div>
+          <div style="font-size:12px;color:var(--text3)">Five Iron Golf · Together Sports</div>
+          <div class="program-stats">
+            <div class="program-stat"><span>Sessions</span><span>0</span></div>
+            <div class="program-stat"><span>Status</span><span>In development</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SESSIONS -->
+    <div id="tab-sessions" class="tab">
+      <div class="page-header">
+        <h1>Sessions</h1>
+        <p>Log and track all Together Sports sessions.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">All sessions</div>
+        <div class="session-item header">
+          <span>Date</span><span>Location</span><span>Attendance</span><span>Status</span><span>Lead</span>
+        </div>
+        <div id="session-list"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Log new session</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Date</label>
+            <input type="date" id="s-date">
+          </div>
+          <div class="form-group">
+            <label>Location</label>
+            <input type="text" id="s-loc" placeholder="Stadium Tennis Center">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Attendance count</label>
+            <input type="number" id="s-att" placeholder="0" min="0">
+          </div>
+          <div class="form-group">
+            <label>Program</label>
+            <select id="s-prog">
+              <option>Together Tennis</option>
+              <option>Together Basketball</option>
+              <option>Together Football</option>
+              <option>Together Golf</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Session lead</label>
+            <input type="text" id="s-lead" placeholder="Harry Honig" value="Harry Honig">
+          </div>
+          <div class="form-group">
+            <label>Status</label>
+            <select id="s-status">
+              <option>Completed</option>
+              <option>Planned</option>
+              <option>Cancelled</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Notes</label>
+          <textarea id="s-notes" placeholder="Any follow-ups, highlights, or notes..."></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="addSession()">Log session</button>
+      </div>
+    </div>
+
+    <!-- OUTREACH -->
+    <div id="tab-outreach" class="tab">
+      <div class="page-header">
+        <h1>School outreach</h1>
+        <p>Track every school contacted — follow-ups, replies, partnerships.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <span>Schools contacted</span>
+          <span id="school-count" style="font-family:'DM Mono',monospace;color:var(--accent)">10</span>
+        </div>
+        <div class="school-item header">
+          <span>School / contact</span><span>Date sent</span><span>Status</span><span>Follow-up</span><span></span>
+        </div>
+        <div id="school-list"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Add school to tracker</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>School name</label>
+            <input type="text" id="o-school" placeholder="School name">
+          </div>
+          <div class="form-group">
+            <label>Contact (principal / superintendent)</label>
+            <input type="text" id="o-contact" placeholder="Principal Smith">
+          </div>
+        </div>
+        <div class="form-row-3">
+          <div class="form-group">
+            <label>Date sent</label>
+            <input type="date" id="o-date">
+          </div>
+          <div class="form-group">
+            <label>Status</label>
+            <select id="o-status">
+              <option>Sent</option>
+              <option>Replied</option>
+              <option>Meeting set</option>
+              <option>Partnered</option>
+              <option>No response</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Follow-up date</label>
+            <input type="date" id="o-followup">
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="addSchool()">Add to tracker</button>
+      </div>
+    </div>
+
+    <!-- TEAM -->
+    <div id="tab-team" class="tab">
+      <div class="page-header">
+        <h1>Team</h1>
+        <p>Together Sports coaches and staff.</p>
+      </div>
+
+      <div class="people-grid" id="team-grid"></div>
+
+      <div class="card" style="margin-top:16px">
+        <div class="card-title">Add team member</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Full name</label>
+            <input type="text" id="p-name" placeholder="Full name">
+          </div>
+          <div class="form-group">
+            <label>Role</label>
+            <input type="text" id="p-role" placeholder="Assistant Coach">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Organization</label>
+            <select id="p-org">
+              <option>Together Sports</option>
+              <option>Together Tennis</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Role type</label>
+            <select id="p-type">
+              <option>Staff</option>
+              <option>Assistant Coach</option>
+              <option>Volunteer</option>
+              <option>Founder</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="addPerson()">Add member</button>
+      </div>
+    </div>
+
+    <!-- REPORT -->
+    <div id="tab-report" class="tab">
+      <div class="page-header">
+        <h1>Report generator</h1>
+        <p>Generate formatted impact summaries using your real session data.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Generate report</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Report type</label>
+            <select id="r-type">
+              <option>School partnership pitch</option>
+              <option>Grant application summary</option>
+              <option>Donor one-pager</option>
+              <option>General impact summary</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Recipient (optional)</label>
+            <input type="text" id="r-recipient" placeholder="e.g. Principal Smith, NYC Education Fund">
+          </div>
+        </div>
+        <div style="display:flex;gap:12px">
+          <button class="btn btn-primary" onclick="generateReport()">Generate report</button>
+          <button class="btn btn-ghost" onclick="copyReport()">Copy to clipboard</button>
+        </div>
+        <div class="report-out" id="report-out"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">By the numbers — use these in any pitch</div>
+        <div class="grid-3" style="gap:12px">
+          <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:16px;border:1px solid var(--border)">
+            <div style="font-family:'DM Mono',monospace;font-size:28px;color:var(--accent)" id="r-sessions">6</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:4px;text-transform:uppercase;letter-spacing:0.08em">sessions completed</div>
+          </div>
+          <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:16px;border:1px solid var(--border)">
+            <div style="font-family:'DM Mono',monospace;font-size:28px;color:var(--accent)" id="r-youth">28</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:4px;text-transform:uppercase;letter-spacing:0.08em">youth reached</div>
+          </div>
+          <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:16px;border:1px solid var(--border)">
+            <div style="font-family:'DM Mono',monospace;font-size:28px;color:var(--accent)">83%</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:4px;text-transform:uppercase;letter-spacing:0.08em">completion rate</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Data (persists via localStorage) ──────────────────────────────
+const STORE = 'ts_hub_v1';
+
+const defaults = {
+  sessions: [
+    { date: '2025-08-31', loc: 'Stadium Tennis Center', att: 3, prog: 'Together Tennis', lead: 'Harry Honig', status: 'Completed', notes: 'Tournament sign-ups' },
+    { date: '2025-09-01', loc: 'Stadium Tennis Center', att: 3, prog: 'Together Tennis', lead: 'Harry Honig', status: 'Completed', notes: 'Tournament sign-ups' },
+    { date: '2025-10-19', loc: 'Stadium Tennis Center', att: 3, prog: 'Together Tennis', lead: 'Harry Honig', status: 'Completed', notes: 'Tournament sign-ups' },
+    { date: '2025-12-17', loc: 'Stadium Tennis Center', att: 3, prog: 'Together Tennis', lead: 'Harry Honig', status: 'Completed', notes: 'Tournament sign-ups' },
+    { date: '2026-02-22', loc: 'Court 16, Long Island City', att: 7, prog: 'Together Tennis', lead: 'Harry Honig', status: 'Completed', notes: 'Tournament sign-ups' },
+    { date: '2026-03-01', loc: 'Stadium Tennis Center', att: 9, prog: 'Together Tennis', lead: 'Harry Honig', status: 'Planned', notes: '' },
+  ],
+  schools: [
+    { school: 'Bronx Park Middle School', contact: 'Principal Renee Rinaldi', date: '2026-03-16', status: 'Sent', followup: '2026-03-23' },
+    { school: 'P.S./I.S. 78Q Long Island City', contact: 'Principal Deana Rombone', date: '2026-03-16', status: 'Sent', followup: '2026-03-23' },
+    { school: 'District 9 Superintendent', contact: 'Harry Sherman', date: '2026-03-16', status: 'Sent', followup: '2026-03-23' },
+    { school: 'I.S. 370 Leaders of Tomorrow', contact: 'Principal Biernat', date: '2026-03-16', status: 'Sent', followup: '2026-03-23' },
+    { school: 'I.S. 462 Cornerstone Academy', contact: 'Principal Calderon', date: '2026-03-16', status: 'Sent', followup: '2026-03-23' },
+    { school: 'M.S. 181 Pablo Casals', contact: 'Principal Warnock', date: '2026-03-16', status: 'Sent', followup: '2026-03-23' },
+    { school: 'M.S. 180 Dr. Daniel Hale Williams', contact: 'Principal Williams', date: '2026-03-16', status: 'Sent', followup: '2026-03-23' },
+    { school: 'Bronx Alliance Middle School', contact: 'Principal Cobb', date: '2026-03-16', status: 'Sent', followup: '2026-03-23' },
+    { school: 'P.S./M.S. 194', contact: 'Principal Valladares', date: '2026-03-16', status: 'Sent', followup: '2026-03-23' },
+    { school: 'District 11 Superintendent', contact: 'Cristine Vaughan', date: '2026-03-16', status: 'Sent', followup: '2026-03-23' },
+  ],
+  team: [
+    { name: 'Harry Honig', role: 'Founder & Head Coach', org: 'Together Sports', type: 'Founder' },
+    { name: 'Sheldon Heyman', role: 'Staff', org: 'Together Sports', type: 'Staff' },
+    { name: 'Solomon Heyman', role: 'Assistant Tennis Coach', org: 'Together Sports', type: 'Staff' },
+    { name: 'Jonah Angrist', role: 'Assistant Tennis Coach', org: 'Together Tennis', type: 'Assistant Coach' },
+    { name: 'Abie Honig', role: 'Staff', org: 'Together Tennis', type: 'Staff' },
+  ]
+};
+
+function load() {
+  try { return JSON.parse(localStorage.getItem(STORE)) || defaults; }
+  catch { return defaults; }
+}
+function save(data) { localStorage.setItem(STORE, JSON.stringify(data)); }
+
+let data = load();
+
+// ── Navigation ─────────────────────────────────────────────────────
+function goTo(id, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── Toast ──────────────────────────────────────────────────────────
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ── Helpers ────────────────────────────────────────────────────────
+function fmtDate(d) {
+  if (!d) return '—';
+  const dt = new Date(d + 'T00:00:00');
+  return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+function initials(name) { return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2); }
+function badgeClass(status) {
+  const map = { 'Sent': 'badge-amber', 'Replied': 'badge-blue', 'Meeting set': 'badge-blue', 'Partnered': 'badge-green', 'No response': 'badge-gray', 'Completed': 'badge-green', 'Planned': 'badge-amber', 'Cancelled': 'badge-red' };
+  return map[status] || 'badge-gray';
+}
+
+// ── Metrics ────────────────────────────────────────────────────────
+function updateMetrics() {
+  const completed = data.sessions.filter(s => s.status === 'Completed');
+  const totalAtt = data.sessions.reduce((a, s) => a + (parseInt(s.att) || 0), 0);
+  const compRate = data.sessions.length ? Math.round((completed.length / data.sessions.length) * 100) : 0;
+  document.getElementById('m-sessions').textContent = data.sessions.length;
+  document.getElementById('m-youth').textContent = totalAtt;
+  document.getElementById('m-completion').textContent = compRate + '%';
+  document.getElementById('m-schools').textContent = data.schools.length;
+  document.getElementById('school-count').textContent = data.schools.length;
+  document.getElementById('r-sessions').textContent = data.sessions.length;
+  document.getElementById('r-youth').textContent = totalAtt;
+}
+
+// ── Chart ──────────────────────────────────────────────────────────
+let chartInst = null;
+function buildChart() {
+  const sorted = [...data.sessions].sort((a,b) => a.date.localeCompare(b.date));
+  const labels = sorted.map(s => fmtDate(s.date));
+  const vals = sorted.map(s => parseInt(s.att) || 0);
+  const ctx = document.getElementById('attChart');
+  if (!ctx) return;
+  if (chartInst) chartInst.destroy();
+  chartInst = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        data: vals,
+        borderColor: '#c8f060',
+        backgroundColor: 'rgba(200,240,96,0.08)',
+        borderWidth: 2,
+        pointBackgroundColor: '#c8f060',
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        fill: true,
+        tension: 0.3
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#555450', font: { size: 11 } } },
+        y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#555450', font: { size: 11 }, stepSize: 2 }, beginAtZero: true }
+      }
+    }
+  });
+}
+
+function buildBarViz() {
+  const sorted = [...data.sessions].sort((a,b) => a.date.localeCompare(b.date));
+  const max = Math.max(...sorted.map(s => parseInt(s.att) || 0), 1);
+  const wrap = document.getElementById('barViz');
+  if (!wrap) return;
+  wrap.innerHTML = sorted.map(s => {
+    const h = Math.round(((parseInt(s.att) || 0) / max) * 70);
+    return `<div class="att-bar-col">
+      <div class="att-bar-val">${s.att}</div>
+      <div class="att-bar" style="height:${h}px"></div>
+      <div class="att-bar-label">${fmtDate(s.date)}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Sessions ───────────────────────────────────────────────────────
+function renderSessions() {
+  const list = document.getElementById('session-list');
+  if (!list) return;
+  const sorted = [...data.sessions].sort((a,b) => b.date.localeCompare(a.date));
+  list.innerHTML = sorted.map((s, i) => `
+    <div class="session-item">
+      <span style="color:var(--text2);font-size:12px">${fmtDate(s.date)}</span>
+      <span style="color:var(--text)">${s.loc}</span>
+      <span style="font-family:'DM Mono',monospace;color:var(--accent)">${s.att}</span>
+      <span><span class="badge ${badgeClass(s.status)}">${s.status}</span></span>
+      <span style="color:var(--text3);font-size:12px">${s.lead || '—'}</span>
+    </div>
+  `).join('');
+}
+
+function addSession() {
+  const date = document.getElementById('s-date').value;
+  const loc = document.getElementById('s-loc').value;
+  const att = document.getElementById('s-att').value;
+  const prog = document.getElementById('s-prog').value;
+  const lead = document.getElementById('s-lead').value;
+  const status = document.getElementById('s-status').value;
+  const notes = document.getElementById('s-notes').value;
+  if (!date || !loc || !att) { toast('Please fill date, location, and attendance.'); return; }
+  data.sessions.push({ date, loc, att: parseInt(att), prog, lead, status, notes });
+  save(data);
+  renderSessions();
+  updateMetrics();
+  buildChart();
+  buildBarViz();
+  document.getElementById('s-date').value = '';
+  document.getElementById('s-loc').value = '';
+  document.getElementById('s-att').value = '';
+  document.getElementById('s-notes').value = '';
+  toast('Session logged.');
+}
+
+// ── Schools ────────────────────────────────────────────────────────
+function renderSchools() {
+  const list = document.getElementById('school-list');
+  if (!list) return;
+  list.innerHTML = data.schools.map((s, i) => `
+    <div class="school-item">
+      <div>
+        <div class="school-name">${s.school}</div>
+        <div class="school-contact">${s.contact || ''}</div>
+      </div>
+      <span style="color:var(--text3);font-size:12px">${fmtDate(s.date)}</span>
+      <span><span class="badge ${badgeClass(s.status)}" style="cursor:pointer" onclick="cycleStatus(${i})">${s.status}</span></span>
+      <span style="color:var(--text3);font-size:12px">${fmtDate(s.followup)}</span>
+      <button class="del-btn" onclick="removeSchool(${i})">✕</button>
+    </div>
+  `).join('');
+  document.getElementById('school-count').textContent = data.schools.length;
+  document.getElementById('m-schools').textContent = data.schools.length;
+}
+
+function cycleStatus(i) {
+  const statuses = ['Sent', 'Replied', 'Meeting set', 'Partnered', 'No response'];
+  const cur = statuses.indexOf(data.schools[i].status);
+  data.schools[i].status = statuses[(cur + 1) % statuses.length];
+  save(data);
+  renderSchools();
+}
+
+function removeSchool(i) {
+  data.schools.splice(i, 1);
+  save(data);
+  renderSchools();
+  updateMetrics();
+  toast('Removed.');
+}
+
+function addSchool() {
+  const school = document.getElementById('o-school').value;
+  const contact = document.getElementById('o-contact').value;
+  const date = document.getElementById('o-date').value;
+  const status = document.getElementById('o-status').value;
+  const followup = document.getElementById('o-followup').value;
+  if (!school) { toast('Enter a school name.'); return; }
+  data.schools.push({ school, contact, date, status, followup });
+  save(data);
+  renderSchools();
+  updateMetrics();
+  document.getElementById('o-school').value = '';
+  document.getElementById('o-contact').value = '';
+  document.getElementById('o-date').value = '';
+  document.getElementById('o-followup').value = '';
+  toast('School added.');
+}
+
+// ── Team ───────────────────────────────────────────────────────────
+function renderTeam() {
+  const grid = document.getElementById('team-grid');
+  if (!grid) return;
+  grid.innerHTML = data.team.map((p, i) => `
+    <div class="person-card">
+      <div class="avatar">${initials(p.name)}</div>
+      <div class="person-name">${p.name}</div>
+      <div class="person-role">${p.role || p.type}</div>
+      <div class="person-org">${p.org}</div>
+    </div>
+  `).join('');
+}
+
+function addPerson() {
+  const name = document.getElementById('p-name').value;
+  const role = document.getElementById('p-role').value;
+  const org = document.getElementById('p-org').value;
+  const type = document.getElementById('p-type').value;
+  if (!name) { toast('Enter a name.'); return; }
+  data.team.push({ name, role, org, type });
+  save(data);
+  renderTeam();
+  document.getElementById('p-name').value = '';
+  document.getElementById('p-role').value = '';
+  toast('Team member added.');
+}
+
+// ── Reports ────────────────────────────────────────────────────────
+function generateReport() {
+  const type = document.getElementById('r-type').value;
+  const rec = document.getElementById('r-recipient').value;
+  const totalAtt = data.sessions.reduce((a, s) => a + (parseInt(s.att) || 0), 0);
+  const completed = data.sessions.filter(s => s.status === 'Completed').length;
+  const compRate = data.sessions.length ? Math.round((completed / data.sessions.length) * 100) : 0;
+  const nsessions = data.sessions.length;
+
+  const reports = {
+    'School partnership pitch': `Together Sports — School Partnership Overview
+${rec ? 'Prepared for: ' + rec : ''}
+
+Together Sports is a youth-led nonprofit founded by a New York City high school student, dedicated to removing financial and logistical barriers to youth sports participation.
+
+Program: Together Tennis
+Free, structured tennis instruction for beginners in underserved communities — no experience required, zero cost to students or schools.
+
+Our impact to date:
+  • ${nsessions} sessions completed
+  • ${totalAtt} youth reached across the Bronx and Long Island City
+  • ${compRate}% session completion rate
+  • Locations: Stadium Tennis Center, Court 16 (LIC)
+  • Team: ${data.team.length} coaches and staff
+
+What we're offering your school:
+A free one-day tennis session on a weekend — we bring the coaches, we run the session, students just show up. Open to all skill levels, including complete beginners. We are also open to ongoing partnership.
+
+Contact: Harry Honig, Founder
+harry@togethersports.org | togethersports.org`,
+
+    'Grant application summary': `Organization: Together Sports
+Website: togethersports.org
+Founded: 2025 | Founder: Harry Honig (high school student)
+
+Mission:
+To remove financial and logistical barriers to youth sports participation in underserved New York City communities.
+
+Primary Program: Together Tennis
+Free beginner tennis instruction for youth who would otherwise lack access to organized sports programming.
+
+Current Impact (as of March 2026):
+  Sessions delivered:         ${nsessions}
+  Total youth served:         ${totalAtt}
+  Session completion rate:    ${compRate}%
+  Geographic reach:           Bronx, Long Island City (Queens)
+  Staff & coaches:            ${data.team.length}
+  Schools contacted:          ${data.schools.length}
+
+Programs in development:
+Together Basketball, Together Football, Together Golf
+
+Partners: Second Serve, Stadium Tennis Center`,
+
+    'Donor one-pager': `Together Sports
+"Play Loud. Build Strong."
+togethersports.org
+
+We believe every kid deserves access to sports — regardless of income, background, or zip code.
+
+Founded by a NYC high school student, Together Sports runs free sports programming for youth in underserved communities. Our flagship program, Together Tennis, has reached ${totalAtt} kids across ${nsessions} sessions in the Bronx and Long Island City — completely free of charge.
+
+Your support helps us:
+  • Run more free sessions
+  • Expand to basketball, football, and golf
+  • Partner with more schools and community organizations
+  • Keep every program 100% free for participants
+
+Impact so far:
+  ${totalAtt} youth reached | ${nsessions} sessions | ${compRate}% completion rate
+
+Get involved: harry@togethersports.org`,
+
+    'General impact summary': `Together Sports — Impact Summary
+${new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+
+  Sessions completed:      ${nsessions}
+  Youth reached:           ${totalAtt}
+  Completion rate:         ${compRate}%
+  Team size:               ${data.team.length}
+  Schools contacted:       ${data.schools.length}
+  Active programs:         1 (Together Tennis)
+  Programs in development: 3
+
+Flagship: Together Tennis
+All sessions free. No equipment required. Open to all skill levels.
+togethersports.org`
+  };
+
+  const out = document.getElementById('report-out');
+  out.textContent = reports[type] || '';
+  out.classList.add('visible');
+}
+
+function copyReport() {
+  const text = document.getElementById('report-out').textContent;
+  if (!text) { toast('Generate a report first.'); return; }
+  navigator.clipboard.writeText(text).then(() => toast('Copied to clipboard.'));
+}
+
+// ── Init ───────────────────────────────────────────────────────────
+function init() {
+  renderSessions();
+  renderSchools();
+  renderTeam();
+  updateMetrics();
+  setTimeout(() => { buildChart(); buildBarViz(); }, 100);
+}
+
+init();
+</script>
+</body>
+</html>
