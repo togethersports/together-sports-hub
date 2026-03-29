@@ -1,464 +1,100 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Impact Dashboard | Together Sports</title>
-  <meta name="description" content="Together Sports Impact Dashboard — Real-time data on youth served, sessions held, and community impact across the Bronx and Long Island City.">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;600;700;800;900&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    :root{
-      --navy:#020367;--blue:#4f74d6;--lime:#87cb4a;--orange:#f6a15c;
-      --periwinkle:#84a6ff;--white:#ffffff;--light-bg:#f4f6fb;
-      --card-bg:#ffffff;--shadow:0 4px 24px rgba(2,3,103,.10);
-      --radius:16px;
-    }
-    html{scroll-behavior:smooth}
-    body{font-family:'Montserrat',sans-serif;color:var(--navy);background:var(--white);line-height:1.6;overflow-x:hidden}
-    h1,h2,h3,h4,h5{font-family:'League Spartan',sans-serif;font-weight:800;line-height:1.15;text-transform:uppercase;letter-spacing:.02em}
-    .container{max-width:1140px;margin:0 auto;padding:0 24px}
-    /* NAV */
-    .topnav{background:var(--navy);padding:14px 0;position:sticky;top:0;z-index:100}
-    .topnav .container{display:flex;align-items:center;justify-content:space-between}
-    .topnav-brand{color:var(--white);font-family:'League Spartan',sans-serif;font-weight:800;font-size:1.15rem;text-decoration:none;letter-spacing:.04em;text-transform:uppercase;display:flex;align-items:center;gap:10px}
-    .topnav-brand svg{width:28px;height:28px}
-    .topnav-links{display:flex;gap:20px;align-items:center}
-    .topnav-links a{color:var(--periwinkle);text-decoration:none;font-size:.85rem;font-weight:600;transition:color .2s}
-    .topnav-links a:hover{color:var(--lime)}
-    .btn-donate{background:var(--lime);color:var(--navy)!important;padding:8px 20px;border-radius:8px;font-weight:700;transition:background .2s}
-    .btn-donate:hover{background:#76ba3a}
-    /* HERO */
-    .hero{background:linear-gradient(135deg,var(--navy) 0%,#0a0f5c 60%,#1a2980 100%);padding:100px 0 80px;position:relative;overflow:hidden}
-    .hero::before{content:'';position:absolute;top:-40%;right:-10%;width:600px;height:600px;background:radial-gradient(circle,rgba(135,203,74,.15) 0%,transparent 70%);border-radius:50%}
-    .hero::after{content:'';position:absolute;bottom:-30%;left:-5%;width:500px;height:500px;background:radial-gradient(circle,rgba(79,116,214,.12) 0%,transparent 70%);border-radius:50%}
-    .hero .container{position:relative;z-index:2;text-align:center}
-    .hero-eyebrow{color:var(--lime);font-family:'League Spartan',sans-serif;font-weight:700;font-size:.95rem;letter-spacing:.15em;text-transform:uppercase;margin-bottom:12px}
-    .hero h1{color:var(--white);font-size:clamp(2.2rem,5.5vw,4rem);margin-bottom:8px}
-    .hero h1 span{color:var(--lime)}
-    .hero-sub{color:var(--periwinkle);font-size:clamp(1rem,2vw,1.25rem);max-width:640px;margin:0 auto 32px;font-weight:500}
-    .hero-badges{display:flex;flex-wrap:wrap;justify-content:center;gap:12px}
-    .badge{display:inline-flex;align-items:center;gap:6px;background:rgba(132,166,255,.15);border:1px solid rgba(132,166,255,.3);color:var(--periwinkle);padding:8px 18px;border-radius:40px;font-size:.85rem;font-weight:600}
-    .badge svg{width:16px;height:16px;fill:var(--lime)}
-    /* STATS */
-    .stats-section{padding:80px 0 60px;background:var(--light-bg)}
-    .stats-section h2{text-align:center;font-size:clamp(1.5rem,3vw,2.2rem);margin-bottom:48px;color:var(--navy)}
-    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:24px}
-    .stat-card{background:var(--card-bg);border-radius:var(--radius);padding:36px 24px;text-align:center;box-shadow:var(--shadow);transition:transform .25s,box-shadow .25s;border-top:4px solid var(--lime)}
-    .stat-card:nth-child(2){border-top-color:var(--blue)}
-    .stat-card:nth-child(3){border-top-color:var(--orange)}
-    .stat-card:nth-child(4){border-top-color:var(--periwinkle)}
-    .stat-card:nth-child(5){border-top-color:var(--lime)}
-    .stat-card:hover{transform:translateY(-4px);box-shadow:0 8px 32px rgba(2,3,103,.15)}
-    .stat-number{font-family:'League Spartan',sans-serif;font-size:clamp(2rem,4vw,3rem);font-weight:900;color:var(--navy);line-height:1}
-    .stat-label{font-size:.9rem;color:#555;font-weight:600;margin-top:8px;text-transform:uppercase;letter-spacing:.06em}
-    .stat-icon{font-size:1.6rem;margin-bottom:10px}
-    /* SESSIONS */
-    .sessions-section{padding:80px 0;background:var(--white)}
-    .sessions-section h2{text-align:center;font-size:clamp(1.5rem,3vw,2.2rem);margin-bottom:12px;color:var(--navy)}
-    .sessions-sub{text-align:center;color:#666;margin-bottom:40px;font-size:1rem}
-    .sessions-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:24px}
-    .session-card{background:var(--card-bg);border-radius:var(--radius);padding:28px;box-shadow:var(--shadow);border-left:5px solid var(--blue);transition:transform .25s}
-    .session-card:hover{transform:translateY(-3px)}
-    .session-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;gap:12px}
-    .session-sport{font-family:'League Spartan',sans-serif;font-weight:700;font-size:1.15rem;color:var(--navy)}
-    .session-date{font-size:.8rem;color:var(--white);background:var(--blue);padding:4px 12px;border-radius:20px;white-space:nowrap;font-weight:600}
-    .session-location{color:var(--blue);font-weight:600;font-size:.85rem;margin-bottom:8px;display:flex;align-items:center;gap:4px}
-    .session-attendance{font-size:.85rem;color:#444;margin-bottom:6px}
-    .session-attendance strong{color:var(--navy)}
-    .session-notes{font-size:.85rem;color:#666;font-style:italic;border-top:1px solid #eee;padding-top:8px;margin-top:8px}
-    /* TEAM */
-    .team-section{padding:80px 0;background:var(--light-bg)}
-    .team-section h2{text-align:center;font-size:clamp(1.5rem,3vw,2.2rem);margin-bottom:48px;color:var(--navy)}
-    .team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:24px}
-    .team-card{background:var(--card-bg);border-radius:var(--radius);padding:32px 24px;text-align:center;box-shadow:var(--shadow);transition:transform .25s;position:relative;overflow:hidden}
-    .team-card::before{content:'';position:absolute;top:0;left:0;right:0;height:6px;background:linear-gradient(90deg,var(--blue),var(--lime))}
-    .team-card:hover{transform:translateY(-4px)}
-    .team-avatar{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--periwinkle));display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-family:'League Spartan',sans-serif;font-weight:800;font-size:1.5rem;color:var(--white)}
-    .team-name{font-family:'League Spartan',sans-serif;font-weight:700;font-size:1.15rem;color:var(--navy);margin-bottom:4px}
-    .team-role{color:var(--blue);font-weight:600;font-size:.85rem;margin-bottom:4px}
-    .team-school{color:#888;font-size:.8rem;font-weight:500}
-    /* FOOTER */
-    .footer{background:var(--navy);padding:48px 0 32px;color:var(--periwinkle)}
-    .footer .container{text-align:center}
-    .footer-brand{font-family:'League Spartan',sans-serif;font-weight:800;font-size:1.4rem;color:var(--white);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em}
-    .footer-tagline{color:var(--periwinkle);margin-bottom:24px;font-size:.95rem}
-    .footer-links{display:flex;justify-content:center;gap:24px;flex-wrap:wrap;margin-bottom:24px}
-    .footer-links a{color:var(--periwinkle);text-decoration:none;font-weight:600;font-size:.9rem;transition:color .2s}
-    .footer-links a:hover{color:var(--lime)}
-    .footer-divider{border:none;border-top:1px solid rgba(132,166,255,.2);margin-bottom:20px}
-    .footer-copy{font-size:.8rem;color:rgba(132,166,255,.6)}
-    .footer-copy a{color:var(--lime);text-decoration:none}
-    /* LOADING */
-    .loading-spinner{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px;color:var(--blue)}
-    .spinner{width:40px;height:40px;border:4px solid var(--light-bg);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:12px}
-    @keyframes spin{to{transform:rotate(360deg)}}
-    /* ANIMATIONS */
-    @keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
-    .fade-up{opacity:0;transform:translateY(30px);transition:opacity .6s ease,transform .6s ease}
-    .fade-up.visible{opacity:1;transform:translateY(0)}
-    /* RESPONSIVE */
-    @media(max-width:768px){
-      .topnav-links{display:none}
-      .hero{padding:72px 0 56px}
-      .stats-grid{grid-template-columns:repeat(2,1fr);gap:16px}
-      .stat-card{padding:24px 16px}
-      .sessions-grid{grid-template-columns:1fr}
-      .team-grid{grid-template-columns:repeat(2,1fr)}
-    }
-    @media(max-width:480px){
-      .stats-grid{grid-template-columns:repeat(2,1fr);gap:12px}
-      .team-grid{grid-template-columns:1fr}
-      .hero-badges{flex-direction:column;align-items:center}
-    }
-    /* DATA NOTICE */
-    .data-notice{background:rgba(135,203,74,.1);border:1px solid rgba(135,203,74,.3);border-radius:12px;padding:16px 24px;text-align:center;margin:32px auto 0;max-width:600px;font-size:.85rem;color:var(--navy)}
-    .data-notice strong{color:var(--blue)}
-    </style>
-  </head>
-  <body>
-
-    <!-- NAV -->
-    <nav class="topnav">
-      <div class="container">
-        <a href="https://togethersports.org" class="topnav-brand">
-          <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="18" stroke="#87cb4a" stroke-width="3"/><path d="M12 20C12 15.6 15.6 12 20 12M28 20C28 24.4 24.4 28 20 28" stroke="#84a6ff" stroke-width="2.5" stroke-linecap="round"/><circle cx="20" cy="20" r="4" fill="#87cb4a"/></svg>svg>
-          Together Sports
-        </a>a>
-        <div class="topnav-links">
-          <a href="https://togethersports.org">Home</a>a>
-          <a href="https://togethersports.org/team">Team</a>a>
-          <a href="https://togethersports.org/sports">Sports</a>a>
-          <a href="https://togethersports.org/contact">Contact</a>a>
-          <a href="https://togethersports.org/donate" class="btn-donate">Donate</a>a>
-        </div>div>
-      </div>div>
-    </nav>nav>
-
-    <!-- HERO -->
-    <section class="hero">
-      <div class="container">
-        <div class="hero-eyebrow">501(c)(3) Nonprofit &bull; Est. 2024</div>div>
-        <h1>Our <span>Impact</span>, Live.</h1>
-      <p class="hero-sub">Real-time data on how Together Sports is empowering youth through free sports programming in New York City.</p>p>
-      <div class="hero-badges">
-      <span class="badge"><svg viewBox="0 0 16 16"><path d="M8 0C5.2 0 3 2.2 3 5c0 4 5 10 5 10s5-6 5-10c0-2.8-2.2-5-5-5zm0 7.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"/></svg>svg> The Bronx, NYC</span>
-      <span class="badge"><svg viewBox="0 0 16 16"><path d="M8 0C5.2 0 3 2.2 3 5c0 4 5 10 5 10s5-6 5-10c0-2.8-2.2-5-5-5zm0 7.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"/></svg>svg> Long Island City, NYC</span>
-      <span class="badge"><svg viewBox="0 0 16 16"><path d="M8 0C5.2 0 3 2.2 3 5c0 4 5 10 5 10s5-6 5-10c0-2.8-2.2-5-5-5zm0 7.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"/></svg>svg> NYC-Wide</span>
-      </div>div>
-      </div>div>
-    </section>section>
-  
-  <!-- STATS -->
-  <section class="stats-section" id="stats">
-  <div class="container">
-  <h2>By The Numbers</h2>
-  <div class="stats-grid" id="statsGrid">
-  <div class="loading-spinner"><div class="spinner"></div>div>Loading stats&hellip;</div>div>
-  </div>div>
-  </div>div>
-  </section>section>
-  
-  <!-- SESSIONS -->
-  <section class="sessions-section" id="sessions">
-  <div class="container">
-  <h2>Recent Sessions</h2>
-  <p class="sessions-sub">A look at our latest community programming across NYC.</p>p>
-  <div class="sessions-grid" id="sessionsGrid">
-  <div class="loading-spinner"><div class="spinner"></div>div>Loading sessions&hellip;</div>div>
-  </div>div>
-  </div>div>
-  </section>section>
-  
-  <!-- TEAM -->
-  <section class="team-section" id="team">
-  <div class="container">
-  <h2>Our Team</h2>
-  <div class="team-grid" id="teamGrid">
-  <div class="loading-spinner"><div class="spinner"></div>div>Loading team&hellip;</div>div>
-  </div>div>
-  </div>div>
-  </section>section>
-  
-  <!-- FOOTER -->
-  <footer class="footer">
-  <div class="container">
-  <div class="footer-brand">Together Sports</div>div>
-  <p class="footer-tagline">Play Loud. Build Strong.</p>p>
-  <div class="footer-links">
-  <a href="https://togethersports.org">Website</a>a>
-  <a href="https://togethersports.org/sports">Our Sports</a>a>
-  <a href="https://togethersports.org/team">Team</a>a>
-  <a href="https://togethersports.org/donate">Donate</a>a>
-  <a href="https://togethersports.org/contact">Contact</a>a>
-  </div>div>
-  <hr class="footer-divider">
-  <p class="footer-copy">&copy; 2025 Together Sports, Inc. &bull; 501(c)(3) Nonprofit &bull; <a href="https://togethersports.org">togethersports.org</a>a></p>p>
-  </div>div>
-  </footer>footer>
-  
-  <script>
-    /*  ============================================================
-        DATA SOURCE CONFIGURATION
-            ============================================================
-                Together Sports Impact Dashboard pulls live data from a
-                    published Google Sheet.
-
-                        HOW IT WORKS:
-                            1. You have ONE Google Spreadsheet with 3 tabs (sheets):
-                                   - "Stats"    → key numbers (Youth Served, Sessions, etc.)
-                                          - "Sessions" → session log
-                                                 - "Team"     → team roster
-                                                     2. The spreadsheet is published to the web as CSV.
-                                                         3. This dashboard fetches each tab's CSV and renders it.
-
-                                                             TO CONNECT YOUR SHEET:
-                                                                 Replace the SHEET_ID below with your Google Sheet ID.
-                                                                     (The ID is the long string in the sheet URL between /d/ and /edit)
-                                                                         ============================================================ */
-
-    const SHEET_ID = 'YOUR_GOOGLE_SHEET_ID_HERE';
-
-    // Build CSV URLs for each tab (sheet name encoded)
-    const csvUrl = (tab) =>
-        `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tab)}`;
-
-    // ---- CSV PARSER ----
-    function parseCSV(text) {
-        const lines = [];
-        let current = '';
-        let inQuotes = false;
-        for (let i = 0; i < text.length; i++) {
-              const ch = text[i];
-              if (ch === '"') {
-                      if (inQuotes && text[i + 1] === '"') { current += '"'; i++; }
-                      else { inQuotes = !inQuotes; }
-              } else if (ch === ',' && !inQuotes) {
-                      lines.push(current); current = '';
-              } else if ((ch === '\n' || ch === '\r') && !inQuotes) {
-                      if (current !== '' || lines.length > 0) { lines.push(current); current = ''; }
-                      if (lines.length > 0) break; // only parse header row — we do full parse below
-              } else {
-                      current += ch;
-              }
-        }
-        // Full parse
-        const rows = [];
-        let row = []; let cell = ''; let q = false;
-        for (let i = 0; i < text.length; i++) {
-              const ch = text[i];
-              if (ch === '"') {
-                      if (q && text[i + 1] === '"') { cell += '"'; i++; }
-                      else { q = !q; }
-              } else if (ch === ',' && !q) {
-                      row.push(cell.trim()); cell = '';
-              } else if ((ch === '\n' || (ch === '\r' && text[i+1] === '\n')) && !q) {
-                      row.push(cell.trim()); cell = '';
-                      if (row.some(c => c !== '')) rows.push(row);
-                      row = [];
-                      if (ch === '\r') i++;
-              } else if (ch === '\r' && !q) {
-                      row.push(cell.trim()); cell = '';
-                      if (row.some(c => c !== '')) rows.push(row);
-                      row = [];
-              } else {
-                      cell += ch;
-              }
-        }
-        if (cell || row.length) { row.push(cell.trim()); if (row.some(c => c !== '')) rows.push(row); }
-        if (rows.length < 2) return [];
-        const headers = rows[0];
-        return rows.slice(1).map(r => {
-              const obj = {};
-              headers.forEach((h, i) => { obj[h] = (r[i] || '').trim(); });
-              return obj;
-        });
-    }
-
-    // ---- STAT ICONS ----
-    const statIcons = {
-        'youth served': '🏅',
-        'sessions held': '📋',
-        'coaching hours': '⏱️',
-        'locations': '📍',
-        'volunteers': '🤝',
-    };
-
-    // ---- RENDER STATS ----
-    function renderStats(data) {
-        const grid = document.getElementById('statsGrid');
-        if (!data || data.length === 0) {
-              grid.innerHTML = '<p style="text-align:center;color:#888;">No stats data available.</p>';
-              return;
-        }
-        grid.innerHTML = data.map((row, i) => {
-              const label = (row['Stat'] || row['stat'] || '').trim();
-              const value = (row['Value'] || row['value'] || '0').trim();
-              const icon = statIcons[label.toLowerCase()] || '📊';
-              return `
-                    <div class="stat-card fade-up" style="animation-delay:${i * 0.1}s">
-                            <div class="stat-icon">${icon}</div>
-                                    <div class="stat-number" data-target="${value.replace(/[^0-9]/g,'')}"
-                                                 data-suffix="${value.replace(/[0-9,]/g,'')}">${value}</div>
-                                                         <div class="stat-label">${label}</div>
-                                                               </div>`;
-        }).join('');
-        initCounters();
-        observeFadeUps();
-    }
-
-    // ---- ANIMATED COUNTERS ----
-    function initCounters() {
-        const counters = document.querySelectorAll('.stat-number[data-target]');
-        const observer = new IntersectionObserver((entries) => {
-              entries.forEach(entry => {
-                      if (entry.isIntersecting) {
-                                const el = entry.target;
-                                const target = parseInt(el.dataset.target) || 0;
-                                const suffix = el.dataset.suffix || '';
-                                if (target === 0) return;
-                                let current = 0;
-                                const increment = Math.max(1, Math.floor(target / 60));
-                                const timer = setInterval(() => {
-                                            current += increment;
-                                            if (current >= target) { current = target; clearInterval(timer); }
-                                            el.textContent = current.toLocaleString() + suffix;
-                                }, 25);
-                                observer.unobserve(el);
-                      }
-              });
-        }, { threshold: 0.3 });
-        counters.forEach(c => observer.observe(c));
-    }
-
-    // ---- RENDER SESSIONS ----
-    function renderSessions(data) {
-        const grid = document.getElementById('sessionsGrid');
-        if (!data || data.length === 0) {
-              grid.innerHTML = '<p style="text-align:center;color:#888;">No session data available.</p>';
-              return;
-        }
-        // Sort by date descending, show latest 9
-        const sorted = data.sort((a, b) => {
-              const da = new Date(a['Date'] || a['date'] || 0);
-              const db = new Date(b['Date'] || b['date'] || 0);
-              return db - da;
-        }).slice(0, 9);
-
-        grid.innerHTML = sorted.map((row, i) => {
-              const date = row['Date'] || row['date'] || '';
-              const location = row['Location'] || row['location'] || '';
-              const sport = row['Sport'] || row['sport'] || '';
-              const youth = row['Youth Attended'] || row['youth attended'] || row['Attendance'] || '';
-              const notes = row['Notes'] || row['notes'] || '';
-              return `
-                    <div class="session-card fade-up" style="animation-delay:${i * 0.08}s">
-                            <div class="session-header">
-                                      <span class="session-sport">${sport}</span>
-                                                <span class="session-date">${date}</span>
-                                                        </div>
-                                                                <div class="session-location">📍 ${location}</div>
-                                                                        <div class="session-attendance">Youth Attended: <strong>${youth}</strong></div>
-                                                                                ${notes ? `<div class="session-notes">"${notes}"</div>` : ''}
-                                                                                      </div>`;
-        }).join('');
-        observeFadeUps();
-    }
-
-    // ---- RENDER TEAM ----
-    function renderTeam(data) {
-        const grid = document.getElementById('teamGrid');
-        if (!data || data.length === 0) {
-              grid.innerHTML = '<p style="text-align:center;color:#888;">No team data available.</p>';
-              return;
-        }
-        grid.innerHTML = data.map((row, i) => {
-              const name = row['Name'] || row['name'] || '';
-              const role = row['Role'] || row['role'] || '';
-              const school = row['School'] || row['school'] || '';
-              const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-              return `
-                    <div class="team-card fade-up" style="animation-delay:${i * 0.08}s">
-                            <div class="team-avatar">${initials}</div>
-                                    <div class="team-name">${name}</div>
-                                            <div class="team-role">${role}</div>
-                                                    ${school ? `<div class="team-school">${school}</div>` : ''}
-                                                          </div>`;
-        }).join('');
-        observeFadeUps();
-    }
-
-    // ---- FADE-UP OBSERVER ----
-    function observeFadeUps() {
-        const obs = new IntersectionObserver((entries) => {
-              entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
-        }, { threshold: 0.1 });
-        document.querySelectorAll('.fade-up:not(.visible)').forEach(el => obs.observe(el));
-    }
-
-    // ---- FALLBACK DATA (shown when no Google Sheet is connected) ----
-    const fallbackStats = [
-      { Stat: 'Youth Served', Value: '50' },
-      { Stat: 'Sessions Held', Value: '30' },
-      { Stat: 'Coaching Hours', Value: '120' },
-      { Stat: 'Locations', Value: '5' },
-      { Stat: 'Volunteers', Value: '12' }
-      ];
-    const fallbackSessions = [
-      { Date: '2025-03-22', Location: 'Crotona Park, Bronx', Sport: 'Tennis', 'Youth Attended': '8', Notes: 'Great energy — first session of spring season' },
-      { Date: '2025-03-15', Location: 'LIC, Queens', Sport: 'Basketball', 'Youth Attended': '12', Notes: '3v3 tournament format, kids loved it' },
-      { Date: '2025-03-08', Location: 'St. Mary\'s Park, Bronx', Sport: 'Football', 'Youth Attended': '10', Notes: 'Flag football fundamentals' },
-      { Date: '2025-03-01', Location: 'Mullaly Park, Bronx', Sport: 'Tennis', 'Youth Attended': '6', Notes: 'Focused on serves and volleys' },
-      { Date: '2025-02-22', Location: 'Rainey Park, LIC', Sport: 'Golf', 'Youth Attended': '5', Notes: 'Indoor putting clinic' },
-      { Date: '2025-02-15', Location: 'Crotona Park, Bronx', Sport: 'Tennis', 'Youth Attended': '9', Notes: 'Rally Forward equipment donation day' },
-      ];
-    const fallbackTeam = [
-      { Name: 'Harry Honig', Role: 'Founder & Executive Director', School: '' },
-      { Name: 'Jonah Angrist', Role: 'Assistant Coach — Instruction', School: '' },
-      { Name: 'Sheldon Heyman', Role: 'Assistant Coach — Player Dev', School: '' },
-      { Name: 'Solomon Heyman', Role: 'Assistant Coach — Outreach', School: '' },
-      { Name: 'Tory Doft', Role: 'Social Media Manager', School: '' },
-      { Name: 'Soumil Voona', Role: 'Technology Lead', School: '' },
-      { Name: 'Akshath Sundar', Role: 'Texas Chapter Founder', School: '' },
-      ];
-
-    // ---- INIT ----
-    async function loadData() {
-        // If no sheet ID is configured, use fallback data
-        if (SHEET_ID === 'YOUR_GOOGLE_SHEET_ID_HERE') {
-              renderStats(fallbackStats);
-              renderSessions(fallbackSessions);
-              renderTeam(fallbackTeam);
-              return;
-        }
-        // Fetch live data from Google Sheets
-        try {
-              const [statsRes, sessionsRes, teamRes] = await Promise.all([
-                      fetch(csvUrl('Stats')).then(r => r.ok ? r.text() : ''),
-                      fetch(csvUrl('Sessions')).then(r => r.ok ? r.text() : ''),
-                      fetch(csvUrl('Team')).then(r => r.ok ? r.text() : ''),
-                    ]);
-              const stats = statsRes ? parseCSV(statsRes) : fallbackStats;
-              const sessions = sessionsRes ? parseCSV(sessionsRes) : fallbackSessions;
-              const team = teamRes ? parseCSV(teamRes) : fallbackTeam;
-              renderStats(stats.length ? stats : fallbackStats);
-              renderSessions(sessions.length ? sessions : fallbackSessions);
-              renderTeam(team.length ? team : fallbackTeam);
-        } catch (e) {
-              console.warn('Failed to fetch sheet data, using fallback:', e);
-              renderStats(fallbackStats);
-              renderSessions(fallbackSessions);
-              renderTeam(fallbackTeam);
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', loadData);
-  </script>
-  </body>
-</html>html>
-  </script></span></h1>
-  </body>
-  </style></title>
-  </head>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Impact Dashboard | Together Sports</title>
+<meta name="description" content="Together Sports Impact Dashboard - Real-time data on youth served, sessions held, and community impact across the Bronx and Long Island City.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;600;700;800;900&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--navy:#020367;--blue:#4f74d6;--lime:#87cb4a;--orange:#f6a15c;--periwinkle:#84a6ff;--white:#ffffff;--light-bg:#f4f6fb;--card-bg:#ffffff;--shadow:0 4px 24px rgba(2,3,103,.10);--radius:16px}
+html{scroll-behavior:smooth}
+body{font-family:'Montserrat',sans-serif;color:var(--navy);background:var(--white);line-height:1.6;overflow-x:hidden}
+h1,h2,h3,h4,h5{font-family:'League Spartan',sans-serif;font-weight:800;line-height:1.15;text-transform:uppercase;letter-spacing:.02em}
+.container{max-width:1140px;margin:0 auto;padding:0 24px}
+.topnav{background:var(--navy);padding:14px 0;position:sticky;top:0;z-index:100}
+.topnav .container{display:flex;align-items:center;justify-content:space-between}
+.topnav-brand{color:var(--white);font-family:'League Spartan',sans-serif;font-weight:800;font-size:1.15rem;text-decoration:none;letter-spacing:.04em;text-transform:uppercase;display:flex;align-items:center;gap:10px}
+.topnav-brand svg{width:28px;height:28px}
+.topnav-links{display:flex;gap:20px;align-items:center}
+.topnav-links a{color:var(--periwinkle);text-decoration:none;font-size:.85rem;font-weight:600;transition:color .2s}
+.topnav-links a:hover{color:var(--lime)}
+.btn-donate{background:var(--lime);color:var(--navy)!important;padding:8px 20px;border-radius:8px;font-weight:700;transition:background .2s}
+.btn-donate:hover{background:#76ba3a}
+.hero{background:linear-gradient(135deg,var(--navy) 0%,#0a0f5c 60%,#1a2980 100%);padding:100px 0 80px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-40%;right:-10%;width:600px;height:600px;background:radial-gradient(circle,rgba(135,203,74,.15) 0%,transparent 70%);border-radius:50%}
+.hero::after{content:'';position:absolute;bottom:-30%;left:-5%;width:500px;height:500px;background:radial-gradient(circle,rgba(79,116,214,.12) 0%,transparent 70%);border-radius:50%}
+.hero .container{position:relative;z-index:2;text-align:center}
+.hero-eyebrow{color:var(--lime);font-family:'League Spartan',sans-serif;font-weight:700;font-size:.95rem;letter-spacing:.15em;text-transform:uppercase;margin-bottom:12px}
+.hero h1{color:var(--white);font-size:clamp(2.2rem,5.5vw,4rem);margin-bottom:8px}
+.hero h1 span{color:var(--lime)}
+.hero-sub{color:var(--periwinkle);font-size:clamp(1rem,2vw,1.25rem);max-width:640px;margin:0 auto 32px;font-weight:500}
+.hero-badges{display:flex;flex-wrap:wrap;justify-content:center;gap:12px}
+.badge{display:inline-flex;align-items:center;gap:6px;background:rgba(132,166,255,.15);border:1px solid rgba(132,166,255,.3);color:var(--periwinkle);padding:8px 18px;border-radius:40px;font-size:.85rem;font-weight:600}
+.badge svg{width:16px;height:16px;fill:var(--lime)}
+.stats-section{padding:80px 0 60px;background:var(--light-bg)}
+.stats-section h2{text-align:center;font-size:clamp(1.5rem,3vw,2.2rem);margin-bottom:48px;color:var(--navy)}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:24px}
+.stat-card{background:var(--card-bg);border-radius:var(--radius);padding:36px 24px;text-align:center;box-shadow:var(--shadow);transition:transform .25s,box-shadow .25s;border-top:4px solid var(--lime)}
+.stat-card:nth-child(2){border-top-color:var(--blue)}.stat-card:nth-child(3){border-top-color:var(--orange)}.stat-card:nth-child(4){border-top-color:var(--periwinkle)}.stat-card:nth-child(5){border-top-color:var(--lime)}
+.stat-card:hover{transform:translateY(-4px);box-shadow:0 8px 32px rgba(2,3,103,.15)}
+.stat-number{font-family:'League Spartan',sans-serif;font-size:clamp(2rem,4vw,3rem);font-weight:900;color:var(--navy);line-height:1}
+.stat-label{font-size:.9rem;color:#555;font-weight:600;margin-top:8px;text-transform:uppercase;letter-spacing:.06em}
+.stat-icon{font-size:1.6rem;margin-bottom:10px}
+.sessions-section{padding:80px 0;background:var(--white)}
+.sessions-section h2{text-align:center;font-size:clamp(1.5rem,3vw,2.2rem);margin-bottom:12px;color:var(--navy)}
+.sessions-sub{text-align:center;color:#666;margin-bottom:40px;font-size:1rem}
+.sessions-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:24px}
+.session-card{background:var(--card-bg);border-radius:var(--radius);padding:28px;box-shadow:var(--shadow);border-left:5px solid var(--blue);transition:transform .25s}
+.session-card:hover{transform:translateY(-3px)}
+.session-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;gap:12px}
+.session-sport{font-family:'League Spartan',sans-serif;font-weight:700;font-size:1.15rem;color:var(--navy)}
+.session-date{font-size:.8rem;color:var(--white);background:var(--blue);padding:4px 12px;border-radius:20px;white-space:nowrap;font-weight:600}
+.session-location{color:var(--blue);font-weight:600;font-size:.85rem;margin-bottom:8px;display:flex;align-items:center;gap:4px}
+.session-attendance{font-size:.85rem;color:#444;margin-bottom:6px}
+.session-attendance strong{color:var(--navy)}
+.session-notes{font-size:.85rem;color:#666;font-style:italic;border-top:1px solid #eee;padding-top:8px;margin-top:8px}
+.team-section{padding:80px 0;background:var(--light-bg)}
+.team-section h2{text-align:center;font-size:clamp(1.5rem,3vw,2.2rem);margin-bottom:48px;color:var(--navy)}
+.team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:24px}
+.team-card{background:var(--card-bg);border-radius:var(--radius);padding:32px 24px;text-align:center;box-shadow:var(--shadow);transition:transform .25s;position:relative;overflow:hidden}
+.team-card::before{content:'';position:absolute;top:0;left:0;right:0;height:6px;background:linear-gradient(90deg,var(--blue),var(--lime))}
+.team-card:hover{transform:translateY(-4px)}
+.team-avatar{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--periwinkle));display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-family:'League Spartan',sans-serif;font-weight:800;font-size:1.5rem;color:var(--white)}
+.team-name{font-family:'League Spartan',sans-serif;font-weight:700;font-size:1.15rem;color:var(--navy);margin-bottom:4px}
+.team-role{color:var(--blue);font-weight:600;font-size:.85rem;margin-bottom:4px}
+.team-school{color:#888;font-size:.8rem;font-weight:500}
+.footer{background:var(--navy);padding:48px 0 32px;color:var(--periwinkle)}
+.footer .container{text-align:center}
+.footer-brand{font-family:'League Spartan',sans-serif;font-weight:800;font-size:1.4rem;color:var(--white);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em}
+.footer-tagline{color:var(--periwinkle);margin-bottom:24px;font-size:.95rem}
+.footer-links{display:flex;justify-content:center;gap:24px;flex-wrap:wrap;margin-bottom:24px}
+.footer-links a{color:var(--periwinkle);text-decoration:none;font-weight:600;font-size:.9rem;transition:color .2s}
+.footer-links a:hover{color:var(--lime)}
+.footer-divider{border:none;border-top:1px solid rgba(132,166,255,.2);margin-bottom:20px}
+.footer-copy{font-size:.8rem;color:rgba(132,166,255,.6)}
+.footer-copy a{color:var(--lime);text-decoration:none}
+.loading-spinner{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px;color:var(--blue)}
+.spinner{width:40px;height:40px;border:4px solid var(--light-bg);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.fade-up{opacity:0;transform:translateY(30px);transition:opacity .6s ease,transform .6s ease}
+.fade-up.visible{opacity:1;transform:translateY(0)}
+@media(max-width:768px){.topnav-links{display:none}.hero{padding:72px 0 56px}.stats-grid{grid-template-columns:repeat(2,1fr);gap:16px}.stat-card{padding:24px 16px}.sessions-grid{grid-template-columns:1fr}.team-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:480px){.stats-grid{grid-template-columns:repeat(2,1fr);gap:12px}.team-grid{grid-template-columns:1fr}.hero-badges{flex-direction:column;align-items:center}}
+</style>
+</head>
+<body>
+<nav class="topnav"><div class="container"><a href="https://togethersports.org" class="topnav-brand"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="18" stroke="#87cb4a" stroke-width="3"/><path d="M12 20C12 15.6 15.6 12 20 12M28 20C28 24.4 24.4 28 20 28" stroke="#84a6ff" stroke-width="2.5" stroke-linecap="round"/><circle cx="20" cy="20" r="4" fill="#87cb4a"/></svg> Together Sports</a><div class="topnav-links"><a href="https://togethersports.org">Home</a><a href="https://togethersports.org/team">Team</a><a href="https://togethersports.org/sports">Sports</a><a href="https://togethersports.org/contact">Contact</a><a href="https://togethersports.org/donate" class="btn-donate">Donate</a></div></div></nav>
+<section class="hero"><div class="container"><div class="hero-eyebrow">501(c)(3) Nonprofit &#8226; Est. 2024</div><h1>Our <span>Impact</span>, Live.</h1><p class="hero-sub">Real-time data on how Together Sports is empowering youth through free sports programming in New York City.</p><div class="hero-badges"><span class="badge"><svg viewBox="0 0 16 16"><path d="M8 0C5.2 0 3 2.2 3 5c0 4 5 10 5 10s5-6 5-10c0-2.8-2.2-5-5-5zm0 7.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"/></svg> The Bronx, NYC</span><span class="badge"><svg viewBox="0 0 16 16"><path d="M8 0C5.2 0 3 2.2 3 5c0 4 5 10 5 10s5-6 5-10c0-2.8-2.2-5-5-5zm0 7.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"/></svg> Long Island City, NYC</span><span class="badge"><svg viewBox="0 0 16 16"><path d="M8 0C5.2 0 3 2.2 3 5c0 4 5 10 5 10s5-6 5-10c0-2.8-2.2-5-5-5zm0 7.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"/></svg> NYC-Wide</span></div></div></section>
+<section class="stats-section" id="stats"><div class="container"><h2>By The Numbers</h2><div class="stats-grid" id="statsGrid"><div class="loading-spinner"><div class="spinner"></div>Loading stats...</div></div></div></section>
+<section class="sessions-section" id="sessions"><div class="container"><h2>Recent Sessions</h2><p class="sessions-sub">A look at our latest community programming across NYC.</p><div class="sessions-grid" id="sessionsGrid"><div class="loading-spinner"><div class="spinner"></div>Loading sessions...</div></div></div></section>
+<section class="team-section" id="team"><div class="container"><h2>Our Team</h2><div class="team-grid" id="teamGrid"><div class="loading-spinner"><div class="spinner"></div>Loading team...</div></div></div></section>
+<footer class="footer"><div class="container"><div class="footer-brand">Together Sports</div><p class="footer-tagline">Play Loud. Build Strong.</p><div class="footer-links"><a href="https://togethersports.org">Website</a><a href="https://togethersports.org/sports">Our Sports</a><a href="https://togethersports.org/team">Team</a><a href="https://togethersports.org/donate">Donate</a><a href="https://togethersports.org/contact">Contact</a></div><hr class="footer-divider"><p class="footer-copy">&#169; 2025 Together Sports, Inc. &#8226; 501(c)(3) Nonprofit &#8226; <a href="https://togethersports.org">togethersports.org</a></p></div></footer>
+<script>
+const SHEET_ID='YOUR_GOOGLE_SHEET_ID_HERE';const csvUrl=(tab)=>'https://docs.google.com/spreadsheets/d/'+SHEET_ID+'/gviz/tq?tqx=out:csv&sheet='+encodeURIComponent(tab);function parseCSV(text){const rows=[];let row=[],cell='',q=false;for(let i=0;i<text.length;i++){const ch=text[i];if(ch==='"'){if(q&&text[i+1]==='"'){cell+='"';i++}else{q=!q}}else if(ch===','&&!q){row.push(cell.trim());cell=''}else if((ch==='\n'||(ch==='\r'&&text[i+1]==='\n'))&&!q){row.push(cell.trim());cell='';if(row.some(function(c){return c!==''}))rows.push(row);row=[];if(ch==='\r')i++}else if(ch==='\r'&&!q){row.push(cell.trim());cell='';if(row.some(function(c){return c!==''}))rows.push(row);row=[]}else{cell+=ch}}if(cell||row.length){row.push(cell.trim());if(row.some(function(c){return c!==''}))rows.push(row)}if(rows.length<2)return[];const headers=rows[0];return rows.slice(1).map(function(r){const obj={};headers.forEach(function(h,i){obj[h]=(r[i]||'').trim()});return obj})}const statIcons={'youth served':'\uD83C\uDFC5','sessions held':'\uD83D\uDCCB','coaching hours':'\u23F1\uFE0F','locations':'\uD83D\uDCCD','volunteers':'\uD83E\uDD1D'};function renderStats(data){const grid=document.getElementById('statsGrid');if(!data||data.length===0){grid.innerHTML='<p style="text-align:center;color:#888;">No stats available.<\/p>';return}grid.innerHTML=data.map(function(row,i){const label=(row['Stat']||row['stat']||'').trim();const value=(row['Value']||row['value']||'0').trim();const icon=statIcons[label.toLowerCase()]||'\uD83D\uDCCA';return '<div class="stat-card fade-up" style="animation-delay:'+i*0.1+'s"><div class="stat-icon">'+icon+'<\/div><div class="stat-number" data-target="'+value.replace(/[^0-9]/g,'')+'" data-suffix="'+value.replace(/[0-9,]/g,'')+'">'+value+'<\/div><div class="stat-label">'+label+'<\/div><\/div>'}).join('');initCounters();observeFadeUps()}function initCounters(){const counters=document.querySelectorAll('.stat-number[data-target]');const observer=new IntersectionObserver(function(entries){entries.forEach(function(entry){if(entry.isIntersecting){const el=entry.target;const target=parseInt(el.dataset.target)||0;const suffix=el.dataset.suffix||'';if(target===0)return;let current=0;const increment=Math.max(1,Math.floor(target/60));const timer=setInterval(function(){current+=increment;if(current>=target){current=target;clearInterval(timer)}el.textContent=current.toLocaleString()+suffix},25);observer.unobserve(el)}})},{threshold:0.3});counters.forEach(function(c){observer.observe(c)})}function renderSessions(data){const grid=document.getElementById('sessionsGrid');if(!data||data.length===0){grid.innerHTML='<p style="text-align:center;color:#888;">No sessions available.<\/p>';return}const sorted=data.sort(function(a,b){return new Date(b['Date']||b['date']||0)-new Date(a['Date']||a['date']||0)}).slice(0,9);grid.innerHTML=sorted.map(function(row,i){const date=row['Date']||row['date']||'';const location=row['Location']||row['location']||'';const sport=row['Sport']||row['sport']||'';const youth=row['Youth Attended']||row['youth attended']||row['Attendance']||'';const notes=row['Notes']||row['notes']||'';return '<div class="session-card fade-up" style="animation-delay:'+i*0.08+'s"><div class="session-header"><span class="session-sport">'+sport+'<\/span><span class="session-date">'+date+'<\/span><\/div><div class="session-location">\uD83D\uDCCD '+location+'<\/div><div class="session-attendance">Youth Attended: <strong>'+youth+'<\/strong><\/div>'+(notes?'<div class="session-notes">\"'+notes+'\"<\/div>':'')+'<\/div>'}).join('');observeFadeUps()}function renderTeam(data){const grid=document.getElementById('teamGrid');if(!data||data.length===0){grid.innerHTML='<p style="text-align:center;color:#888;">No team data available.<\/p>';return}grid.innerHTML=data.map(function(row,i){const name=row['Name']||row['name']||'';const role=row['Role']||row['role']||'';const school=row['School']||row['school']||'';const initials=name.split(' ').map(function(n){return n[0]}).join('').toUpperCase().slice(0,2);return '<div class="team-card fade-up" style="animation-delay:'+i*0.08+'s"><div class="team-avatar">'+initials+'<\/div><div class="team-name">'+name+'<\/div><div class="team-role">'+role+'<\/div>'+(school?'<div class="team-school">'+school+'<\/div>':'')+'<\/div>'}).join('');observeFadeUps()}function observeFadeUps(){const obs=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target)}})},{threshold:0.1});document.querySelectorAll('.fade-up:not(.visible)').forEach(function(el){obs.observe(el)})}const fallbackStats=[{Stat:'Youth Served',Value:'50'},{Stat:'Sessions Held',Value:'30'},{Stat:'Coaching Hours',Value:'120'},{Stat:'Locations',Value:'5'},{Stat:'Volunteers',Value:'12'}];const fallbackSessions=[{Date:'2025-03-22',Location:'Crotona Park, Bronx',Sport:'Tennis','Youth Attended':'8',Notes:'Great energy - first session of spring season'},{Date:'2025-03-15',Location:'LIC, Queens',Sport:'Basketball','Youth Attended':'12',Notes:'3v3 tournament format, kids loved it'},{Date:'2025-03-08',Location:"St. Mary's Park, Bronx",Sport:'Football','Youth Attended':'10',Notes:'Flag football fundamentals'},{Date:'2025-03-01',Location:'Mullaly Park, Bronx',Sport:'Tennis','Youth Attended':'6',Notes:'Focused on serves and volleys'},{Date:'2025-02-22',Location:'Rainey Park, LIC',Sport:'Golf','Youth Attended':'5',Notes:'Indoor putting clinic'},{Date:'2025-02-15',Location:'Crotona Park, Bronx',Sport:'Tennis','Youth Attended':'9',Notes:'Rally Forward equipment donation day'}];const fallbackTeam=[{Name:'Harry Honig',Role:'Founder & Executive Director',School:''},{Name:'Jonah Angrist',Role:'Assistant Coach - Instruction',School:''},{Name:'Sheldon Heyman',Role:'Assistant Coach - Player Dev',School:''},{Name:'Solomon Heyman',Role:'Assistant Coach - Outreach',School:''},{Name:'Tory Doft',Role:'Social Media Manager',School:''},{Name:'Soumil Voona',Role:'Technology Lead',School:''},{Name:'Akshath Sundar',Role:'Texas Chapter Founder',School:''}];function loadData(){if(SHEET_ID==='YOUR_GOOGLE_SHEET_ID_HERE'){renderStats(fallbackStats);renderSessions(fallbackSessions);renderTeam(fallbackTeam);return}Promise.all([fetch(csvUrl('Stats')).then(function(r){return r.ok?r.text():''}),fetch(csvUrl('Sessions')).then(function(r){return r.ok?r.text():''}),fetch(csvUrl('Team')).then(function(r){return r.ok?r.text():''})]).then(function(results){var stats=results[0]?parseCSV(results[0]):fallbackStats;var sessions=results[1]?parseCSV(results[1]):fallbackSessions;var team=results[2]?parseCSV(results[2]):fallbackTeam;renderStats(stats.length?stats:fallbackStats);renderSessions(sessions.length?sessions:fallbackSessions);renderTeam(team.length?team:fallbackTeam)}).catch(function(e){console.warn('Failed to fetch:',e);renderStats(fallbackStats);renderSessions(fallbackSessions);renderTeam(fallbackTeam)})}document.addEventListener('DOMContentLoaded',loadData);
+</script>
+</body>
+</html>
