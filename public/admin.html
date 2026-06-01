@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Together Sports – Admin</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --green:#1a7f3c;--green-dark:#145f2d;--green-light:#e8f5ed;
+  --white:#fff;--gray:#f5f5f5;--border:#d0d0d0;
+  --text:#1a1a1a;--muted:#6b6b6b;
+}
+body{font-family:'Segoe UI',sans-serif;background:var(--gray);color:var(--text);min-height:100vh}
+
+/* ── Login overlay ── */
+#login-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.55);
+  display:flex;align-items:center;justify-content:center;z-index:999
+}
+#login-box{
+  background:var(--white);border-radius:12px;padding:40px 48px;
+  box-shadow:0 8px 40px rgba(0,0,0,.25);text-align:center;width:340px
+}
+#login-box .logo{font-size:2rem;font-weight:800;color:var(--green);margin-bottom:4px}
+#login-box p{color:var(--muted);margin-bottom:24px;font-size:.9rem}
+#login-box input{
+  width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;
+  font-size:1rem;margin-bottom:14px;outline:none
+}
+#login-box input:focus{border-color:var(--green)}
+#login-box button{
+  width:100%;padding:11px;background:var(--green);color:#fff;border:none;
+  border-radius:8px;font-size:1rem;font-weight:600;cursor:pointer
+}
+#login-box button:hover{background:var(--green-dark)}
+#login-err{color:#c0392b;font-size:.85rem;margin-top:8px;display:none}
+
+/* ── Header ── */
+header{
+  background:var(--green);color:#fff;padding:0 28px;height:60px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.15)
+}
+.brand{font-size:1.35rem;font-weight:800;letter-spacing:.5px}
+.brand span{opacity:.7;font-weight:400;font-size:.85rem;margin-left:8px}
+header nav a{
+  color:rgba(255,255,255,.85);text-decoration:none;font-size:.85rem;
+  margin-left:18px
+}
+header nav a:hover{color:#fff}
+
+/* ── Tabs ── */
+.tabs-bar{
+  background:var(--white);border-bottom:1.5px solid var(--border);
+  display:flex;padding:0 24px;overflow-x:auto;
+}
+.tab-btn{
+  padding:14px 20px;cursor:pointer;border:none;background:transparent;
+  font-size:.9rem;font-weight:500;color:var(--muted);border-bottom:3px solid transparent;
+  white-space:nowrap;transition:color .2s
+}
+.tab-btn.active{color:var(--green);border-bottom-color:var(--green)}
+.tab-btn:hover:not(.active){color:var(--text)}
+
+/* ── Tab panes ── */
+.tab-pane{display:none;padding:28px 32px;max-width:1200px;margin:0 auto}
+.tab-pane.active{display:block}
+
+/* ── Cards / stat tiles ── */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:28px}
+.stat-card{
+  background:var(--white);border-radius:10px;padding:22px 20px;
+  box-shadow:0 1px 6px rgba(0,0,0,.07);
+}
+.stat-card .val{font-size:2.2rem;font-weight:800;color:var(--green)}
+.stat-card .lbl{color:var(--muted);font-size:.85rem;margin-top:4px}
+
+/* ── Panels / sections ── */
+.panel{
+  background:var(--white);border-radius:10px;padding:22px 24px;
+  box-shadow:0 1px 6px rgba(0,0,0,.07);margin-bottom:22px
+}
+.panel h3{font-size:1rem;font-weight:700;margin-bottom:16px;color:var(--text)}
+
+/* ── Tables ── */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.88rem}
+th{background:var(--green-light);color:var(--green-dark);padding:10px 12px;text-align:left;font-weight:600}
+td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafafa}
+
+/* ── Filters ── */
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;align-items:flex-end}
+.filters select,.filters input{
+  padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;
+  font-size:.85rem;background:#fff;outline:none
+}
+.filters select:focus,.filters input:focus{border-color:var(--green)}
+.filters button{
+  padding:8px 18px;background:var(--green);color:#fff;border:none;
+  border-radius:8px;cursor:pointer;font-size:.85rem;font-weight:600
+}
+.filters button.sec{background:#fff;color:var(--green);border:1.5px solid var(--green)}
+.filters button:hover{filter:brightness(.93)}
+
+/* ── Forms ── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-grid.single{grid-template-columns:1fr}
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-group.full{grid-column:1/-1}
+.form-group label{font-size:.83rem;font-weight:600;color:var(--muted)}
+.form-group input,.form-group select,.form-group textarea{
+  padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;
+  font-size:.9rem;font-family:inherit;outline:none;background:#fff
+}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{
+  border-color:var(--green)
+}
+.form-group textarea{resize:vertical;min-height:80px}
+.btn-primary{
+  padding:11px 28px;background:var(--green);color:#fff;border:none;
+  border-radius:8px;font-size:.95rem;font-weight:700;cursor:pointer;margin-top:10px
+}
+.btn-primary:hover{background:var(--green-dark)}
+.btn-danger{
+  padding:5px 12px;background:#c0392b;color:#fff;border:none;
+  border-radius:6px;cursor:pointer;font-size:.8rem
+}
+.btn-danger:hover{background:#a93226}
+.btn-edit{
+  padding:5px 12px;background:var(--green);color:#fff;border:none;
+  border-radius:6px;cursor:pointer;font-size:.8rem;margin-right:4px
+}
+
+/* ── Photo gallery ── */
+.gallery-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;
+  margin-top:18px
+}
+.photo-card{position:relative;cursor:pointer;border-radius:10px;overflow:hidden;
+  box-shadow:0 1px 6px rgba(0,0,0,.1);background:#eee}
+.photo-card img{width:100%;height:140px;object-fit:cover;display:block}
+.photo-card .pcap{
+  position:absolute;bottom:0;left:0;right:0;
+  background:linear-gradient(transparent,rgba(0,0,0,.65));
+  color:#fff;font-size:.75rem;padding:18px 8px 6px
+}
+.photo-card .pdel{
+  position:absolute;top:6px;right:6px;background:rgba(0,0,0,.55);
+  color:#fff;border:none;border-radius:50%;width:24px;height:24px;
+  font-size:.75rem;cursor:pointer;display:none;align-items:center;justify-content:center
+}
+.photo-card:hover .pdel{display:flex}
+
+/* ── Lightbox ── */
+#lightbox{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);
+  z-index:500;align-items:center;justify-content:center
+}
+#lightbox.open{display:flex}
+#lightbox img{max-width:90vw;max-height:85vh;border-radius:8px;box-shadow:0 4px 40px rgba(0,0,0,.5)}
+#lightbox .lbcap{
+  position:absolute;bottom:28px;left:0;right:0;text-align:center;
+  color:#fff;font-size:.95rem
+}
+#lightbox .lbclose{
+  position:absolute;top:18px;right:22px;color:#fff;font-size:1.8rem;
+  cursor:pointer;background:none;border:none;line-height:1
+}
+
+/* ── Badge / tag ── */
+.badge{
+  display:inline-block;padding:2px 9px;border-radius:20px;font-size:.75rem;font-weight:600
+}
+.badge-green{background:var(--green-light);color:var(--green)}
+.badge-gray{background:#eee;color:#555}
+
+/* ── Two-col layout ── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:700px){.two-col{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}}
+
+.msg{padding:10px 14px;border-radius:8px;margin-bottom:14px;font-size:.88rem;display:none}
+.msg.ok{background:#e8f5ed;color:var(--green-dark)}
+.msg.err{background:#fde8e8;color:#c0392b}
+</style>
+</head>
+<body>
+
+<!-- Login -->
+<div id="login-overlay">
+  <div id="login-box">
+    <div class="logo">Together Sports</div>
+    <p>Internal Operations Dashboard</p>
+    <input type="password" id="pw-input" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()"/>
+    <button onclick="doLogin()">Sign In</button>
+    <div id="login-err">Incorrect password. Try again.</div>
+  </div>
+</div>
+
+<!-- Header -->
+<header>
+  <div class="brand">Together Sports <span>Admin</span></div>
+  <nav>
+    <a href="/submit.html" target="_blank">Coach Submit Form ↗</a>
+    <a href="#" onclick="doLogout()">Logout</a>
+  </nav>
+</header>
+
+<!-- Tabs -->
+<div class="tabs-bar">
+  <button class="tab-btn active" onclick="switchTab('overview')">📊 Overview</button>
+  <button class="tab-btn" onclick="switchTab('sessions')">📋 Sessions Log</button>
+  <button class="tab-btn" onclick="switchTab('roster')">👥 Coach Roster</button>
+  <button class="tab-btn" onclick="switchTab('add-session')">➕ Add Session</button>
+  <button class="tab-btn" onclick="switchTab('coaches')">🛠 Manage Coaches</button>
+  <button class="tab-btn" onclick="switchTab('settings')">⚙️ Settings</button>
+  <button class="tab-btn" onclick="switchTab('gallery')">🖼 Photo Gallery</button>
+</div>
+
+<!-- ══════════════════════ OVERVIEW ══════════════════════ -->
+<div class="tab-pane active" id="tab-overview">
+  <div class="stat-grid" id="stat-grid">
+    <div class="stat-card"><div class="val" id="stat-sessions">—</div><div class="lbl">Total Sessions</div></div>
+    <div class="stat-card"><div class="val" id="stat-participants">—</div><div class="lbl">Total Participants</div></div>
+    <div class="stat-card"><div class="val" id="stat-coaches">—</div><div class="lbl">Active Coaches</div></div>
+    <div class="stat-card"><div class="val" id="stat-chapters">—</div><div class="lbl">Chapters w/ Sessions</div></div>
+  </div>
+  <div class="two-col">
+    <div class="panel">
+      <h3>Sessions by Chapter</h3>
+      <div class="tbl-wrap"><table id="tbl-by-chapter">
+        <thead><tr><th>Chapter</th><th>Sessions</th><th>Participants</th></tr></thead>
+        <tbody></tbody>
+      </table></div>
+    </div>
+    <div class="panel">
+      <h3>Sessions by Sport</h3>
+      <div class="tbl-wrap"><table id="tbl-by-sport">
+        <thead><tr><th>Sport</th><th>Sessions</th></tr></thead>
+        <tbody></tbody>
+      </table></div>
+    </div>
+  </div>
+  <div class="panel">
+    <h3>Recent Sessions</h3>
+    <div class="tbl-wrap"><table id="tbl-recent">
+      <thead><tr><th>Date</th><th>Coach</th><th>Chapter</th><th>Sport</th><th>Participants</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- ══════════════════════ SESSIONS LOG ══════════════════════ -->
+<div class="tab-pane" id="tab-sessions">
+  <div class="filters">
+    <select id="f-chapter"><option value="">All Chapters</option></select>
+    <select id="f-sport"><option value="">All Sports</option></select>
+    <select id="f-coach"><option value="">All Coaches</option></select>
+    <input type="date" id="f-date-from" placeholder="From"/>
+    <input type="date" id="f-date-to" placeholder="To"/>
+    <button onclick="loadSessions()">Filter</button>
+    <button class="sec" onclick="clearFilters()">Clear</button>
+    <button class="sec" onclick="exportCSV()">Export CSV</button>
+  </div>
+  <div class="panel" style="padding:0">
+    <div class="tbl-wrap"><table id="tbl-sessions">
+      <thead><tr><th>Date</th><th>Coach</th><th>Chapter</th><th>Sport</th><th>Duration</th><th>Participants</th><th>Location</th><th>Notes</th><th></th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- ══════════════════════ ROSTER ══════════════════════ -->
+<div class="tab-pane" id="tab-roster">
+  <div class="filters">
+    <select id="r-chapter"><option value="">All Chapters</option></select>
+    <select id="r-sport"><option value="">All Sports</option></select>
+    <button onclick="loadRoster()">Filter</button>
+  </div>
+  <div class="panel" style="padding:0">
+    <div class="tbl-wrap"><table id="tbl-roster">
+      <thead><tr><th>Name</th><th>Chapter</th><th>Sport</th><th>Email</th><th>Phone</th><th>Status</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- ══════════════════════ ADD SESSION ══════════════════════ -->
+<div class="tab-pane" id="tab-add-session">
+  <div class="panel" style="max-width:640px">
+    <h3>Log a New Session</h3>
+    <div id="msg-add-session" class="msg"></div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Date *</label>
+        <input type="date" id="as-date"/>
+      </div>
+      <div class="form-group">
+        <label>Coach</label>
+        <select id="as-coach"><option value="">— Select Coach —</option></select>
+      </div>
+      <div class="form-group">
+        <label>Chapter</label>
+        <select id="as-chapter"><option value="">— Select Chapter —</option></select>
+      </div>
+      <div class="form-group">
+        <label>Sport</label>
+        <select id="as-sport"><option value="">— Select Sport —</option></select>
+      </div>
+      <div class="form-group">
+        <label>Duration (minutes)</label>
+        <input type="number" id="as-duration" min="0" placeholder="60"/>
+      </div>
+      <div class="form-group">
+        <label>Participants</label>
+        <input type="number" id="as-participants" min="0"/>
+      </div>
+      <div class="form-group full">
+        <label>Location</label>
+        <input type="text" id="as-location"/>
+      </div>
+      <div class="form-group full">
+        <label>Notes</label>
+        <textarea id="as-notes"></textarea>
+      </div>
+      <div class="form-group full">
+        <label>Your Name</label>
+        <input type="text" id="as-submitted-by"/>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="submitSession()">Save Session</button>
+  </div>
+</div>
+
+<!-- ══════════════════════ MANAGE COACHES ══════════════════════ -->
+<div class="tab-pane" id="tab-coaches">
+  <div class="two-col">
+    <div class="panel">
+      <h3 id="coach-form-title">Add New Coach</h3>
+      <div id="msg-coach" class="msg"></div>
+      <div class="form-grid">
+        <input type="hidden" id="coach-id"/>
+        <div class="form-group full">
+          <label>Name *</label>
+          <input type="text" id="coach-name"/>
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="coach-email"/>
+        </div>
+        <div class="form-group">
+          <label>Phone</label>
+          <input type="text" id="coach-phone"/>
+        </div>
+        <div class="form-group">
+          <label>Chapter</label>
+          <select id="coach-chapter"><option value="">—</option></select>
+        </div>
+        <div class="form-group">
+          <label>Sport</label>
+          <select id="coach-sport"><option value="">—</option></select>
+        </div>
+        <div class="form-group full">
+          <label>Bio</label>
+          <textarea id="coach-bio"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select id="coach-active">
+            <option value="1">Active</option>
+            <option value="0">Inactive</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn-primary" onclick="saveCoach()">Save Coach</button>
+        <button class="btn-primary" style="background:#888" onclick="resetCoachForm()">Clear</button>
+      </div>
+    </div>
+    <div class="panel" style="padding:0;overflow:auto">
+      <div class="tbl-wrap"><table id="tbl-coaches-manage">
+        <thead><tr><th>Name</th><th>Chapter</th><th>Sport</th><th>Status</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ SETTINGS ══════════════════════ -->
+<div class="tab-pane" id="tab-settings">
+  <div class="panel" style="max-width:500px">
+    <h3>Organization Settings</h3>
+    <div id="msg-settings" class="msg"></div>
+    <div class="form-grid single">
+      <div class="form-group">
+        <label>Organization Name</label>
+        <input type="text" id="set-org-name"/>
+      </div>
+      <div class="form-group">
+        <label>Contact Email</label>
+        <input type="email" id="set-contact-email"/>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="saveSettings()">Save Settings</button>
+  </div>
+  <div class="panel" style="max-width:500px">
+    <h3>Add Chapter</h3>
+    <div id="msg-chapter" class="msg"></div>
+    <div style="display:flex;gap:10px">
+      <input type="text" id="new-chapter" placeholder="Chapter name" style="flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:.9rem"/>
+      <button class="btn-primary" style="margin:0" onclick="addChapter()">Add</button>
+    </div>
+    <ul id="chapter-list" style="margin-top:14px;list-style:none;font-size:.88rem;color:var(--muted)"></ul>
+  </div>
+  <div class="panel" style="max-width:500px">
+    <h3>Add Sport</h3>
+    <div id="msg-sport" class="msg"></div>
+    <div style="display:flex;gap:10px">
+      <input type="text" id="new-sport" placeholder="Sport name" style="flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:.9rem"/>
+      <button class="btn-primary" style="margin:0" onclick="addSport()">Add</button>
+    </div>
+    <ul id="sport-list" style="margin-top:14px;list-style:none;font-size:.88rem;color:var(--muted)"></ul>
+  </div>
+</div>
+
+<!-- ══════════════════════ GALLERY ══════════════════════ -->
+<div class="tab-pane" id="tab-gallery">
+  <div class="panel">
+    <h3>Upload Photo</h3>
+    <div id="msg-photo" class="msg"></div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end">
+      <input type="file" id="photo-file" accept="image/*"/>
+      <input type="text" id="photo-caption" placeholder="Caption (optional)" style="flex:1;min-width:160px;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:.9rem"/>
+      <select id="photo-chapter" style="padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:.9rem"><option value="">All Chapters</option></select>
+      <select id="photo-sport" style="padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:.9rem"><option value="">All Sports</option></select>
+      <button class="btn-primary" style="margin:0" onclick="uploadPhoto()">Upload</button>
+    </div>
+  </div>
+  <div class="gallery-grid" id="gallery-grid"></div>
+</div>
+
+<!-- Lightbox -->
+<div id="lightbox">
+  <button class="lbclose" onclick="closeLightbox()">✕</button>
+  <img id="lb-img" src="" alt=""/>
+  <div class="lbcap" id="lb-cap"></div>
+</div>
+
+<!-- Edit Coach Modal (reuse form) -->
+
+<script>
+const TOKEN = () => localStorage.getItem('ts_token') || '';
+const API = (path, opts={}) => {
+  opts.headers = { ...(opts.headers||{}), 'x-admin-token': TOKEN() };
+  return fetch(path, opts).then(r => r.json());
+};
+
+// ── Auth ───────────────────────────────────────────────────────────────────
+async function doLogin() {
+  const pw = document.getElementById('pw-input').value;
+  const r = await fetch('/api/auth', {
+    method:'POST',
+    headers:{'content-type':'application/json'},
+    body: JSON.stringify({password:pw})
+  }).then(r=>r.json()).catch(()=>({error:'Network error'}));
+  if (r.ok) {
+    localStorage.setItem('ts_token', pw);
+    document.getElementById('login-overlay').style.display='none';
+    initApp();
+  } else {
+    document.getElementById('login-err').style.display='block';
+  }
+}
+function doLogout(){
+  localStorage.removeItem('ts_token');
+  location.reload();
+}
+if (TOKEN()) {
+  document.getElementById('login-overlay').style.display='none';
+  setTimeout(initApp, 0);
+}
+
+// ── Tabs ───────────────────────────────────────────────────────────────────
+const tabLoaded = {};
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  const btns = document.querySelectorAll('.tab-btn');
+  const idx = ['overview','sessions','roster','add-session','coaches','settings','gallery'].indexOf(name);
+  btns[idx].classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+  if (!tabLoaded[name]) { tabLoaded[name]=true; loadTab(name); }
+}
+function loadTab(name) {
+  if (name==='overview') loadOverview();
+  if (name==='sessions') loadSessions();
+  if (name==='roster') { loadRoster(); }
+  if (name==='add-session') populateAddSession();
+  if (name==='coaches') loadCoachesManage();
+  if (name==='settings') loadSettings();
+  if (name==='gallery') loadGallery();
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+async function initApp() {
+  await populateGlobalDropdowns();
+  loadTab('overview');
+}
+
+let _chapters=[], _sports=[], _coaches=[];
+
+async function populateGlobalDropdowns() {
+  [_chapters, _sports, _coaches] = await Promise.all([
+    API('/api/chapters'), API('/api/sports'), API('/api/coaches')
+  ]);
+  // filter dropdowns
+  fillSelect('f-chapter', _chapters, 'All Chapters');
+  fillSelect('f-sport',   _sports,   'All Sports');
+  fillSelect('f-coach',   _coaches,  'All Coaches');
+  fillSelect('r-chapter', _chapters, 'All Chapters');
+  fillSelect('r-sport',   _sports,   'All Sports');
+  // add-session
+  fillSelect('as-chapter', _chapters, '— Chapter —');
+  fillSelect('as-sport',   _sports,   '— Sport —');
+  fillSelect('as-coach',   _coaches,  '— Coach —');
+  // manage coaches
+  fillSelect('coach-chapter', _chapters, '—');
+  fillSelect('coach-sport',   _sports,   '—');
+  // gallery
+  fillSelect('photo-chapter', _chapters, 'All Chapters');
+  fillSelect('photo-sport',   _sports,   'All Sports');
+}
+
+function fillSelect(id, items, placeholder) {
+  const s = document.getElementById(id);
+  if (!s) return;
+  const cur = s.value;
+  s.innerHTML = `<option value="">${placeholder}</option>` +
+    items.map(i=>`<option value="${i.id}">${i.name}</option>`).join('');
+  if (cur) s.value = cur;
+}
+
+// ── Overview ───────────────────────────────────────────────────────────────
+async function loadOverview() {
+  const s = await API('/api/stats');
+  document.getElementById('stat-sessions').textContent     = s.total_sessions;
+  document.getElementById('stat-participants').textContent = s.total_participants;
+  document.getElementById('stat-coaches').textContent      = s.active_coaches;
+  document.getElementById('stat-chapters').textContent     = s.chapters_active;
+
+  fillTable('tbl-by-chapter', s.by_chapter,
+    r=>`<td>${r.name}</td><td>${r.sessions}</td><td>${r.participants}</td>`);
+  fillTable('tbl-by-sport', s.by_sport,
+    r=>`<td>${r.name}</td><td>${r.sessions}</td>`);
+  fillTable('tbl-recent', s.recent,
+    r=>`<td>${r.session_date}</td><td>${r.coach||'—'}</td><td>${r.chapter||'—'}</td><td>${r.sport||'—'}</td><td>${r.participants||'—'}</td>`);
+}
+
+// ── Sessions ───────────────────────────────────────────────────────────────
+let _sessionsCache = [];
+async function loadSessions() {
+  const params = new URLSearchParams();
+  val('f-chapter') && params.set('chapter_id', val('f-chapter'));
+  val('f-sport')   && params.set('sport_id',   val('f-sport'));
+  val('f-coach')   && params.set('coach_id',   val('f-coach'));
+  val('f-date-from') && params.set('date_from', val('f-date-from'));
+  val('f-date-to')   && params.set('date_to',   val('f-date-to'));
+  _sessionsCache = await API('/api/sessions?' + params);
+  fillTable('tbl-sessions', _sessionsCache, r=>`
+    <td>${r.session_date}</td>
+    <td>${r.coach||'—'}</td>
+    <td>${r.chapter||'—'}</td>
+    <td>${r.sport||'—'}</td>
+    <td>${r.duration_minutes ? r.duration_minutes+'m' : '—'}</td>
+    <td>${r.participants||'—'}</td>
+    <td>${r.location||'—'}</td>
+    <td style="max-width:160px;white-space:normal">${r.notes||''}</td>
+    <td><button class="btn-danger" onclick="deleteSession(${r.id})">✕</button></td>
+  `);
+}
+function clearFilters() {
+  ['f-chapter','f-sport','f-coach'].forEach(id=>{document.getElementById(id).value='';});
+  ['f-date-from','f-date-to'].forEach(id=>{document.getElementById(id).value='';});
+  loadSessions();
+}
+async function deleteSession(id) {
+  if (!confirm('Delete this session?')) return;
+  await API(`/api/sessions/${id}`, {method:'DELETE'});
+  loadSessions();
+}
+function exportCSV() {
+  const cols = ['id','session_date','coach','chapter','sport','duration_minutes','participants','location','notes','submitted_by','created_at'];
+  const rows = [cols.join(','), ..._sessionsCache.map(r=>cols.map(c=>JSON.stringify(r[c]??'')).join(','))];
+  download('sessions.csv', rows.join('\n'), 'text/csv');
+}
+
+// ── Roster ─────────────────────────────────────────────────────────────────
+async function loadRoster() {
+  const coaches = await API('/api/coaches');
+  const chF = val('r-chapter'), spF = val('r-sport');
+  const filtered = coaches.filter(c =>
+    (!chF || String(c.chapter_id)===chF) &&
+    (!spF || String(c.sport_id)===spF)
+  );
+  fillTable('tbl-roster', filtered, r=>`
+    <td><strong>${r.name}</strong>${r.bio ? '<br><small style="color:var(--muted)">'+r.bio+'</small>':''}</td>
+    <td>${r.chapter||'—'}</td>
+    <td>${r.sport||'—'}</td>
+    <td>${r.email||'—'}</td>
+    <td>${r.phone||'—'}</td>
+    <td><span class="badge ${r.active?'badge-green':'badge-gray'}">${r.active?'Active':'Inactive'}</span></td>
+  `);
+}
+
+// ── Add Session ────────────────────────────────────────────────────────────
+function populateAddSession() {
+  // dropdowns already filled in initApp
+}
+async function submitSession() {
+  const body = {
+    session_date:    val('as-date'),
+    coach_id:        val('as-coach'),
+    chapter_id:      val('as-chapter'),
+    sport_id:        val('as-sport'),
+    duration_minutes:val('as-duration'),
+    participants:    val('as-participants'),
+    location:        val('as-location'),
+    notes:           val('as-notes'),
+    submitted_by:    val('as-submitted-by'),
+  };
+  if (!body.session_date) return showMsg('msg-add-session','Date is required','err');
+  const r = await API('/api/sessions', {method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify(body)});
+  if (r.id) {
+    showMsg('msg-add-session','Session saved!','ok');
+    ['as-date','as-coach','as-chapter','as-sport','as-duration','as-participants','as-location','as-notes','as-submitted-by']
+      .forEach(id=>{ const el=document.getElementById(id); if(el)el.value=''; });
+    tabLoaded['sessions']=false; tabLoaded['overview']=false;
+  } else showMsg('msg-add-session','Error: '+(r.error||'unknown'),'err');
+}
+
+// ── Manage Coaches ─────────────────────────────────────────────────────────
+async function loadCoachesManage() {
+  const coaches = await API('/api/coaches');
+  fillTable('tbl-coaches-manage', coaches, r=>`
+    <td>${r.name}</td>
+    <td>${r.chapter||'—'}</td>
+    <td>${r.sport||'—'}</td>
+    <td><span class="badge ${r.active?'badge-green':'badge-gray'}">${r.active?'Active':'Inactive'}</span></td>
+    <td>
+      <button class="btn-edit" onclick='editCoach(${JSON.stringify(r)})'>Edit</button>
+      <button class="btn-danger" onclick="deleteCoach(${r.id})">✕</button>
+    </td>
+  `);
+}
+function editCoach(r) {
+  document.getElementById('coach-id').value     = r.id;
+  document.getElementById('coach-name').value   = r.name;
+  document.getElementById('coach-email').value  = r.email||'';
+  document.getElementById('coach-phone').value  = r.phone||'';
+  document.getElementById('coach-chapter').value= r.chapter_id||'';
+  document.getElementById('coach-sport').value  = r.sport_id||'';
+  document.getElementById('coach-bio').value    = r.bio||'';
+  document.getElementById('coach-active').value = r.active;
+  document.getElementById('coach-form-title').textContent='Edit Coach';
+}
+function resetCoachForm() {
+  ['coach-id','coach-name','coach-email','coach-phone','coach-bio'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('coach-chapter').value='';
+  document.getElementById('coach-sport').value='';
+  document.getElementById('coach-active').value='1';
+  document.getElementById('coach-form-title').textContent='Add New Coach';
+}
+async function saveCoach() {
+  const id = val('coach-id');
+  const body = {
+    name:       val('coach-name'),
+    email:      val('coach-email'),
+    phone:      val('coach-phone'),
+    chapter_id: val('coach-chapter'),
+    sport_id:   val('coach-sport'),
+    bio:        val('coach-bio'),
+    active:     val('coach-active'),
+  };
+  if (!body.name) return showMsg('msg-coach','Name is required','err');
+  let r;
+  if (id) r = await API(`/api/coaches/${id}`,{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify(body)});
+  else     r = await API('/api/coaches',    {method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});
+  if (r.ok||r.id) {
+    showMsg('msg-coach','Saved!','ok');
+    resetCoachForm();
+    loadCoachesManage();
+    // refresh globals
+    _coaches = await API('/api/coaches');
+    fillSelect('f-coach',    _coaches,'All Coaches');
+    fillSelect('as-coach',   _coaches,'— Coach —');
+    tabLoaded['roster']=false;
+  } else showMsg('msg-coach','Error: '+(r.error||'unknown'),'err');
+}
+async function deleteCoach(id) {
+  if (!confirm('Delete this coach?')) return;
+  await API(`/api/coaches/${id}`,{method:'DELETE'});
+  loadCoachesManage();
+}
+
+// ── Settings ───────────────────────────────────────────────────────────────
+async function loadSettings() {
+  const s = await API('/api/settings');
+  document.getElementById('set-org-name').value      = s.org_name||'';
+  document.getElementById('set-contact-email').value = s.contact_email||'';
+  // chapter & sport lists
+  const chapters = await API('/api/chapters');
+  const sports   = await API('/api/sports');
+  const cl = document.getElementById('chapter-list');
+  cl.innerHTML = chapters.map(c=>`<li>• ${c.name}</li>`).join('');
+  const sl = document.getElementById('sport-list');
+  sl.innerHTML = sports.map(s=>`<li>• ${s.name}</li>`).join('');
+}
+async function saveSettings() {
+  const body = {
+    org_name:      val('set-org-name'),
+    contact_email: val('set-contact-email'),
+  };
+  const r = await API('/api/settings',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});
+  showMsg('msg-settings', r.ok?'Saved!':'Error','err');
+  if (r.ok) showMsg('msg-settings','Settings saved!','ok');
+}
+async function addChapter() {
+  const name = val('new-chapter').trim();
+  if (!name) return;
+  await fetch('/api/chapters', {
+    method:'POST',
+    headers:{'content-type':'application/json','x-admin-token':TOKEN()},
+    body: JSON.stringify({name})
+  });
+  document.getElementById('new-chapter').value='';
+  _chapters = await API('/api/chapters');
+  ['f-chapter','r-chapter','as-chapter','coach-chapter','photo-chapter'].forEach(id=>fillSelect(id,_chapters,'—'));
+  loadSettings();
+  showMsg('msg-chapter','Chapter added!','ok');
+}
+async function addSport() {
+  const name = val('new-sport').trim();
+  if (!name) return;
+  await fetch('/api/sports', {
+    method:'POST',
+    headers:{'content-type':'application/json','x-admin-token':TOKEN()},
+    body: JSON.stringify({name})
+  });
+  document.getElementById('new-sport').value='';
+  _sports = await API('/api/sports');
+  ['f-sport','r-sport','as-sport','coach-sport','photo-sport'].forEach(id=>fillSelect(id,_sports,'—'));
+  loadSettings();
+  showMsg('msg-sport','Sport added!','ok');
+}
+
+// ── Gallery ────────────────────────────────────────────────────────────────
+async function loadGallery() {
+  const photos = await API('/api/photos');
+  const grid = document.getElementById('gallery-grid');
+  if (!photos.length) { grid.innerHTML='<p style="color:var(--muted);padding:8px">No photos yet.</p>'; return; }
+  grid.innerHTML = photos.map(p=>`
+    <div class="photo-card" onclick="openLightbox('/uploads/${p.filename}','${(p.caption||'').replace(/'/g,"\\'")}')">
+      <img src="/uploads/${p.filename}" alt="${p.caption||''}" loading="lazy"/>
+      <div class="pcap">${p.caption||''}<br><small>${p.chapter||''} ${p.sport||''}</small></div>
+      <button class="pdel" onclick="event.stopPropagation();deletePhoto(${p.id},this.closest('.photo-card'))">✕</button>
+    </div>
+  `).join('');
+}
+async function uploadPhoto() {
+  const file = document.getElementById('photo-file').files[0];
+  if (!file) return showMsg('msg-photo','Select a file first','err');
+  const fd = new FormData();
+  fd.append('photo', file);
+  fd.append('caption', val('photo-caption'));
+  fd.append('chapter_id', val('photo-chapter'));
+  fd.append('sport_id', val('photo-sport'));
+  const r = await fetch('/api/photos',{method:'POST',headers:{'x-admin-token':TOKEN()},body:fd}).then(r=>r.json());
+  if (r.id) {
+    showMsg('msg-photo','Photo uploaded!','ok');
+    document.getElementById('photo-file').value='';
+    document.getElementById('photo-caption').value='';
+    loadGallery();
+  } else showMsg('msg-photo','Upload failed: '+(r.error||'unknown'),'err');
+}
+async function deletePhoto(id, el) {
+  if (!confirm('Delete this photo?')) return;
+  await API(`/api/photos/${id}`,{method:'DELETE'});
+  el.remove();
+}
+function openLightbox(src, cap) {
+  document.getElementById('lb-img').src = src;
+  document.getElementById('lb-cap').textContent = cap;
+  document.getElementById('lightbox').classList.add('open');
+}
+function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); }
+document.getElementById('lightbox').addEventListener('click', e=>{ if(e.target===e.currentTarget)closeLightbox(); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape')closeLightbox(); });
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+function val(id) { const el=document.getElementById(id); return el ? el.value : ''; }
+function fillTable(id, rows, rowFn) {
+  const tb = document.querySelector('#'+id+' tbody');
+  if (!rows.length) { tb.innerHTML='<tr><td colspan="20" style="text-align:center;color:var(--muted);padding:20px">No data</td></tr>'; return; }
+  tb.innerHTML = rows.map(r=>`<tr>${rowFn(r)}</tr>`).join('');
+}
+function showMsg(id, text, type) {
+  const el=document.getElementById(id);
+  el.textContent=text; el.className='msg '+type; el.style.display='block';
+  setTimeout(()=>el.style.display='none', 4000);
+}
+function download(filename, text, mime) {
+  const a=document.createElement('a');
+  a.href='data:'+mime+';charset=utf-8,'+encodeURIComponent(text);
+  a.download=filename; a.click();
+}
+
+// ── Missing POST routes for chapters/sports (add to server via fetch) ──────
+// chapters & sports add via settings tab but need endpoints — inline fallback:
+// (server handles /api/chapters POST already below)
+</script>
+</body>
+</html>
