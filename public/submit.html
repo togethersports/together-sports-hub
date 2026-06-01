@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Together Sports – Submit Session</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --green:#1a7f3c;--green-dark:#145f2d;--green-light:#e8f5ed;
+  --white:#fff;--gray:#f5f5f5;--border:#d0d0d0;--text:#1a1a1a;--muted:#6b6b6b
+}
+body{font-family:'Segoe UI',sans-serif;background:var(--gray);color:var(--text);min-height:100vh}
+header{
+  background:var(--green);color:#fff;padding:0 28px;height:60px;
+  display:flex;align-items:center;justify-content:space-between
+}
+.brand{font-size:1.35rem;font-weight:800}
+.brand span{opacity:.7;font-size:.85rem;font-weight:400;margin-left:8px}
+main{max-width:620px;margin:40px auto;padding:0 16px}
+.card{background:var(--white);border-radius:12px;padding:36px 40px;box-shadow:0 2px 14px rgba(0,0,0,.09)}
+.card h2{font-size:1.4rem;font-weight:800;color:var(--green);margin-bottom:6px}
+.card p.sub{color:var(--muted);font-size:.9rem;margin-bottom:28px}
+.form-group{display:flex;flex-direction:column;gap:6px;margin-bottom:18px}
+.form-group label{font-size:.83rem;font-weight:600;color:var(--muted)}
+.form-group input,.form-group select,.form-group textarea{
+  padding:10px 13px;border:1.5px solid var(--border);border-radius:8px;
+  font-size:.95rem;font-family:inherit;outline:none;background:#fff
+}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--green)}
+.form-group textarea{resize:vertical;min-height:90px}
+.required{color:#c0392b}
+.btn{
+  width:100%;padding:13px;background:var(--green);color:#fff;border:none;
+  border-radius:8px;font-size:1rem;font-weight:700;cursor:pointer;margin-top:6px
+}
+.btn:hover{background:var(--green-dark)}
+.msg{padding:12px 16px;border-radius:8px;margin-bottom:18px;font-size:.9rem;display:none}
+.msg.ok{background:var(--green-light);color:var(--green-dark)}
+.msg.err{background:#fde8e8;color:#c0392b}
+.success-screen{text-align:center;display:none}
+.success-screen .icon{font-size:3rem;margin-bottom:14px}
+.success-screen h3{color:var(--green);font-size:1.3rem;margin-bottom:8px}
+.success-screen p{color:var(--muted);margin-bottom:20px}
+.success-screen button{
+  padding:10px 28px;background:var(--green);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:.95rem
+}
+@media(max-width:500px){.card{padding:24px 18px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">Together Sports <span>Session Submission</span></div>
+</header>
+<main>
+  <div class="card">
+    <div id="form-area">
+      <h2>Log a Session</h2>
+      <p class="sub">Fill in the details of your coaching session below. Fields marked <span class="required">*</span> are required.</p>
+      <div id="msg-submit" class="msg"></div>
+      <div class="form-group">
+        <label>Your Name <span class="required">*</span></label>
+        <input type="text" id="sub-name" placeholder="Coach Name"/>
+      </div>
+      <div class="form-group">
+        <label>Session Date <span class="required">*</span></label>
+        <input type="date" id="sub-date"/>
+      </div>
+      <div class="form-group">
+        <label>Chapter</label>
+        <select id="sub-chapter"><option value="">— Select Chapter —</option></select>
+      </div>
+      <div class="form-group">
+        <label>Sport</label>
+        <select id="sub-sport"><option value="">— Select Sport —</option></select>
+      </div>
+      <div class="form-group">
+        <label>Duration (minutes)</label>
+        <input type="number" id="sub-duration" min="0" placeholder="e.g. 60"/>
+      </div>
+      <div class="form-group">
+        <label>Number of Participants</label>
+        <input type="number" id="sub-participants" min="0"/>
+      </div>
+      <div class="form-group">
+        <label>Location</label>
+        <input type="text" id="sub-location" placeholder="Park, gym, address…"/>
+      </div>
+      <div class="form-group">
+        <label>Notes / Highlights</label>
+        <textarea id="sub-notes" placeholder="How did the session go? Any highlights?"></textarea>
+      </div>
+      <button class="btn" onclick="submitForm()">Submit Session</button>
+    </div>
+    <div class="success-screen" id="success-screen">
+      <div class="icon">✅</div>
+      <h3>Session Submitted!</h3>
+      <p>Thank you for logging your session. Keep up the great work!</p>
+      <button onclick="resetForm()">Log Another Session</button>
+    </div>
+  </div>
+</main>
+
+<script>
+async function loadDropdowns() {
+  const [chapters, sports] = await Promise.all([
+    fetch('/api/chapters').then(r=>r.json()),
+    fetch('/api/sports').then(r=>r.json())
+  ]);
+  const cs = document.getElementById('sub-chapter');
+  chapters.forEach(c => cs.innerHTML += `<option value="${c.id}">${c.name}</option>`);
+  const ss = document.getElementById('sub-sport');
+  sports.forEach(s => ss.innerHTML += `<option value="${s.id}">${s.name}</option>`);
+}
+loadDropdowns();
+
+// Set today as default date
+document.getElementById('sub-date').valueAsDate = new Date();
+
+async function submitForm() {
+  const name = document.getElementById('sub-name').value.trim();
+  const date = document.getElementById('sub-date').value;
+  if (!name) return showMsg('Name is required','err');
+  if (!date) return showMsg('Date is required','err');
+
+  // Find coach by name (best effort)
+  let coach_id = null;
+  try {
+    const coaches = await fetch('/api/coaches').then(r=>r.json());
+    const match = coaches.find(c=>c.name.toLowerCase()===name.toLowerCase());
+    if (match) coach_id = match.id;
+  } catch(e){}
+
+  const body = {
+    submitted_by:    name,
+    coach_id,
+    session_date:    date,
+    chapter_id:      document.getElementById('sub-chapter').value||null,
+    sport_id:        document.getElementById('sub-sport').value||null,
+    duration_minutes:document.getElementById('sub-duration').value||null,
+    participants:    document.getElementById('sub-participants').value||null,
+    location:        document.getElementById('sub-location').value||null,
+    notes:           document.getElementById('sub-notes').value||null,
+  };
+
+  const r = await fetch('/api/sessions', {
+    method:'POST',
+    headers:{'content-type':'application/json'},
+    body: JSON.stringify(body)
+  }).then(r=>r.json()).catch(()=>({error:'Network error'}));
+
+  if (r.id) {
+    document.getElementById('form-area').style.display='none';
+    document.getElementById('success-screen').style.display='block';
+  } else {
+    showMsg('Error: '+(r.error||'unknown'),'err');
+  }
+}
+
+function showMsg(text, type) {
+  const el = document.getElementById('msg-submit');
+  el.textContent=text; el.className='msg '+type; el.style.display='block';
+  setTimeout(()=>el.style.display='none',5000);
+}
+
+function resetForm() {
+  document.getElementById('form-area').style.display='block';
+  document.getElementById('success-screen').style.display='none';
+  ['sub-name','sub-duration','sub-participants','sub-location','sub-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('sub-chapter').value='';
+  document.getElementById('sub-sport').value='';
+  document.getElementById('sub-date').valueAsDate = new Date();
+}
+</script>
+</body>
+</html>
