@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Together Sports — Coach Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;600;700;800&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --accent: #285400;
+      --accent-light: #87cb4a;
+      --bg: #F5F4EC;
+      --card: #fff;
+      --border: #e2e0d6;
+      --text: #1a1a1a;
+      --muted: #666;
+      --radius: 12px;
+      --shadow: 0 2px 12px rgba(0,0,0,.08);
+    }
+
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    header {
+      background: var(--accent);
+      color: #fff;
+      padding: 0 2rem;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,.2);
+    }
+
+    header .logo {
+      font-family: 'League Spartan', sans-serif;
+      font-weight: 800;
+      font-size: 1.25rem;
+      letter-spacing: -.02em;
+    }
+
+    header .logo span { color: var(--accent-light); }
+
+    header .tagline {
+      font-size: .8rem;
+      opacity: .7;
+      margin-left: .5rem;
+    }
+
+    .page {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+    }
+
+    .page-title {
+      font-family: 'League Spartan', sans-serif;
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: var(--accent);
+      margin-bottom: .35rem;
+    }
+
+    .page-sub {
+      color: var(--muted);
+      font-size: .9rem;
+      margin-bottom: 2rem;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: .5rem;
+      margin-bottom: 2rem;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 0;
+    }
+
+    .tab-btn {
+      font-family: 'League Spartan', sans-serif;
+      font-weight: 700;
+      font-size: .95rem;
+      padding: .65rem 1.25rem;
+      border: none;
+      background: none;
+      color: var(--muted);
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      transition: color .15s, border-color .15s;
+      border-radius: 4px 4px 0 0;
+    }
+
+    .tab-btn:hover { color: var(--accent); }
+    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* Card */
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 1.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .card-title {
+      font-family: 'League Spartan', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 1.25rem;
+    }
+
+    /* Form */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .form-grid.single { grid-template-columns: 1fr; }
+
+    @media (max-width: 580px) {
+      .form-grid { grid-template-columns: 1fr; }
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: .4rem;
+    }
+
+    .field.span2 { grid-column: 1 / -1; }
+
+    label {
+      font-size: .8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      color: var(--muted);
+    }
+
+    input, select, textarea {
+      font-family: 'Montserrat', sans-serif;
+      font-size: .9rem;
+      padding: .6rem .85rem;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      background: #fafaf8;
+      color: var(--text);
+      outline: none;
+      transition: border-color .15s;
+      width: 100%;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent);
+      background: #fff;
+    }
+
+    textarea { resize: vertical; min-height: 90px; }
+
+    /* Participant rows */
+    .participant-list { display: flex; flex-direction: column; gap: .75rem; }
+
+    .participant-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr auto;
+      gap: .6rem;
+      align-items: end;
+      background: #fafaf8;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: .75rem;
+    }
+
+    @media (max-width: 580px) {
+      .participant-row { grid-template-columns: 1fr; }
+    }
+
+    .participant-row .remove-btn {
+      background: #fee2e2;
+      border: none;
+      color: #dc2626;
+      border-radius: 6px;
+      padding: .5rem .75rem;
+      cursor: pointer;
+      font-size: .8rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .add-participant-btn {
+      background: none;
+      border: 1.5px dashed var(--accent-light);
+      color: var(--accent);
+      border-radius: 8px;
+      padding: .6rem 1rem;
+      cursor: pointer;
+      font-family: 'Montserrat', sans-serif;
+      font-size: .85rem;
+      font-weight: 600;
+      width: 100%;
+      margin-top: .5rem;
+      transition: background .15s;
+    }
+
+    .add-participant-btn:hover { background: rgba(135,203,74,.1); }
+
+    /* Photo upload */
+    .upload-zone {
+      border: 2px dashed var(--accent-light);
+      border-radius: var(--radius);
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: background .15s;
+      position: relative;
+    }
+
+    .upload-zone:hover, .upload-zone.dragover { background: rgba(135,203,74,.1); }
+
+    .upload-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .upload-icon { font-size: 2rem; margin-bottom: .5rem; }
+    .upload-label { font-weight: 600; color: var(--accent); font-size: .9rem; }
+    .upload-sub { color: var(--muted); font-size: .78rem; margin-top: .25rem; }
+
+    .upload-preview {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem;
+      margin-top: .75rem;
+    }
+
+    .upload-preview .thumb {
+      position: relative;
+      width: 80px;
+      height: 80px;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1.5px solid var(--border);
+    }
+
+    .upload-preview .thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .upload-preview .thumb .remove-thumb {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      background: rgba(0,0,0,.6);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 18px;
+      height: 18px;
+      font-size: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Submit button */
+    .submit-btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: .75rem 2rem;
+      font-family: 'League Spartan', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .15s, transform .1s;
+      margin-top: 1.25rem;
+    }
+
+    .submit-btn:hover { background: #1e4000; }
+    .submit-btn:active { transform: scale(.98); }
+    .submit-btn:disabled { opacity: .6; cursor: not-allowed; }
+
+    /* Toast */
+    #toast-container {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: .5rem;
+    }
+
+    .toast {
+      background: #1a1a1a;
+      color: #fff;
+      padding: .75rem 1.25rem;
+      border-radius: 8px;
+      font-size: .87rem;
+      font-weight: 500;
+      box-shadow: 0 4px 16px rgba(0,0,0,.2);
+      animation: slideIn .2s ease;
+      max-width: 320px;
+    }
+
+    .toast.success { background: var(--accent); }
+    .toast.error { background: #dc2626; }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .divider {
+      border: none;
+      border-top: 1.5px solid var(--border);
+      margin: 1.25rem 0;
+    }
+
+    .section-label {
+      font-size: .75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--muted);
+      margin-bottom: .75rem;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Together <span>Sports</span></div>
+  <div class="tagline">Coach Portal</div>
+</header>
+
+<div id="toast-container"></div>
+
+<div class="page">
+  <div class="page-title">Coach Portal</div>
+  <div class="page-sub">Submit sessions, testimonials, and photos. Everything you submit goes to the admin for review.</div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="session">Log Session</button>
+    <button class="tab-btn" data-tab="testimonial">Submit Testimonial</button>
+    <button class="tab-btn" data-tab="photos">Upload Photos</button>
+  </div>
+
+  <!-- LOG SESSION -->
+  <div class="tab-panel active" id="tab-session">
+    <div class="card">
+      <div class="card-title">Session Details</div>
+      <form id="session-form">
+        <div class="form-grid">
+          <div class="field">
+            <label>Your Name (Coach)</label>
+            <select id="s-coach" required>
+              <option value="">Select coach…</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Session Date</label>
+            <input type="date" id="s-date" required />
+          </div>
+          <div class="field">
+            <label>Chapter</label>
+            <select id="s-chapter" required>
+              <option value="">Select chapter…</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Sport</label>
+            <select id="s-sport" required>
+              <option value="">Select sport…</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Location</label>
+            <input type="text" id="s-location" placeholder="e.g. Central Park Court 3" />
+          </div>
+          <div class="field">
+            <label>Duration (minutes)</label>
+            <input type="number" id="s-duration" min="15" max="480" placeholder="e.g. 60" />
+          </div>
+          <div class="field span2">
+            <label>Notes</label>
+            <textarea id="s-notes" placeholder="How did the session go? Any highlights or challenges?"></textarea>
+          </div>
+        </div>
+
+        <hr class="divider" />
+
+        <div class="section-label">Participants</div>
+        <div class="participant-list" id="participant-list"></div>
+        <button type="button" class="add-participant-btn" id="add-participant-btn">+ Add Participant</button>
+
+        <br />
+        <button type="submit" class="submit-btn" id="s-submit">Submit Session</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- SUBMIT TESTIMONIAL -->
+  <div class="tab-panel" id="tab-testimonial">
+    <div class="card">
+      <div class="card-title">Submit a Testimonial</div>
+      <form id="testimonial-form">
+        <div class="form-grid">
+          <div class="field">
+            <label>Your Name (Coach)</label>
+            <select id="t-coach" required>
+              <option value="">Select coach…</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Chapter</label>
+            <select id="t-chapter">
+              <option value="">Select chapter…</option>
+            </select>
+          </div>
+          <div class="field span2">
+            <label>Testimonial / Quote</label>
+            <textarea id="t-quote" required placeholder="Share what a parent, student, or community member said about Together Sports…" style="min-height:120px;"></textarea>
+          </div>
+          <div class="field">
+            <label>Parent / Guardian Name</label>
+            <input type="text" id="t-parent-name" placeholder="Jane Smith" />
+          </div>
+          <div class="field">
+            <label>Parent Contact (email or phone)</label>
+            <input type="text" id="t-parent-contact" placeholder="jane@email.com" />
+          </div>
+          <div class="field">
+            <label>Child's Name</label>
+            <input type="text" id="t-child-name" placeholder="First name is fine" />
+          </div>
+          <div class="field">
+            <label>Sport (optional)</label>
+            <select id="t-sport">
+              <option value="">Select sport…</option>
+            </select>
+          </div>
+        </div>
+
+        <hr class="divider" />
+
+        <div class="section-label">Optional Photo</div>
+        <div class="upload-zone" id="t-upload-zone">
+          <input type="file" id="t-photo" accept="image/*" />
+          <div class="upload-icon">📸</div>
+          <div class="upload-label">Attach a photo</div>
+          <div class="upload-sub">JPG, PNG, WebP — max 10 MB</div>
+        </div>
+        <div class="upload-preview" id="t-preview"></div>
+
+        <button type="submit" class="submit-btn" id="t-submit">Submit Testimonial</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- UPLOAD PHOTOS -->
+  <div class="tab-panel" id="tab-photos">
+    <div class="card">
+      <div class="card-title">Upload Photos</div>
+      <p style="color:var(--muted);font-size:.88rem;margin-bottom:1.25rem;">Photos go to the admin for review before they appear in the gallery.</p>
+      <form id="photo-form">
+        <div class="form-grid">
+          <div class="field">
+            <label>Your Name (Coach)</label>
+            <select id="p-coach" required>
+              <option value="">Select coach…</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Chapter</label>
+            <select id="p-chapter">
+              <option value="">Select chapter…</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Sport (optional)</label>
+            <select id="p-sport">
+              <option value="">Select sport…</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Caption</label>
+            <input type="text" id="p-caption" placeholder="Brief description of the photo" />
+          </div>
+        </div>
+
+        <hr class="divider" />
+
+        <div class="section-label">Photos (select up to 10)</div>
+        <div class="upload-zone" id="p-upload-zone">
+          <input type="file" id="p-photos" accept="image/*" multiple />
+          <div class="upload-icon">🖼️</div>
+          <div class="upload-label">Click or drag photos here</div>
+          <div class="upload-sub">JPG, PNG, WebP — max 10 MB each</div>
+        </div>
+        <div class="upload-preview" id="p-preview"></div>
+
+        <button type="submit" class="submit-btn" id="p-submit">Upload Photos</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── Helpers ────────────────────────────────────────────────────
+  function toast(msg, type = 'success') {
+    const el = document.createElement('div');
+    el.className = `toast ${type}`;
+    el.textContent = msg;
+    document.getElementById('toast-container').appendChild(el);
+    setTimeout(() => el.remove(), 4000);
+  }
+
+  function populateSelect(sel, items, labelKey = 'name') {
+    items.forEach(item => {
+      const opt = document.createElement('option');
+      opt.value = item.id;
+      opt.textContent = item[labelKey];
+      sel.appendChild(opt);
+    });
+  }
+
+  // ── Tabs ───────────────────────────────────────────────────────
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  // ── Load reference data ────────────────────────────────────────
+  let coaches = [], chapters = [], sports = [];
+
+  async function loadRefData() {
+    const [c, ch, sp] = await Promise.all([
+      fetch('/api/coaches').then(r => r.json()),
+      fetch('/api/chapters').then(r => r.json()),
+      fetch('/api/sports').then(r => r.json()),
+    ]);
+    coaches = c.filter(x => x.name !== 'Coach TBD');
+    chapters = ch;
+    sports = sp;
+
+    const coachSelects = ['s-coach', 't-coach', 'p-coach'];
+    const chapterSelects = ['s-chapter', 't-chapter', 'p-chapter'];
+    const sportSelects = ['s-sport', 't-sport', 'p-sport'];
+
+    coachSelects.forEach(id => populateSelect(document.getElementById(id), coaches));
+    chapterSelects.forEach(id => populateSelect(document.getElementById(id), chapters));
+    sportSelects.forEach(id => populateSelect(document.getElementById(id), sports));
+  }
+
+  loadRefData();
+
+  // Set today's date
+  document.getElementById('s-date').value = new Date().toISOString().slice(0, 10);
+
+  // ── Participants ───────────────────────────────────────────────
+  let participants = [{ name: '', parent_name: '', parent_contact: '' }];
+
+  function renderParticipants() {
+    const list = document.getElementById('participant-list');
+    list.innerHTML = '';
+    participants.forEach((p, i) => {
+      const row = document.createElement('div');
+      row.className = 'participant-row';
+      row.innerHTML = `
+        <div class="field">
+          <label>Child Name</label>
+          <input type="text" placeholder="First name" value="${p.name}" data-i="${i}" data-f="name" />
+        </div>
+        <div class="field">
+          <label>Parent / Guardian</label>
+          <input type="text" placeholder="Parent name" value="${p.parent_name}" data-i="${i}" data-f="parent_name" />
+        </div>
+        <div class="field">
+          <label>Parent Contact</label>
+          <input type="text" placeholder="Email or phone" value="${p.parent_contact}" data-i="${i}" data-f="parent_contact" />
+        </div>
+        ${participants.length > 1 ? `<button type="button" class="remove-btn" data-i="${i}">Remove</button>` : '<div></div>'}
+      `;
+      list.appendChild(row);
+    });
+
+    list.querySelectorAll('input[data-i]').forEach(inp => {
+      inp.addEventListener('input', e => {
+        participants[+e.target.dataset.i][e.target.dataset.f] = e.target.value;
+      });
+    });
+
+    list.querySelectorAll('.remove-btn').forEach(btn => {
+      btn.addEventListener('click', e => {
+        participants.splice(+e.target.dataset.i, 1);
+        renderParticipants();
+      });
+    });
+  }
+
+  renderParticipants();
+
+  document.getElementById('add-participant-btn').addEventListener('click', () => {
+    participants.push({ name: '', parent_name: '', parent_contact: '' });
+    renderParticipants();
+  });
+
+  // ── Session form ───────────────────────────────────────────────
+  document.getElementById('session-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const btn = document.getElementById('s-submit');
+    btn.disabled = true;
+    btn.textContent = 'Submitting…';
+
+    const filled = participants.filter(p => p.name.trim());
+
+    const coachSel = document.getElementById('s-coach');
+    const payload = {
+      coach_id: +coachSel.value,
+      chapter_id: +document.getElementById('s-chapter').value,
+      sport_id: +document.getElementById('s-sport').value,
+      session_date: document.getElementById('s-date').value,
+      location: document.getElementById('s-location').value,
+      duration_minutes: +document.getElementById('s-duration').value || null,
+      participants: filled.length || 0,
+      notes: document.getElementById('s-notes').value,
+      submitted_by: coachSel.options[coachSel.selectedIndex]?.text,
+    };
+
+    try {
+      const res = await fetch('/api/sessions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const { id: sessionId } = await res.json();
+
+      // Post participant contact info
+      for (const p of filled) {
+        await fetch('/api/participants', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ session_id: sessionId, ...p }),
+        });
+      }
+
+      toast('Session logged successfully!');
+      e.target.reset();
+      participants = [{ name: '', parent_name: '', parent_contact: '' }];
+      renderParticipants();
+      document.getElementById('s-date').value = new Date().toISOString().slice(0, 10);
+    } catch (err) {
+      toast('Error: ' + err.message, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Submit Session';
+    }
+  });
+
+  // ── Testimonial photo preview ──────────────────────────────────
+  let tPhotoFile = null;
+
+  document.getElementById('t-photo').addEventListener('change', function () {
+    const file = this.files[0];
+    if (!file) return;
+    tPhotoFile = file;
+    const preview = document.getElementById('t-preview');
+    preview.innerHTML = '';
+    const thumb = document.createElement('div');
+    thumb.className = 'thumb';
+    const img = document.createElement('img');
+    img.src = URL.createObjectURL(file);
+    const rm = document.createElement('button');
+    rm.className = 'remove-thumb';
+    rm.type = 'button';
+    rm.textContent = '×';
+    rm.onclick = () => { tPhotoFile = null; preview.innerHTML = ''; document.getElementById('t-photo').value = ''; };
+    thumb.appendChild(img);
+    thumb.appendChild(rm);
+    preview.appendChild(thumb);
+  });
+
+  setupDragZone('t-upload-zone', 't-photo');
+
+  // ── Testimonial form ───────────────────────────────────────────
+  document.getElementById('testimonial-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const btn = document.getElementById('t-submit');
+    btn.disabled = true;
+    btn.textContent = 'Submitting…';
+
+    try {
+      const fd = new FormData();
+      fd.append('coach_id', document.getElementById('t-coach').value);
+      fd.append('quote', document.getElementById('t-quote').value);
+      fd.append('parent_name', document.getElementById('t-parent-name').value);
+      fd.append('parent_contact', document.getElementById('t-parent-contact').value);
+      fd.append('child_name', document.getElementById('t-child-name').value);
+      fd.append('chapter_id', document.getElementById('t-chapter').value || '');
+      fd.append('sport_id', document.getElementById('t-sport').value || '');
+      if (tPhotoFile) fd.append('photo', tPhotoFile);
+
+      const res = await fetch('/api/testimonials', { method: 'POST', body: fd });
+      if (!res.ok) throw new Error(await res.text());
+      toast('Testimonial submitted! The admin will review it.');
+      e.target.reset();
+      tPhotoFile = null;
+      document.getElementById('t-preview').innerHTML = '';
+    } catch (err) {
+      toast('Error: ' + err.message, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Submit Testimonial';
+    }
+  });
+
+  // ── Photo upload ───────────────────────────────────────────────
+  let pPhotoFiles = [];
+
+  document.getElementById('p-photos').addEventListener('change', function () {
+    addPhotoFiles(Array.from(this.files));
+  });
+
+  setupDragZone('p-upload-zone', 'p-photos');
+
+  function addPhotoFiles(files) {
+    const allowed = files.filter(f => f.type.startsWith('image/'));
+    pPhotoFiles = [...pPhotoFiles, ...allowed].slice(0, 10);
+    renderPhotoPreview();
+  }
+
+  function renderPhotoPreview() {
+    const preview = document.getElementById('p-preview');
+    preview.innerHTML = '';
+    pPhotoFiles.forEach((f, i) => {
+      const thumb = document.createElement('div');
+      thumb.className = 'thumb';
+      const img = document.createElement('img');
+      img.src = URL.createObjectURL(f);
+      const rm = document.createElement('button');
+      rm.className = 'remove-thumb';
+      rm.type = 'button';
+      rm.textContent = '×';
+      rm.onclick = () => { pPhotoFiles.splice(i, 1); renderPhotoPreview(); };
+      thumb.appendChild(img);
+      thumb.appendChild(rm);
+      preview.appendChild(thumb);
+    });
+  }
+
+  document.getElementById('photo-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    if (!pPhotoFiles.length) { toast('Please select at least one photo.', 'error'); return; }
+    const btn = document.getElementById('p-submit');
+    btn.disabled = true;
+    btn.textContent = 'Uploading…';
+
+    const coachId = document.getElementById('p-coach').value;
+    const chapterId = document.getElementById('p-chapter').value;
+    const sportId = document.getElementById('p-sport').value;
+    const caption = document.getElementById('p-caption').value;
+    const coachName = document.getElementById('p-coach').options[document.getElementById('p-coach').selectedIndex]?.text;
+
+    try {
+      let uploaded = 0;
+      for (const file of pPhotoFiles) {
+        const fd = new FormData();
+        fd.append('photo', file);
+        fd.append('coach_id', coachId);
+        fd.append('chapter_id', chapterId || '');
+        fd.append('sport_id', sportId || '');
+        fd.append('caption', caption);
+        fd.append('uploaded_by', coachName);
+        const res = await fetch('/api/photos', { method: 'POST', body: fd });
+        if (res.ok) uploaded++;
+      }
+      toast(`${uploaded} photo${uploaded !== 1 ? 's' : ''} uploaded for review!`);
+      e.target.reset();
+      pPhotoFiles = [];
+      document.getElementById('p-preview').innerHTML = '';
+    } catch (err) {
+      toast('Error: ' + err.message, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Upload Photos';
+    }
+  });
+
+  // ── Drag-and-drop helper ───────────────────────────────────────
+  function setupDragZone(zoneId, inputId) {
+    const zone = document.getElementById(zoneId);
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+    zone.addEventListener('drop', e => {
+      e.preventDefault();
+      zone.classList.remove('dragover');
+      const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+      if (zoneId === 'p-upload-zone') {
+        addPhotoFiles(files);
+      } else if (files[0]) {
+        tPhotoFile = files[0];
+        const preview = document.getElementById('t-preview');
+        preview.innerHTML = '';
+        const thumb = document.createElement('div');
+        thumb.className = 'thumb';
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(files[0]);
+        const rm = document.createElement('button');
+        rm.className = 'remove-thumb';
+        rm.type = 'button';
+        rm.textContent = '×';
+        rm.onclick = () => { tPhotoFile = null; preview.innerHTML = ''; };
+        thumb.appendChild(img);
+        thumb.appendChild(rm);
+        preview.appendChild(thumb);
+      }
+    });
+  }
+</script>
+</body>
+</html>
