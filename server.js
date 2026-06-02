@@ -280,8 +280,10 @@ app.get('/api/testimonials/public', (req, res) => {
 });
 
 app.post('/api/testimonials', upload.single('photo'), (req, res) => {
-  const { coach_id, coach_name, quote, parent_name, parent_contact, child_name, chapter_id, sport_id } = req.body;
-  if (!coach_name || !quote) return res.status(400).json({ error: 'coach_name and quote required' });
+  const { coach_id, quote, parent_name, parent_contact, child_name, chapter_id, sport_id } = req.body;
+  if (!quote) return res.status(400).json({ error: 'quote required' });
+  const coachRow = coach_id ? db.prepare('SELECT name FROM coaches WHERE id=?').get(coach_id) : null;
+  const coach_name = req.body.coach_name || coachRow?.name || 'Unknown Coach';
   const r = db.prepare(`
     INSERT INTO testimonials (coach_id,coach_name,quote,parent_name,parent_contact,child_name,chapter_id,sport_id,photo_filename)
     VALUES (?,?,?,?,?,?,?,?,?)
