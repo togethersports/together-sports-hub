@@ -2,24 +2,17 @@
   "name": "together-sports-hub",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "http://local_proxy@127.0.0.1:34455/git/togethersports/together-sports-hub"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@libsql/client": "^0.17.3",
     "better-sqlite3": "^12.10.0",
-    "cloudinary": "^1.41.3",
     "express": "^5.2.1",
-    "multer": "^2.1.1",
-    "multer-storage-cloudinary": "^4.0.0"
+    "multer": "^2.1.1"
   }
 }
