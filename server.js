@@ -34,6 +34,7 @@ db.exec(`
     chapter_id INTEGER REFERENCES chapters(id),
     sport_id INTEGER REFERENCES sports(id),
     bio TEXT,
+    access_code TEXT,
     active INTEGER NOT NULL DEFAULT 1,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
@@ -147,6 +148,13 @@ app.post('/api/auth', (req, res) => {
     : res.status(401).json({ error: 'Wrong password' });
 });
 
+app.post('/api/coach-auth', (req, res) => {
+  const { access_code } = req.body;
+  if (!access_code) return res.status(400).json({ error: 'Access code required' });
+  const coach = db.prepare("SELECT id,name,chapter_id,sport_id FROM coaches WHERE access_code=? AND active=1 AND name!='Coach TBD'").get(access_code.trim());
+  coach ? res.json({ ok: true, coach }) : res.status(401).json({ error: 'Invalid access code' });
+});
+
 // ── Reference data ────────────────────────────────────────────────────────────
 app.get('/api/chapters', (req, res) => res.json(db.prepare('SELECT * FROM chapters ORDER BY name').all()));
 app.get('/api/sports',   (req, res) => res.json(db.prepare('SELECT * FROM sports ORDER BY name').all()));
@@ -166,13 +174,17 @@ app.post('/api/sports', requireAdmin, (req, res) => {
 
 // ── Coaches ───────────────────────────────────────────────────────────────────
 app.get('/api/coaches', (req, res) => {
-  res.json(db.prepare(`
-    SELECT c.*, ch.name AS chapter, sp.name AS sport
+  const isAdmin = (req.headers['x-admin-token'] || req.query.token) === ADMIN_PASSWORD;
+  const rows = db.prepare(`
+    SELECT c.id, c.name, c.email, c.phone, c.chapter_id, c.sport_id, c.bio, c.active,
+           ${isAdmin ? 'c.access_code,' : ''}
+           ch.name AS chapter, sp.name AS sport
     FROM coaches c
     LEFT JOIN chapters ch ON c.chapter_id=ch.id
     LEFT JOIN sports sp ON c.sport_id=sp.id
     ORDER BY c.name
-  `).all());
+  `).all();
+  res.json(rows);
 });
 
 app.post('/api/coaches', requireAdmin, (req, res) => {
@@ -184,9 +196,9 @@ app.post('/api/coaches', requireAdmin, (req, res) => {
 });
 
 app.put('/api/coaches/:id', requireAdmin, (req, res) => {
-  const { name, email, phone, chapter_id, sport_id, bio, active } = req.body;
-  db.prepare('UPDATE coaches SET name=?,email=?,phone=?,chapter_id=?,sport_id=?,bio=?,active=? WHERE id=?')
-    .run(name, email||null, phone||null, chapter_id||null, sport_id||null, bio||null, active??1, req.params.id);
+  const { name, email, phone, chapter_id, sport_id, bio, active, access_code } = req.body;
+  db.prepare('UPDATE coaches SET name=?,email=?,phone=?,chapter_id=?,sport_id=?,bio=?,active=?,access_code=? WHERE id=?')
+    .run(name, email||null, phone||null, chapter_id||null, sport_id||null, bio||null, active??1, access_code||null, req.params.id);
   res.json({ ok: true });
 });
 

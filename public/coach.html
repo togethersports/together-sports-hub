@@ -361,8 +361,24 @@
 
 <div id="toast-container"></div>
 
+<!-- LOGIN OVERLAY -->
+<div id="login-overlay" style="position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999;">
+  <div style="background:#fff;border-radius:16px;padding:2.5rem 2.25rem;box-shadow:0 8px 40px rgba(0,0,0,.12);width:360px;text-align:center;">
+    <div style="width:56px;height:56px;border-radius:14px;background:var(--accent);color:#fff;display:grid;place-items:center;font-family:'League Spartan',sans-serif;font-weight:800;font-size:1.4rem;margin:0 auto 1.25rem;">TS</div>
+    <div style="font-family:'League Spartan',sans-serif;font-weight:800;font-size:1.5rem;margin-bottom:.35rem;color:var(--accent);">Coach Portal</div>
+    <p style="color:var(--muted);font-size:.85rem;margin-bottom:1.5rem;">Enter your access code to continue</p>
+    <input type="password" id="login-code" placeholder="Access code" style="width:100%;padding:.7rem 1rem;border:1.5px solid var(--border);border-radius:8px;font-size:1rem;margin-bottom:.75rem;font-family:'Montserrat',sans-serif;outline:none;" />
+    <button onclick="doLogin()" style="width:100%;padding:.75rem;background:var(--accent);color:#fff;border:none;border-radius:8px;font-family:'League Spartan',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;">Sign In</button>
+    <div id="login-err" style="color:#dc2626;font-size:.82rem;margin-top:.6rem;"></div>
+  </div>
+</div>
+
+<div id="portal" style="display:none;">
 <div class="page">
-  <div class="page-title">Coach Portal</div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.25rem;">
+    <div class="page-title" id="welcome-name">Coach Portal</div>
+    <button onclick="logout()" style="background:none;border:1.5px solid var(--border);border-radius:8px;padding:.4rem .9rem;font-size:.8rem;font-weight:600;color:var(--muted);cursor:pointer;">Sign Out</button>
+  </div>
   <div class="page-sub">Submit sessions, testimonials, and photos. Everything you submit goes to the admin for review.</div>
 
   <div class="tabs">
@@ -530,8 +546,55 @@
     </div>
   </div>
 </div>
+</div> <!-- end #portal -->
 
 <script>
+  // ── Login ──────────────────────────────────────────────────────
+  let currentCoach = null;
+
+  async function doLogin() {
+    const code = document.getElementById('login-code').value.trim();
+    const errEl = document.getElementById('login-err');
+    if (!code) { errEl.textContent = 'Enter your access code.'; return; }
+    try {
+      const res = await fetch('/api/coach-auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ access_code: code }),
+      });
+      const data = await res.json();
+      if (!res.ok) { errEl.textContent = data.error || 'Invalid code.'; return; }
+      currentCoach = data.coach;
+      sessionStorage.setItem('coach_session', JSON.stringify(currentCoach));
+      showPortal();
+    } catch {
+      errEl.textContent = 'Network error. Try again.';
+    }
+  }
+
+  document.getElementById('login-code').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+
+  function showPortal() {
+    document.getElementById('login-overlay').style.display = 'none';
+    document.getElementById('portal').style.display = 'block';
+    document.getElementById('welcome-name').textContent = `Hi, ${currentCoach.name} 👋`;
+    loadRefData();
+  }
+
+  function logout() {
+    sessionStorage.removeItem('coach_session');
+    currentCoach = null;
+    document.getElementById('login-overlay').style.display = 'flex';
+    document.getElementById('portal').style.display = 'none';
+    document.getElementById('login-code').value = '';
+  }
+
+  // Resume session if stored
+  const saved = sessionStorage.getItem('coach_session');
+  if (saved) { try { currentCoach = JSON.parse(saved); showPortal(); } catch { sessionStorage.removeItem('coach_session'); } }
+
   // ── Helpers ────────────────────────────────────────────────────
   function toast(msg, type = 'success') {
     const el = document.createElement('div');
@@ -580,9 +643,17 @@
     coachSelects.forEach(id => populateSelect(document.getElementById(id), coaches));
     chapterSelects.forEach(id => populateSelect(document.getElementById(id), chapters));
     sportSelects.forEach(id => populateSelect(document.getElementById(id), sports));
+
+    // Pre-select the logged-in coach and lock it
+    if (currentCoach) {
+      coachSelects.forEach(id => {
+        const sel = document.getElementById(id);
+        sel.value = String(currentCoach.id);
+        sel.disabled = true;
+      });
+    }
   }
 
-  loadRefData();
 
   // Set today's date
   document.getElementById('s-date').value = new Date().toISOString().slice(0, 10);
