@@ -293,6 +293,18 @@ app.get('/api/testimonials', requireAdmin, (req, res) => {
   res.json(rows.map(r => ({ ...r, photo_url: r.photo_filename ? `/uploads/${r.photo_filename}` : null })));
 });
 
+// Public stats for impact page (no auth required)
+app.get('/api/impact-stats', (req, res) => {
+  res.json({
+    total_sessions:     get('SELECT COUNT(*) n FROM sessions').n,
+    total_participants: get('SELECT COALESCE(SUM(participants),0) n FROM sessions').n,
+    active_coaches:     get("SELECT COUNT(*) n FROM coaches WHERE active=1 AND name!='Coach TBD'").n,
+    chapters_active:    get("SELECT COUNT(DISTINCT chapter_id) n FROM sessions WHERE chapter_id IS NOT NULL").n,
+    by_chapter: all(`SELECT ch.name, COUNT(*) sessions, COALESCE(SUM(s.participants),0) participants
+                     FROM sessions s JOIN chapters ch ON s.chapter_id=ch.id GROUP BY ch.id ORDER BY sessions DESC`),
+  });
+});
+
 app.get('/api/testimonials/public', (req, res) => {
   const rows = all(`
     SELECT t.coach_name, t.quote, t.parent_name, t.child_name, t.photo_filename,
@@ -335,6 +347,19 @@ app.delete('/api/testimonials/:id', requireAdmin, (req, res) => {
 });
 
 // ── Photos ────────────────────────────────────────────────────────────────────
+app.get('/api/photos/public', (req, res) => {
+  const rows = all(`
+    SELECT p.filename, p.caption, ch.name AS chapter, sp.name AS sport
+    FROM photos p
+    LEFT JOIN chapters ch ON p.chapter_id=ch.id
+    LEFT JOIN sports sp ON p.sport_id=sp.id
+    WHERE p.approved=1
+    ORDER BY p.uploaded_at DESC
+    LIMIT 60
+  `);
+  res.json(rows.map(r => ({ ...r, url: `/uploads/${r.filename}` })));
+});
+
 app.get('/api/photos', requireAdmin, (req, res) => {
   const rows = all(`
     SELECT p.*, ch.name AS chapter, sp.name AS sport
