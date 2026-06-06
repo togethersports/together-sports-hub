@@ -469,7 +469,7 @@ app.put('/api/volunteer-logs/:id', (req, res) => {
 
 app.delete('/api/volunteer-logs/:id', (req, res) => {
   const isAdmin = (req.headers['x-admin-token'] || req.query.token) === ADMIN_PASSWORD;
-  const { coach_id } = req.body;
+  const { coach_id } = req.body || {};
   const existing = get('SELECT coach_id FROM volunteer_logs WHERE id=?', [req.params.id]);
   if (!existing) return res.status(404).json({ error: 'Not found' });
   if (!isAdmin && String(existing.coach_id) !== String(coach_id)) return res.status(403).json({ error: 'Forbidden' });
