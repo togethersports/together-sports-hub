@@ -91,6 +91,17 @@ db.exec(`
     approved INTEGER NOT NULL DEFAULT 1,
     uploaded_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
+  CREATE TABLE IF NOT EXISTS volunteer_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    coach_id INTEGER REFERENCES coaches(id),
+    log_date TEXT NOT NULL,
+    activity_type TEXT NOT NULL,
+    description TEXT,
+    people_helped INTEGER DEFAULT 0,
+    hours REAL DEFAULT 0,
+    chapter_id INTEGER REFERENCES chapters(id),
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
   CREATE TABLE IF NOT EXISTS settings (
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL
@@ -251,7 +262,25 @@ app.post('/api/sessions', (req, res) => {
   res.json({ id: r.lastInsertRowid });
 });
 
-app.delete('/api/sessions/:id', requireAdmin, (req, res) => {
+app.put('/api/sessions/:id', (req, res) => {
+  const { coach_id, chapter_id, sport_id, session_date, duration_minutes, participants, location, notes } = req.body;
+  const isAdmin = (req.headers['x-admin-token'] || req.query.token) === ADMIN_PASSWORD;
+  const existing = get('SELECT coach_id FROM sessions WHERE id=?', [req.params.id]);
+  if (!existing) return res.status(404).json({ error: 'Not found' });
+  if (!isAdmin && String(existing.coach_id) !== String(coach_id)) return res.status(403).json({ error: 'Forbidden' });
+  run(
+    'UPDATE sessions SET chapter_id=?,sport_id=?,session_date=?,duration_minutes=?,participants=?,location=?,notes=? WHERE id=?',
+    [chapter_id||null, sport_id||null, session_date, duration_minutes||null, participants||null, location||null, notes||null, req.params.id]
+  );
+  res.json({ ok: true });
+});
+
+app.delete('/api/sessions/:id', (req, res) => {
+  const isAdmin = (req.headers['x-admin-token'] || req.query.token) === ADMIN_PASSWORD;
+  const { coach_id } = req.body || {};
+  const existing = get('SELECT coach_id FROM sessions WHERE id=?', [req.params.id]);
+  if (!existing) return res.status(404).json({ error: 'Not found' });
+  if (!isAdmin && String(existing.coach_id) !== String(coach_id)) return res.status(403).json({ error: 'Forbidden' });
   run('DELETE FROM sessions WHERE id=?', [req.params.id]);
   res.json({ ok: true });
 });
@@ -296,10 +325,11 @@ app.get('/api/testimonials', requireAdmin, (req, res) => {
 // Public stats for impact page (no auth required)
 app.get('/api/impact-stats', (req, res) => {
   res.json({
-    total_sessions:     get('SELECT COUNT(*) n FROM sessions').n,
-    total_participants: get('SELECT COALESCE(SUM(participants),0) n FROM sessions').n,
-    active_coaches:     get("SELECT COUNT(*) n FROM coaches WHERE active=1 AND name!='Coach TBD'").n,
-    chapters_active:    get("SELECT COUNT(DISTINCT chapter_id) n FROM sessions WHERE chapter_id IS NOT NULL").n,
+    total_sessions:      get('SELECT COUNT(*) n FROM sessions').n,
+    total_participants:  get('SELECT COALESCE(SUM(participants),0) n FROM sessions').n,
+    total_people_helped: get('SELECT COALESCE(SUM(people_helped),0) n FROM volunteer_logs').n,
+    active_coaches:      get("SELECT COUNT(*) n FROM coaches WHERE active=1 AND name!='Coach TBD'").n,
+    chapters_active:     get("SELECT COUNT(DISTINCT chapter_id) n FROM sessions WHERE chapter_id IS NOT NULL").n,
     by_chapter: all(`SELECT ch.name, COUNT(*) sessions, COALESCE(SUM(s.participants),0) participants
                      FROM sessions s JOIN chapters ch ON s.chapter_id=ch.id GROUP BY ch.id ORDER BY sessions DESC`),
   });
@@ -394,6 +424,56 @@ app.delete('/api/photos/:id', requireAdmin, (req, res) => {
     if (fs.existsSync(fp)) fs.unlinkSync(fp);
     run('DELETE FROM photos WHERE id=?', [req.params.id]);
   }
+  res.json({ ok: true });
+});
+
+// ── Volunteer Logs ────────────────────────────────────────────────────────────
+app.get('/api/volunteer-logs', (req, res) => {
+  const isAdmin = (req.headers['x-admin-token'] || req.query.token) === ADMIN_PASSWORD;
+  let sql = `
+    SELECT v.*, c.name AS coach, ch.name AS chapter
+    FROM volunteer_logs v
+    LEFT JOIN coaches c ON v.coach_id=c.id
+    LEFT JOIN chapters ch ON v.chapter_id=ch.id
+    WHERE 1=1
+  `;
+  const args = [];
+  if (!isAdmin && req.query.coach_id) { sql += ' AND v.coach_id=?'; args.push(req.query.coach_id); }
+  else if (req.query.coach_id) { sql += ' AND v.coach_id=?'; args.push(req.query.coach_id); }
+  sql += ' ORDER BY v.log_date DESC, v.id DESC';
+  res.json(all(sql, args));
+});
+
+app.post('/api/volunteer-logs', (req, res) => {
+  const { coach_id, log_date, activity_type, description, people_helped, hours, chapter_id } = req.body;
+  if (!log_date || !activity_type) return res.status(400).json({ error: 'log_date and activity_type required' });
+  const r = run(
+    'INSERT INTO volunteer_logs (coach_id,log_date,activity_type,description,people_helped,hours,chapter_id) VALUES (?,?,?,?,?,?,?)',
+    [coach_id||null, log_date, activity_type, description||null, people_helped||0, hours||0, chapter_id||null]
+  );
+  res.json({ id: r.lastInsertRowid });
+});
+
+app.put('/api/volunteer-logs/:id', (req, res) => {
+  const { coach_id, log_date, activity_type, description, people_helped, hours, chapter_id } = req.body;
+  const isAdmin = (req.headers['x-admin-token'] || req.query.token) === ADMIN_PASSWORD;
+  const existing = get('SELECT coach_id FROM volunteer_logs WHERE id=?', [req.params.id]);
+  if (!existing) return res.status(404).json({ error: 'Not found' });
+  if (!isAdmin && String(existing.coach_id) !== String(coach_id)) return res.status(403).json({ error: 'Forbidden' });
+  run(
+    'UPDATE volunteer_logs SET log_date=?,activity_type=?,description=?,people_helped=?,hours=?,chapter_id=? WHERE id=?',
+    [log_date, activity_type, description||null, people_helped||0, hours||0, chapter_id||null, req.params.id]
+  );
+  res.json({ ok: true });
+});
+
+app.delete('/api/volunteer-logs/:id', (req, res) => {
+  const isAdmin = (req.headers['x-admin-token'] || req.query.token) === ADMIN_PASSWORD;
+  const { coach_id } = req.body;
+  const existing = get('SELECT coach_id FROM volunteer_logs WHERE id=?', [req.params.id]);
+  if (!existing) return res.status(404).json({ error: 'Not found' });
+  if (!isAdmin && String(existing.coach_id) !== String(coach_id)) return res.status(403).json({ error: 'Forbidden' });
+  run('DELETE FROM volunteer_logs WHERE id=?', [req.params.id]);
   res.json({ ok: true });
 });
 

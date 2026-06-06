@@ -9,347 +9,111 @@
   <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;600;700;800&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --accent: #285400;
-      --accent-light: #87cb4a;
-      --bg: #F5F4EC;
-      --card: #fff;
-      --border: #e2e0d6;
-      --text: #1a1a1a;
-      --muted: #666;
-      --radius: 12px;
-      --shadow: 0 2px 12px rgba(0,0,0,.08);
+      --accent: #285400; --lime: #87cb4a;
+      --bg: #F5F4EC; --card: #fff; --surface-2: #ECEFE1;
+      --border: #e2e0d6; --text: #1a1a1a; --muted: #666;
+      --danger: #dc2626; --danger-soft: #fee2e2;
+      --radius: 12px; --shadow: 0 2px 12px rgba(0,0,0,.08);
     }
-
-    body {
-      font-family: 'Montserrat', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-    }
-
-    header {
-      background: var(--accent);
-      color: #fff;
-      padding: 0 2rem;
-      height: 64px;
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: 0 2px 8px rgba(0,0,0,.2);
-    }
-
-    header .logo {
-      font-family: 'League Spartan', sans-serif;
-      font-weight: 800;
-      font-size: 1.25rem;
-      letter-spacing: -.02em;
-    }
-
-    header .logo span { color: var(--accent-light); }
-
-    header .tagline {
-      font-size: .8rem;
-      opacity: .7;
-      margin-left: .5rem;
-    }
-
-    .page {
-      max-width: 760px;
-      margin: 0 auto;
-      padding: 2.5rem 1.5rem 4rem;
-    }
-
-    .page-title {
-      font-family: 'League Spartan', sans-serif;
-      font-size: 1.75rem;
-      font-weight: 800;
-      color: var(--accent);
-      margin-bottom: .35rem;
-    }
-
-    .page-sub {
-      color: var(--muted);
-      font-size: .9rem;
-      margin-bottom: 2rem;
-    }
+    body { font-family: 'Montserrat', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    header { background: var(--accent); color: #fff; padding: 0 2rem; height: 64px; display: flex; align-items: center; gap: 1rem; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,.2); }
+    header .logo { font-family: 'League Spartan', sans-serif; font-weight: 800; font-size: 1.25rem; letter-spacing: -.02em; }
+    header .logo span { color: var(--lime); }
+    header .tagline { font-size: .8rem; opacity: .7; margin-left: .5rem; }
+    .page { max-width: 780px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+    .page-title { font-family: 'League Spartan', sans-serif; font-size: 1.75rem; font-weight: 800; color: var(--accent); margin-bottom: .35rem; }
+    .page-sub { color: var(--muted); font-size: .9rem; margin-bottom: 2rem; }
 
     /* Tabs */
-    .tabs {
-      display: flex;
-      gap: .5rem;
-      margin-bottom: 2rem;
-      border-bottom: 2px solid var(--border);
-      padding-bottom: 0;
-    }
-
-    .tab-btn {
-      font-family: 'League Spartan', sans-serif;
-      font-weight: 700;
-      font-size: .95rem;
-      padding: .65rem 1.25rem;
-      border: none;
-      background: none;
-      color: var(--muted);
-      cursor: pointer;
-      border-bottom: 3px solid transparent;
-      margin-bottom: -2px;
-      transition: color .15s, border-color .15s;
-      border-radius: 4px 4px 0 0;
-    }
-
+    .tabs { display: flex; gap: .25rem; margin-bottom: 2rem; border-bottom: 2px solid var(--border); flex-wrap: wrap; }
+    .tab-btn { font-family: 'League Spartan', sans-serif; font-weight: 700; font-size: .88rem; padding: .6rem 1.1rem; border: none; background: none; color: var(--muted); cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: color .15s, border-color .15s; border-radius: 4px 4px 0 0; white-space: nowrap; }
     .tab-btn:hover { color: var(--accent); }
     .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
-
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
 
     /* Card */
-    .card {
-      background: var(--card);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 1.75rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .card-title {
-      font-family: 'League Spartan', sans-serif;
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: var(--accent);
-      margin-bottom: 1.25rem;
-    }
+    .card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 1.75rem; margin-bottom: 1.5rem; }
+    .card-title { font-family: 'League Spartan', sans-serif; font-size: 1.1rem; font-weight: 700; color: var(--accent); margin-bottom: 1.25rem; }
 
     /* Form */
-    .form-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-    }
-
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
     .form-grid.single { grid-template-columns: 1fr; }
-
-    @media (max-width: 580px) {
-      .form-grid { grid-template-columns: 1fr; }
-    }
-
-    .field {
-      display: flex;
-      flex-direction: column;
-      gap: .4rem;
-    }
-
+    @media (max-width: 580px) { .form-grid { grid-template-columns: 1fr; } }
+    .field { display: flex; flex-direction: column; gap: .4rem; }
     .field.span2 { grid-column: 1 / -1; }
-
-    label {
-      font-size: .8rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: .04em;
-      color: var(--muted);
-    }
-
-    input, select, textarea {
-      font-family: 'Montserrat', sans-serif;
-      font-size: .9rem;
-      padding: .6rem .85rem;
-      border: 1.5px solid var(--border);
-      border-radius: 8px;
-      background: #fafaf8;
-      color: var(--text);
-      outline: none;
-      transition: border-color .15s;
-      width: 100%;
-    }
-
-    input:focus, select:focus, textarea:focus {
-      border-color: var(--accent);
-      background: #fff;
-    }
-
+    label { font-size: .8rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+    input, select, textarea { font-family: 'Montserrat', sans-serif; font-size: .9rem; padding: .6rem .85rem; border: 1.5px solid var(--border); border-radius: 8px; background: #fafaf8; color: var(--text); outline: none; transition: border-color .15s; width: 100%; }
+    input:focus, select:focus, textarea:focus { border-color: var(--accent); background: #fff; }
     textarea { resize: vertical; min-height: 90px; }
 
     /* Participant rows */
     .participant-list { display: flex; flex-direction: column; gap: .75rem; }
-
-    .participant-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr auto;
-      gap: .6rem;
-      align-items: end;
-      background: #fafaf8;
-      border: 1.5px solid var(--border);
-      border-radius: 8px;
-      padding: .75rem;
-    }
-
-    @media (max-width: 580px) {
-      .participant-row { grid-template-columns: 1fr; }
-    }
-
-    .participant-row .remove-btn {
-      background: #fee2e2;
-      border: none;
-      color: #dc2626;
-      border-radius: 6px;
-      padding: .5rem .75rem;
-      cursor: pointer;
-      font-size: .8rem;
-      font-weight: 600;
-      white-space: nowrap;
-    }
-
-    .add-participant-btn {
-      background: none;
-      border: 1.5px dashed var(--accent-light);
-      color: var(--accent);
-      border-radius: 8px;
-      padding: .6rem 1rem;
-      cursor: pointer;
-      font-family: 'Montserrat', sans-serif;
-      font-size: .85rem;
-      font-weight: 600;
-      width: 100%;
-      margin-top: .5rem;
-      transition: background .15s;
-    }
-
+    .participant-row { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: .6rem; align-items: end; background: #fafaf8; border: 1.5px solid var(--border); border-radius: 8px; padding: .75rem; }
+    @media (max-width: 580px) { .participant-row { grid-template-columns: 1fr; } }
+    .participant-row .remove-btn { background: var(--danger-soft); border: none; color: var(--danger); border-radius: 6px; padding: .5rem .75rem; cursor: pointer; font-size: .8rem; font-weight: 600; white-space: nowrap; }
+    .add-participant-btn { background: none; border: 1.5px dashed var(--lime); color: var(--accent); border-radius: 8px; padding: .6rem 1rem; cursor: pointer; font-family: 'Montserrat', sans-serif; font-size: .85rem; font-weight: 600; width: 100%; margin-top: .5rem; transition: background .15s; }
     .add-participant-btn:hover { background: rgba(135,203,74,.1); }
 
-    /* Photo upload */
-    .upload-zone {
-      border: 2px dashed var(--accent-light);
-      border-radius: var(--radius);
-      padding: 2rem;
-      text-align: center;
-      cursor: pointer;
-      transition: background .15s;
-      position: relative;
-    }
-
+    /* Upload */
+    .upload-zone { border: 2px dashed var(--lime); border-radius: var(--radius); padding: 2rem; text-align: center; cursor: pointer; transition: background .15s; position: relative; }
     .upload-zone:hover, .upload-zone.dragover { background: rgba(135,203,74,.1); }
-
-    .upload-zone input[type="file"] {
-      position: absolute;
-      inset: 0;
-      opacity: 0;
-      cursor: pointer;
-      width: 100%;
-      height: 100%;
-    }
-
+    .upload-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
     .upload-icon { font-size: 2rem; margin-bottom: .5rem; }
     .upload-label { font-weight: 600; color: var(--accent); font-size: .9rem; }
     .upload-sub { color: var(--muted); font-size: .78rem; margin-top: .25rem; }
+    .upload-preview { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .75rem; }
+    .upload-preview .thumb { position: relative; width: 80px; height: 80px; border-radius: 6px; overflow: hidden; border: 1.5px solid var(--border); }
+    .upload-preview .thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .upload-preview .thumb .remove-thumb { position: absolute; top: 2px; right: 2px; background: rgba(0,0,0,.6); color: #fff; border: none; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
-    .upload-preview {
-      display: flex;
-      flex-wrap: wrap;
-      gap: .5rem;
-      margin-top: .75rem;
-    }
-
-    .upload-preview .thumb {
-      position: relative;
-      width: 80px;
-      height: 80px;
-      border-radius: 6px;
-      overflow: hidden;
-      border: 1.5px solid var(--border);
-    }
-
-    .upload-preview .thumb img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .upload-preview .thumb .remove-thumb {
-      position: absolute;
-      top: 2px;
-      right: 2px;
-      background: rgba(0,0,0,.6);
-      color: #fff;
-      border: none;
-      border-radius: 50%;
-      width: 18px;
-      height: 18px;
-      font-size: 10px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    /* Submit button */
-    .submit-btn {
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      padding: .75rem 2rem;
-      font-family: 'League Spartan', sans-serif;
-      font-size: 1rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: background .15s, transform .1s;
-      margin-top: 1.25rem;
-    }
-
+    /* Buttons */
+    .submit-btn { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: .75rem 2rem; font-family: 'League Spartan', sans-serif; font-size: 1rem; font-weight: 700; cursor: pointer; transition: background .15s, transform .1s; margin-top: 1.25rem; }
     .submit-btn:hover { background: #1e4000; }
     .submit-btn:active { transform: scale(.98); }
     .submit-btn:disabled { opacity: .6; cursor: not-allowed; }
+    .ghost-btn { background: none; border: 1.5px solid var(--border); border-radius: 8px; padding: .4rem .9rem; font-size: .8rem; font-weight: 600; color: var(--muted); cursor: pointer; font-family: 'Montserrat', sans-serif; transition: border-color .15s, color .15s; }
+    .ghost-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .danger-btn { background: var(--danger-soft); border: none; border-radius: 6px; padding: .35rem .75rem; font-size: .78rem; font-weight: 600; color: var(--danger); cursor: pointer; }
 
     /* Toast */
-    #toast-container {
-      position: fixed;
-      bottom: 1.5rem;
-      right: 1.5rem;
-      z-index: 9999;
-      display: flex;
-      flex-direction: column;
-      gap: .5rem;
-    }
-
-    .toast {
-      background: #1a1a1a;
-      color: #fff;
-      padding: .75rem 1.25rem;
-      border-radius: 8px;
-      font-size: .87rem;
-      font-weight: 500;
-      box-shadow: 0 4px 16px rgba(0,0,0,.2);
-      animation: slideIn .2s ease;
-      max-width: 320px;
-    }
-
+    #toast-container { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 9999; display: flex; flex-direction: column; gap: .5rem; }
+    .toast { background: #1a1a1a; color: #fff; padding: .75rem 1.25rem; border-radius: 8px; font-size: .87rem; font-weight: 500; box-shadow: 0 4px 16px rgba(0,0,0,.2); animation: slideIn .2s ease; max-width: 320px; }
     .toast.success { background: var(--accent); }
-    .toast.error { background: #dc2626; }
+    .toast.error { background: var(--danger); }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    .divider { border: none; border-top: 1.5px solid var(--border); margin: 1.25rem 0; }
+    .section-label { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: .75rem; }
 
-    .divider {
-      border: none;
-      border-top: 1.5px solid var(--border);
-      margin: 1.25rem 0;
-    }
+    /* Stat row */
+    .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 1.5rem; }
+    .stat-box { background: var(--surface-2); border-radius: 10px; padding: 14px 16px; text-align: center; }
+    .stat-box .num { font-family: 'League Spartan', sans-serif; font-size: 2rem; font-weight: 900; color: var(--accent); line-height: 1; }
+    .stat-box .lbl { font-size: .72rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-top: 4px; }
 
-    .section-label {
-      font-size: .75rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: .06em;
-      color: var(--muted);
-      margin-bottom: .75rem;
-    }
+    /* Log list */
+    .log-list { display: flex; flex-direction: column; gap: .75rem; }
+    .log-item { background: var(--surface-2); border-radius: 10px; padding: 14px 16px; display: flex; align-items: flex-start; gap: 12px; }
+    .log-item .log-icon { width: 36px; height: 36px; border-radius: 8px; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+    .log-item .log-body { flex: 1; min-width: 0; }
+    .log-item .log-type { font-family: 'League Spartan', sans-serif; font-weight: 700; font-size: .95rem; color: var(--accent); }
+    .log-item .log-meta { font-size: .78rem; color: var(--muted); margin-top: 2px; }
+    .log-item .log-desc { font-size: .85rem; margin-top: 5px; color: var(--text); }
+    .log-item .log-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+    /* Edit modal */
+    .modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 500; align-items: center; justify-content: center; padding: 24px; }
+    .modal-backdrop.open { display: flex; }
+    .modal { background: #fff; border-radius: 16px; padding: 2rem; width: 100%; max-width: 520px; box-shadow: 0 20px 60px rgba(0,0,0,.2); }
+    .modal h3 { font-family: 'League Spartan', sans-serif; font-size: 1.2rem; font-weight: 800; color: var(--accent); margin-bottom: 1.25rem; }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 1.25rem; }
+
+    .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); font-size: .9rem; }
+
+    /* Activity type badge */
+    .type-badge { display: inline-block; background: rgba(40,84,0,.1); color: var(--accent); font-size: .7rem; font-weight: 700; padding: 2px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: .04em; }
   </style>
 </head>
 <body>
@@ -369,20 +133,26 @@
     <p style="color:var(--muted);font-size:.85rem;margin-bottom:1.5rem;">Enter your access code to continue</p>
     <input type="password" id="login-code" placeholder="Access code" style="width:100%;padding:.7rem 1rem;border:1.5px solid var(--border);border-radius:8px;font-size:1rem;margin-bottom:.75rem;font-family:'Montserrat',sans-serif;outline:none;" />
     <button onclick="doLogin()" style="width:100%;padding:.75rem;background:var(--accent);color:#fff;border:none;border-radius:8px;font-family:'League Spartan',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;">Sign In</button>
-    <div id="login-err" style="color:#dc2626;font-size:.82rem;margin-top:.6rem;"></div>
+    <div id="login-err" style="color:var(--danger);font-size:.82rem;margin-top:.6rem;"></div>
   </div>
 </div>
 
+<!-- PORTAL -->
 <div id="portal" style="display:none;">
 <div class="page">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.25rem;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.25rem;flex-wrap:wrap;gap:.5rem;">
     <div class="page-title" id="welcome-name">Coach Portal</div>
-    <button onclick="logout()" style="background:none;border:1.5px solid var(--border);border-radius:8px;padding:.4rem .9rem;font-size:.8rem;font-weight:600;color:var(--muted);cursor:pointer;">Sign Out</button>
+    <div style="display:flex;gap:.5rem;align-items:center;">
+      <a href="/impact.html" style="font-size:.8rem;font-weight:600;color:var(--accent);border:1.5px solid var(--border);border-radius:8px;padding:.4rem .9rem;">View Impact Page</a>
+      <button onclick="logout()" class="ghost-btn">Sign Out</button>
+    </div>
   </div>
-  <div class="page-sub">Submit sessions, testimonials, and photos. Everything you submit goes to the admin for review.</div>
+  <div class="page-sub">Log sessions, volunteer activity, testimonials, and photos.</div>
 
   <div class="tabs">
     <button class="tab-btn active" data-tab="session">Log Session</button>
+    <button class="tab-btn" data-tab="volunteer">Log Activity</button>
+    <button class="tab-btn" data-tab="my-activity">My Activity</button>
     <button class="tab-btn" data-tab="testimonial">Submit Testimonial</button>
     <button class="tab-btn" data-tab="photos">Upload Photos</button>
   </div>
@@ -390,30 +160,20 @@
   <!-- LOG SESSION -->
   <div class="tab-panel active" id="tab-session">
     <div class="card">
-      <div class="card-title">Session Details</div>
+      <div class="card-title">Log a Coaching Session</div>
       <form id="session-form">
         <div class="form-grid">
-          <div class="field">
-            <label>Your Name (Coach)</label>
-            <select id="s-coach" required>
-              <option value="">Select coach…</option>
-            </select>
-          </div>
           <div class="field">
             <label>Session Date</label>
             <input type="date" id="s-date" required />
           </div>
           <div class="field">
             <label>Chapter</label>
-            <select id="s-chapter" required>
-              <option value="">Select chapter…</option>
-            </select>
+            <select id="s-chapter" required><option value="">Select chapter…</option></select>
           </div>
           <div class="field">
             <label>Sport</label>
-            <select id="s-sport" required>
-              <option value="">Select sport…</option>
-            </select>
+            <select id="s-sport" required><option value="">Select sport…</option></select>
           </div>
           <div class="field">
             <label>Location</label>
@@ -428,16 +188,74 @@
             <textarea id="s-notes" placeholder="How did the session go? Any highlights or challenges?"></textarea>
           </div>
         </div>
-
         <hr class="divider" />
-
         <div class="section-label">Participants</div>
         <div class="participant-list" id="participant-list"></div>
         <button type="button" class="add-participant-btn" id="add-participant-btn">+ Add Participant</button>
-
         <br />
         <button type="submit" class="submit-btn" id="s-submit">Submit Session</button>
       </form>
+    </div>
+  </div>
+
+  <!-- LOG VOLUNTEER ACTIVITY -->
+  <div class="tab-panel" id="tab-volunteer">
+    <div class="card">
+      <div class="card-title">Log Volunteer Activity</div>
+      <p style="color:var(--muted);font-size:.88rem;margin-bottom:1.25rem;">Log any volunteer work — not just coaching. Community outreach, events, mentoring, etc.</p>
+      <form id="volunteer-form">
+        <div class="form-grid">
+          <div class="field">
+            <label>Date</label>
+            <input type="date" id="v-date" required />
+          </div>
+          <div class="field">
+            <label>Activity Type</label>
+            <select id="v-type" required>
+              <option value="">Select type…</option>
+              <option>Coaching Session</option>
+              <option>Community Outreach</option>
+              <option>Event / Tournament</option>
+              <option>Mentoring</option>
+              <option>Fundraising</option>
+              <option>Admin / Planning</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="field">
+            <label># People Helped</label>
+            <input type="number" id="v-people" min="0" placeholder="e.g. 12" />
+          </div>
+          <div class="field">
+            <label>Hours Volunteered</label>
+            <input type="number" id="v-hours" min="0" step="0.5" placeholder="e.g. 2.5" />
+          </div>
+          <div class="field">
+            <label>Chapter</label>
+            <select id="v-chapter"><option value="">Select chapter…</option></select>
+          </div>
+          <div class="field span2">
+            <label>Description</label>
+            <textarea id="v-desc" placeholder="What did you do? Who did you help? Any outcomes worth noting?"></textarea>
+          </div>
+        </div>
+        <button type="submit" class="submit-btn" id="v-submit">Log Activity</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MY ACTIVITY -->
+  <div class="tab-panel" id="tab-my-activity">
+    <div id="my-stats" class="stat-row"></div>
+
+    <div class="card">
+      <div class="card-title">My Coaching Sessions</div>
+      <div id="my-sessions-list" class="log-list"><div class="empty-state">Loading…</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">My Volunteer Activity</div>
+      <div id="my-volunteer-list" class="log-list"><div class="empty-state">Loading…</div></div>
     </div>
   </div>
 
@@ -448,16 +266,8 @@
       <form id="testimonial-form">
         <div class="form-grid">
           <div class="field">
-            <label>Your Name (Coach)</label>
-            <select id="t-coach" required>
-              <option value="">Select coach…</option>
-            </select>
-          </div>
-          <div class="field">
             <label>Chapter</label>
-            <select id="t-chapter">
-              <option value="">Select chapter…</option>
-            </select>
+            <select id="t-chapter"><option value="">Select chapter…</option></select>
           </div>
           <div class="field span2">
             <label>Testimonial / Quote</label>
@@ -477,14 +287,10 @@
           </div>
           <div class="field">
             <label>Sport (optional)</label>
-            <select id="t-sport">
-              <option value="">Select sport…</option>
-            </select>
+            <select id="t-sport"><option value="">Select sport…</option></select>
           </div>
         </div>
-
         <hr class="divider" />
-
         <div class="section-label">Optional Photo</div>
         <div class="upload-zone" id="t-upload-zone">
           <input type="file" id="t-photo" accept="image/*" />
@@ -493,7 +299,6 @@
           <div class="upload-sub">JPG, PNG, WebP — max 10 MB</div>
         </div>
         <div class="upload-preview" id="t-preview"></div>
-
         <button type="submit" class="submit-btn" id="t-submit">Submit Testimonial</button>
       </form>
     </div>
@@ -507,31 +312,19 @@
       <form id="photo-form">
         <div class="form-grid">
           <div class="field">
-            <label>Your Name (Coach)</label>
-            <select id="p-coach" required>
-              <option value="">Select coach…</option>
-            </select>
-          </div>
-          <div class="field">
             <label>Chapter</label>
-            <select id="p-chapter">
-              <option value="">Select chapter…</option>
-            </select>
+            <select id="p-chapter"><option value="">Select chapter…</option></select>
           </div>
           <div class="field">
             <label>Sport (optional)</label>
-            <select id="p-sport">
-              <option value="">Select sport…</option>
-            </select>
+            <select id="p-sport"><option value="">Select sport…</option></select>
           </div>
-          <div class="field">
+          <div class="field span2">
             <label>Caption</label>
             <input type="text" id="p-caption" placeholder="Brief description of the photo" />
           </div>
         </div>
-
         <hr class="divider" />
-
         <div class="section-label">Photos (select up to 10)</div>
         <div class="upload-zone" id="p-upload-zone">
           <input type="file" id="p-photos" accept="image/*" multiple />
@@ -540,384 +333,541 @@
           <div class="upload-sub">JPG, PNG, WebP — max 10 MB each</div>
         </div>
         <div class="upload-preview" id="p-preview"></div>
-
         <button type="submit" class="submit-btn" id="p-submit">Upload Photos</button>
       </form>
     </div>
   </div>
 </div>
-</div> <!-- end #portal -->
+</div><!-- end #portal -->
+
+<!-- EDIT SESSION MODAL -->
+<div class="modal-backdrop" id="edit-session-modal">
+  <div class="modal">
+    <h3>Edit Session</h3>
+    <input type="hidden" id="es-id" />
+    <div class="form-grid" style="margin-bottom:.75rem;">
+      <div class="field">
+        <label>Date</label>
+        <input type="date" id="es-date" />
+      </div>
+      <div class="field">
+        <label># Kids</label>
+        <input type="number" id="es-kids" min="0" />
+      </div>
+      <div class="field">
+        <label>Location</label>
+        <input type="text" id="es-location" />
+      </div>
+      <div class="field">
+        <label>Duration (min)</label>
+        <input type="number" id="es-duration" min="0" />
+      </div>
+      <div class="field span2">
+        <label>Notes</label>
+        <textarea id="es-notes" style="min-height:80px;"></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="ghost-btn" onclick="closeSessionModal()">Cancel</button>
+      <button class="submit-btn" style="margin-top:0;" onclick="saveEditSession()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT VOLUNTEER LOG MODAL -->
+<div class="modal-backdrop" id="edit-modal">
+  <div class="modal">
+    <h3>Edit Activity Log</h3>
+    <input type="hidden" id="edit-log-id" />
+    <div class="form-grid" style="margin-bottom:.75rem;">
+      <div class="field">
+        <label>Date</label>
+        <input type="date" id="edit-date" />
+      </div>
+      <div class="field">
+        <label>Activity Type</label>
+        <select id="edit-type">
+          <option>Coaching Session</option>
+          <option>Community Outreach</option>
+          <option>Event / Tournament</option>
+          <option>Mentoring</option>
+          <option>Fundraising</option>
+          <option>Admin / Planning</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label># People Helped</label>
+        <input type="number" id="edit-people" min="0" />
+      </div>
+      <div class="field">
+        <label>Hours</label>
+        <input type="number" id="edit-hours" min="0" step="0.5" />
+      </div>
+      <div class="field span2">
+        <label>Description</label>
+        <textarea id="edit-desc" style="min-height:80px;"></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="ghost-btn" onclick="closeEditModal()">Cancel</button>
+      <button class="submit-btn" style="margin-top:0;" onclick="saveEditLog()">Save Changes</button>
+    </div>
+  </div>
+</div>
 
 <script>
-  // ── Login ──────────────────────────────────────────────────────
-  let currentCoach = null;
+// ── Auth ──────────────────────────────────────────────────────────────────────
+let currentCoach = null;
 
-  async function doLogin() {
-    const code = document.getElementById('login-code').value.trim();
-    const errEl = document.getElementById('login-err');
-    if (!code) { errEl.textContent = 'Enter your access code.'; return; }
-    try {
-      const res = await fetch('/api/coach-auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ access_code: code }),
-      });
-      const data = await res.json();
-      if (!res.ok) { errEl.textContent = data.error || 'Invalid code.'; return; }
-      currentCoach = data.coach;
-      sessionStorage.setItem('coach_session', JSON.stringify(currentCoach));
-      showPortal();
-    } catch {
-      errEl.textContent = 'Network error. Try again.';
-    }
-  }
+async function doLogin() {
+  const code = document.getElementById('login-code').value.trim();
+  const errEl = document.getElementById('login-err');
+  if (!code) { errEl.textContent = 'Enter your access code.'; return; }
+  try {
+    const res = await fetch('/api/coach-auth', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ access_code: code }),
+    });
+    const data = await res.json();
+    if (!res.ok) { errEl.textContent = data.error || 'Invalid code.'; return; }
+    currentCoach = data.coach;
+    sessionStorage.setItem('coach_session', JSON.stringify(currentCoach));
+    showPortal();
+  } catch { errEl.textContent = 'Network error. Try again.'; }
+}
 
-  document.getElementById('login-code').addEventListener('keydown', e => {
-    if (e.key === 'Enter') doLogin();
+document.getElementById('login-code').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+function showPortal() {
+  document.getElementById('login-overlay').style.display = 'none';
+  document.getElementById('portal').style.display = 'block';
+  document.getElementById('welcome-name').textContent = `Hi, ${currentCoach.name} 👋`;
+  loadRefData();
+}
+
+function logout() {
+  sessionStorage.removeItem('coach_session');
+  currentCoach = null;
+  document.getElementById('login-overlay').style.display = 'flex';
+  document.getElementById('portal').style.display = 'none';
+  document.getElementById('login-code').value = '';
+}
+
+const saved = sessionStorage.getItem('coach_session');
+if (saved) { try { currentCoach = JSON.parse(saved); showPortal(); } catch { sessionStorage.removeItem('coach_session'); } }
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function toast(msg, type = 'success') {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.textContent = msg;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+
+function populateSelect(sel, items) {
+  items.forEach(item => {
+    const opt = document.createElement('option');
+    opt.value = item.id;
+    opt.textContent = item.name;
+    sel.appendChild(opt);
   });
+}
 
-  function showPortal() {
-    document.getElementById('login-overlay').style.display = 'none';
-    document.getElementById('portal').style.display = 'block';
-    document.getElementById('welcome-name').textContent = `Hi, ${currentCoach.name} 👋`;
-    loadRefData();
-  }
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 
-  function logout() {
-    sessionStorage.removeItem('coach_session');
-    currentCoach = null;
-    document.getElementById('login-overlay').style.display = 'flex';
-    document.getElementById('portal').style.display = 'none';
-    document.getElementById('login-code').value = '';
-  }
+const ACTIVITY_ICONS = {
+  'Coaching Session': '🏅', 'Community Outreach': '🌍', 'Event / Tournament': '🏆',
+  'Mentoring': '🤝', 'Fundraising': '💚', 'Admin / Planning': '📋', 'Other': '⭐',
+};
 
-  // Resume session if stored
-  const saved = sessionStorage.getItem('coach_session');
-  if (saved) { try { currentCoach = JSON.parse(saved); showPortal(); } catch { sessionStorage.removeItem('coach_session'); } }
-
-  // ── Helpers ────────────────────────────────────────────────────
-  function toast(msg, type = 'success') {
-    const el = document.createElement('div');
-    el.className = `toast ${type}`;
-    el.textContent = msg;
-    document.getElementById('toast-container').appendChild(el);
-    setTimeout(() => el.remove(), 4000);
-  }
-
-  function populateSelect(sel, items, labelKey = 'name') {
-    items.forEach(item => {
-      const opt = document.createElement('option');
-      opt.value = item.id;
-      opt.textContent = item[labelKey];
-      sel.appendChild(opt);
-    });
-  }
-
-  // ── Tabs ───────────────────────────────────────────────────────
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-      btn.classList.add('active');
-      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
-    });
+// ── Tabs ──────────────────────────────────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    if (btn.dataset.tab === 'my-activity') loadMyActivity();
   });
+});
 
-  // ── Load reference data ────────────────────────────────────────
-  let coaches = [], chapters = [], sports = [];
+// ── Reference data ────────────────────────────────────────────────────────────
+let chapters = [], sports = [];
 
-  async function loadRefData() {
-    const [c, ch, sp] = await Promise.all([
-      fetch('/api/coaches').then(r => r.json()),
-      fetch('/api/chapters').then(r => r.json()),
-      fetch('/api/sports').then(r => r.json()),
-    ]);
-    coaches = c.filter(x => x.name !== 'Coach TBD');
-    chapters = ch;
-    sports = sp;
+async function loadRefData() {
+  const [ch, sp] = await Promise.all([
+    fetch('/api/chapters').then(r => r.json()),
+    fetch('/api/sports').then(r => r.json()),
+  ]);
+  chapters = ch; sports = sp;
 
-    const coachSelects = ['s-coach', 't-coach', 'p-coach'];
-    const chapterSelects = ['s-chapter', 't-chapter', 'p-chapter'];
-    const sportSelects = ['s-sport', 't-sport', 'p-sport'];
+  ['s-chapter', 't-chapter', 'p-chapter', 'v-chapter'].forEach(id => populateSelect(document.getElementById(id), chapters));
+  ['s-sport', 't-sport', 'p-sport'].forEach(id => populateSelect(document.getElementById(id), sports));
 
-    coachSelects.forEach(id => populateSelect(document.getElementById(id), coaches));
-    chapterSelects.forEach(id => populateSelect(document.getElementById(id), chapters));
-    sportSelects.forEach(id => populateSelect(document.getElementById(id), sports));
-
-    // Pre-select the logged-in coach and lock it
-    if (currentCoach) {
-      coachSelects.forEach(id => {
-        const sel = document.getElementById(id);
-        sel.value = String(currentCoach.id);
-        sel.disabled = true;
-      });
-    }
+  // Pre-select coach's chapter if set
+  if (currentCoach?.chapter_id) {
+    ['s-chapter', 'v-chapter'].forEach(id => { document.getElementById(id).value = String(currentCoach.chapter_id); });
   }
+}
 
+// Set today's date
+document.getElementById('s-date').value = new Date().toISOString().slice(0, 10);
+document.getElementById('v-date').value = new Date().toISOString().slice(0, 10);
 
-  // Set today's date
-  document.getElementById('s-date').value = new Date().toISOString().slice(0, 10);
+// ── Participants ──────────────────────────────────────────────────────────────
+let participants = [{ name: '', parent_name: '', parent_contact: '' }];
 
-  // ── Participants ───────────────────────────────────────────────
-  let participants = [{ name: '', parent_name: '', parent_contact: '' }];
-
-  function renderParticipants() {
-    const list = document.getElementById('participant-list');
-    list.innerHTML = '';
-    participants.forEach((p, i) => {
-      const row = document.createElement('div');
-      row.className = 'participant-row';
-      row.innerHTML = `
-        <div class="field">
-          <label>Child Name</label>
-          <input type="text" placeholder="First name" value="${p.name}" data-i="${i}" data-f="name" />
-        </div>
-        <div class="field">
-          <label>Parent / Guardian</label>
-          <input type="text" placeholder="Parent name" value="${p.parent_name}" data-i="${i}" data-f="parent_name" />
-        </div>
-        <div class="field">
-          <label>Parent Contact</label>
-          <input type="text" placeholder="Email or phone" value="${p.parent_contact}" data-i="${i}" data-f="parent_contact" />
-        </div>
-        ${participants.length > 1 ? `<button type="button" class="remove-btn" data-i="${i}">Remove</button>` : '<div></div>'}
-      `;
-      list.appendChild(row);
-    });
-
-    list.querySelectorAll('input[data-i]').forEach(inp => {
-      inp.addEventListener('input', e => {
-        participants[+e.target.dataset.i][e.target.dataset.f] = e.target.value;
-      });
-    });
-
-    list.querySelectorAll('.remove-btn').forEach(btn => {
-      btn.addEventListener('click', e => {
-        participants.splice(+e.target.dataset.i, 1);
-        renderParticipants();
-      });
-    });
-  }
-
+function renderParticipants() {
+  const list = document.getElementById('participant-list');
+  list.innerHTML = '';
+  participants.forEach((p, i) => {
+    const row = document.createElement('div');
+    row.className = 'participant-row';
+    row.innerHTML = `
+      <div class="field"><label>Child Name</label><input type="text" placeholder="First name" value="${escHtml(p.name)}" data-i="${i}" data-f="name" /></div>
+      <div class="field"><label>Parent / Guardian</label><input type="text" placeholder="Parent name" value="${escHtml(p.parent_name)}" data-i="${i}" data-f="parent_name" /></div>
+      <div class="field"><label>Parent Contact</label><input type="text" placeholder="Email or phone" value="${escHtml(p.parent_contact)}" data-i="${i}" data-f="parent_contact" /></div>
+      ${participants.length > 1 ? `<button type="button" class="remove-btn" data-i="${i}">Remove</button>` : '<div></div>'}
+    `;
+    list.appendChild(row);
+  });
+  list.querySelectorAll('input[data-i]').forEach(inp => {
+    inp.addEventListener('input', e => { participants[+e.target.dataset.i][e.target.dataset.f] = e.target.value; });
+  });
+  list.querySelectorAll('.remove-btn').forEach(btn => {
+    btn.addEventListener('click', e => { participants.splice(+e.target.dataset.i, 1); renderParticipants(); });
+  });
+}
+renderParticipants();
+document.getElementById('add-participant-btn').addEventListener('click', () => {
+  participants.push({ name: '', parent_name: '', parent_contact: '' });
   renderParticipants();
+});
 
-  document.getElementById('add-participant-btn').addEventListener('click', () => {
-    participants.push({ name: '', parent_name: '', parent_contact: '' });
+// ── Session form ──────────────────────────────────────────────────────────────
+document.getElementById('session-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = document.getElementById('s-submit');
+  btn.disabled = true; btn.textContent = 'Submitting…';
+  const filled = participants.filter(p => p.name.trim());
+  const payload = {
+    coach_id: currentCoach.id,
+    chapter_id: +document.getElementById('s-chapter').value,
+    sport_id: +document.getElementById('s-sport').value,
+    session_date: document.getElementById('s-date').value,
+    location: document.getElementById('s-location').value,
+    duration_minutes: +document.getElementById('s-duration').value || null,
+    participants: filled.length || 0,
+    notes: document.getElementById('s-notes').value,
+    submitted_by: currentCoach.name,
+  };
+  try {
+    const res = await fetch('/api/sessions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    if (!res.ok) throw new Error(await res.text());
+    const { id: sessionId } = await res.json();
+    for (const p of filled) {
+      await fetch('/api/participants', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ session_id: sessionId, ...p }) });
+    }
+    toast('Session logged successfully!');
+    e.target.reset();
+    participants = [{ name: '', parent_name: '', parent_contact: '' }];
     renderParticipants();
+    document.getElementById('s-date').value = new Date().toISOString().slice(0, 10);
+    if (currentCoach?.chapter_id) document.getElementById('s-chapter').value = String(currentCoach.chapter_id);
+  } catch (err) { toast('Error: ' + err.message, 'error'); }
+  finally { btn.disabled = false; btn.textContent = 'Submit Session'; }
+});
+
+// ── Volunteer form ────────────────────────────────────────────────────────────
+document.getElementById('volunteer-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = document.getElementById('v-submit');
+  btn.disabled = true; btn.textContent = 'Logging…';
+  const payload = {
+    coach_id: currentCoach.id,
+    log_date: document.getElementById('v-date').value,
+    activity_type: document.getElementById('v-type').value,
+    description: document.getElementById('v-desc').value,
+    people_helped: +document.getElementById('v-people').value || 0,
+    hours: +document.getElementById('v-hours').value || 0,
+    chapter_id: document.getElementById('v-chapter').value || null,
+  };
+  try {
+    const res = await fetch('/api/volunteer-logs', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    if (!res.ok) throw new Error(await res.text());
+    toast('Activity logged!');
+    e.target.reset();
+    document.getElementById('v-date').value = new Date().toISOString().slice(0, 10);
+    if (currentCoach?.chapter_id) document.getElementById('v-chapter').value = String(currentCoach.chapter_id);
+  } catch (err) { toast('Error: ' + err.message, 'error'); }
+  finally { btn.disabled = false; btn.textContent = 'Log Activity'; }
+});
+
+// ── My Activity ───────────────────────────────────────────────────────────────
+async function loadMyActivity() {
+  const [sessions, vlogs] = await Promise.all([
+    fetch(`/api/sessions?coach_id=${currentCoach.id}`).then(r => r.json()).catch(() => []),
+    fetch(`/api/volunteer-logs?coach_id=${currentCoach.id}`).then(r => r.json()).catch(() => []),
+  ]);
+
+  // Stats
+  const totalSessions = sessions.length;
+  const totalKids = sessions.reduce((s, x) => s + (x.participants || 0), 0);
+  const totalPeople = vlogs.reduce((s, x) => s + (x.people_helped || 0), 0);
+  const totalHours = vlogs.reduce((s, x) => s + (x.hours || 0), 0);
+
+  document.getElementById('my-stats').innerHTML = `
+    <div class="stat-box"><div class="num">${totalSessions}</div><div class="lbl">Sessions</div></div>
+    <div class="stat-box"><div class="num">${totalKids}</div><div class="lbl">Kids Coached</div></div>
+    <div class="stat-box"><div class="num">${totalPeople}</div><div class="lbl">People Helped</div></div>
+    <div class="stat-box"><div class="num">${totalHours}</div><div class="lbl">Hours Volunteered</div></div>
+  `;
+
+  // Sessions list
+  const sl = document.getElementById('my-sessions-list');
+  if (!sessions.length) {
+    sl.innerHTML = '<div class="empty-state">No sessions logged yet.</div>';
+  } else {
+    sl.innerHTML = sessions.map(s => `
+      <div class="log-item">
+        <div class="log-icon">🏅</div>
+        <div class="log-body">
+          <div class="log-type">${escHtml(s.sport || 'Session')} <span class="type-badge">${escHtml(s.chapter || '')}</span></div>
+          <div class="log-meta">${s.session_date}${s.location ? ' · ' + escHtml(s.location) : ''}${s.duration_minutes ? ' · ' + s.duration_minutes + ' min' : ''} · ${s.participants || 0} kids</div>
+          ${s.notes ? `<div class="log-desc">${escHtml(s.notes)}</div>` : ''}
+        </div>
+        <div class="log-actions">
+          <button class="ghost-btn" onclick="openSessionModal(${JSON.stringify(s).replace(/"/g,'&quot;')})">Edit</button>
+          <button class="danger-btn" onclick="deleteSession(${s.id})">Delete</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // Volunteer logs list
+  const vl = document.getElementById('my-volunteer-list');
+  if (!vlogs.length) {
+    vl.innerHTML = '<div class="empty-state">No volunteer activity logged yet.</div>';
+  } else {
+    vl.innerHTML = vlogs.map(v => `
+      <div class="log-item" id="vlog-${v.id}">
+        <div class="log-icon">${ACTIVITY_ICONS[v.activity_type] || '⭐'}</div>
+        <div class="log-body">
+          <div class="log-type">${escHtml(v.activity_type)}</div>
+          <div class="log-meta">${v.log_date}${v.people_helped ? ' · ' + v.people_helped + ' people helped' : ''}${v.hours ? ' · ' + v.hours + ' hrs' : ''}${v.chapter ? ' · ' + escHtml(v.chapter) : ''}</div>
+          ${v.description ? `<div class="log-desc">${escHtml(v.description)}</div>` : ''}
+        </div>
+        <div class="log-actions">
+          <button class="ghost-btn" onclick="openEditModal(${JSON.stringify(v).replace(/"/g,'&quot;')})">Edit</button>
+          <button class="danger-btn" onclick="deleteLog(${v.id})">Delete</button>
+        </div>
+      </div>
+    `).join('');
+  }
+}
+
+// ── Edit session modal ────────────────────────────────────────────────────────
+let editSessionData = null;
+
+function openSessionModal(s) {
+  editSessionData = s;
+  document.getElementById('es-id').value = s.id;
+  document.getElementById('es-date').value = s.session_date;
+  document.getElementById('es-kids').value = s.participants || 0;
+  document.getElementById('es-location').value = s.location || '';
+  document.getElementById('es-duration').value = s.duration_minutes || '';
+  document.getElementById('es-notes').value = s.notes || '';
+  document.getElementById('edit-session-modal').classList.add('open');
+}
+
+function closeSessionModal() {
+  document.getElementById('edit-session-modal').classList.remove('open');
+}
+
+async function saveEditSession() {
+  const id = document.getElementById('es-id').value;
+  const payload = {
+    coach_id: currentCoach.id,
+    chapter_id: editSessionData.chapter_id,
+    sport_id: editSessionData.sport_id,
+    session_date: document.getElementById('es-date').value,
+    participants: +document.getElementById('es-kids').value || 0,
+    location: document.getElementById('es-location').value,
+    duration_minutes: +document.getElementById('es-duration').value || null,
+    notes: document.getElementById('es-notes').value,
+  };
+  try {
+    const res = await fetch(`/api/sessions/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    if (!res.ok) throw new Error(await res.text());
+    toast('Session updated!');
+    closeSessionModal();
+    loadMyActivity();
+  } catch (err) { toast('Error: ' + err.message, 'error'); }
+}
+
+async function deleteSession(id) {
+  if (!confirm('Delete this session?')) return;
+  try {
+    const res = await fetch(`/api/sessions/${id}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ coach_id: currentCoach.id }) });
+    if (!res.ok) throw new Error(await res.text());
+    toast('Session deleted.');
+    loadMyActivity();
+  } catch (err) { toast('Error: ' + err.message, 'error'); }
+}
+
+document.getElementById('edit-session-modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeSessionModal(); });
+
+// ── Edit volunteer log modal ───────────────────────────────────────────────────
+function openEditModal(v) {
+  document.getElementById('edit-log-id').value = v.id;
+  document.getElementById('edit-date').value = v.log_date;
+  document.getElementById('edit-type').value = v.activity_type;
+  document.getElementById('edit-people').value = v.people_helped || 0;
+  document.getElementById('edit-hours').value = v.hours || 0;
+  document.getElementById('edit-desc').value = v.description || '';
+  document.getElementById('edit-modal').classList.add('open');
+}
+
+function closeEditModal() {
+  document.getElementById('edit-modal').classList.remove('open');
+}
+
+async function saveEditLog() {
+  const id = document.getElementById('edit-log-id').value;
+  const payload = {
+    coach_id: currentCoach.id,
+    log_date: document.getElementById('edit-date').value,
+    activity_type: document.getElementById('edit-type').value,
+    description: document.getElementById('edit-desc').value,
+    people_helped: +document.getElementById('edit-people').value || 0,
+    hours: +document.getElementById('edit-hours').value || 0,
+  };
+  try {
+    const res = await fetch(`/api/volunteer-logs/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    if (!res.ok) throw new Error(await res.text());
+    toast('Activity updated!');
+    closeEditModal();
+    loadMyActivity();
+  } catch (err) { toast('Error: ' + err.message, 'error'); }
+}
+
+async function deleteLog(id) {
+  if (!confirm('Delete this activity log?')) return;
+  try {
+    const res = await fetch(`/api/volunteer-logs/${id}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ coach_id: currentCoach.id }) });
+    if (!res.ok) throw new Error(await res.text());
+    toast('Log deleted.');
+    loadMyActivity();
+  } catch (err) { toast('Error: ' + err.message, 'error'); }
+}
+
+document.getElementById('edit-modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeEditModal(); });
+
+// ── Testimonial photo preview ─────────────────────────────────────────────────
+let tPhotoFile = null;
+document.getElementById('t-photo').addEventListener('change', function () {
+  const file = this.files[0]; if (!file) return;
+  tPhotoFile = file;
+  const preview = document.getElementById('t-preview'); preview.innerHTML = '';
+  const thumb = document.createElement('div'); thumb.className = 'thumb';
+  const img = document.createElement('img'); img.src = URL.createObjectURL(file);
+  const rm = document.createElement('button'); rm.className = 'remove-thumb'; rm.type = 'button'; rm.textContent = '×';
+  rm.onclick = () => { tPhotoFile = null; preview.innerHTML = ''; document.getElementById('t-photo').value = ''; };
+  thumb.appendChild(img); thumb.appendChild(rm); preview.appendChild(thumb);
+});
+setupDragZone('t-upload-zone', 't-photo');
+
+// ── Testimonial form ──────────────────────────────────────────────────────────
+document.getElementById('testimonial-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = document.getElementById('t-submit');
+  btn.disabled = true; btn.textContent = 'Submitting…';
+  try {
+    const fd = new FormData();
+    fd.append('coach_id', currentCoach.id);
+    fd.append('quote', document.getElementById('t-quote').value);
+    fd.append('parent_name', document.getElementById('t-parent-name').value);
+    fd.append('parent_contact', document.getElementById('t-parent-contact').value);
+    fd.append('child_name', document.getElementById('t-child-name').value);
+    fd.append('chapter_id', document.getElementById('t-chapter').value || '');
+    fd.append('sport_id', document.getElementById('t-sport').value || '');
+    if (tPhotoFile) fd.append('photo', tPhotoFile);
+    const res = await fetch('/api/testimonials', { method: 'POST', body: fd });
+    if (!res.ok) throw new Error(await res.text());
+    toast('Testimonial submitted! The admin will review it.');
+    e.target.reset(); tPhotoFile = null; document.getElementById('t-preview').innerHTML = '';
+  } catch (err) { toast('Error: ' + err.message, 'error'); }
+  finally { btn.disabled = false; btn.textContent = 'Submit Testimonial'; }
+});
+
+// ── Photo upload ──────────────────────────────────────────────────────────────
+let pPhotoFiles = [];
+document.getElementById('p-photos').addEventListener('change', function () { addPhotoFiles(Array.from(this.files)); });
+setupDragZone('p-upload-zone', 'p-photos');
+
+function addPhotoFiles(files) {
+  pPhotoFiles = [...pPhotoFiles, ...files.filter(f => f.type.startsWith('image/'))].slice(0, 10);
+  renderPhotoPreview();
+}
+
+function renderPhotoPreview() {
+  const preview = document.getElementById('p-preview'); preview.innerHTML = '';
+  pPhotoFiles.forEach((f, i) => {
+    const thumb = document.createElement('div'); thumb.className = 'thumb';
+    const img = document.createElement('img'); img.src = URL.createObjectURL(f);
+    const rm = document.createElement('button'); rm.className = 'remove-thumb'; rm.type = 'button'; rm.textContent = '×';
+    rm.onclick = () => { pPhotoFiles.splice(i, 1); renderPhotoPreview(); };
+    thumb.appendChild(img); thumb.appendChild(rm); preview.appendChild(thumb);
   });
+}
 
-  // ── Session form ───────────────────────────────────────────────
-  document.getElementById('session-form').addEventListener('submit', async e => {
-    e.preventDefault();
-    const btn = document.getElementById('s-submit');
-    btn.disabled = true;
-    btn.textContent = 'Submitting…';
-
-    const filled = participants.filter(p => p.name.trim());
-
-    const coachSel = document.getElementById('s-coach');
-    const payload = {
-      coach_id: +coachSel.value,
-      chapter_id: +document.getElementById('s-chapter').value,
-      sport_id: +document.getElementById('s-sport').value,
-      session_date: document.getElementById('s-date').value,
-      location: document.getElementById('s-location').value,
-      duration_minutes: +document.getElementById('s-duration').value || null,
-      participants: filled.length || 0,
-      notes: document.getElementById('s-notes').value,
-      submitted_by: coachSel.options[coachSel.selectedIndex]?.text,
-    };
-
-    try {
-      const res = await fetch('/api/sessions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) throw new Error(await res.text());
-      const { id: sessionId } = await res.json();
-
-      // Post participant contact info
-      for (const p of filled) {
-        await fetch('/api/participants', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ session_id: sessionId, ...p }),
-        });
-      }
-
-      toast('Session logged successfully!');
-      e.target.reset();
-      participants = [{ name: '', parent_name: '', parent_contact: '' }];
-      renderParticipants();
-      document.getElementById('s-date').value = new Date().toISOString().slice(0, 10);
-    } catch (err) {
-      toast('Error: ' + err.message, 'error');
-    } finally {
-      btn.disabled = false;
-      btn.textContent = 'Submit Session';
-    }
-  });
-
-  // ── Testimonial photo preview ──────────────────────────────────
-  let tPhotoFile = null;
-
-  document.getElementById('t-photo').addEventListener('change', function () {
-    const file = this.files[0];
-    if (!file) return;
-    tPhotoFile = file;
-    const preview = document.getElementById('t-preview');
-    preview.innerHTML = '';
-    const thumb = document.createElement('div');
-    thumb.className = 'thumb';
-    const img = document.createElement('img');
-    img.src = URL.createObjectURL(file);
-    const rm = document.createElement('button');
-    rm.className = 'remove-thumb';
-    rm.type = 'button';
-    rm.textContent = '×';
-    rm.onclick = () => { tPhotoFile = null; preview.innerHTML = ''; document.getElementById('t-photo').value = ''; };
-    thumb.appendChild(img);
-    thumb.appendChild(rm);
-    preview.appendChild(thumb);
-  });
-
-  setupDragZone('t-upload-zone', 't-photo');
-
-  // ── Testimonial form ───────────────────────────────────────────
-  document.getElementById('testimonial-form').addEventListener('submit', async e => {
-    e.preventDefault();
-    const btn = document.getElementById('t-submit');
-    btn.disabled = true;
-    btn.textContent = 'Submitting…';
-
-    try {
+document.getElementById('photo-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  if (!pPhotoFiles.length) { toast('Please select at least one photo.', 'error'); return; }
+  const btn = document.getElementById('p-submit');
+  btn.disabled = true; btn.textContent = 'Uploading…';
+  try {
+    let uploaded = 0;
+    for (const file of pPhotoFiles) {
       const fd = new FormData();
-      fd.append('coach_id', document.getElementById('t-coach').value);
-      fd.append('quote', document.getElementById('t-quote').value);
-      fd.append('parent_name', document.getElementById('t-parent-name').value);
-      fd.append('parent_contact', document.getElementById('t-parent-contact').value);
-      fd.append('child_name', document.getElementById('t-child-name').value);
-      fd.append('chapter_id', document.getElementById('t-chapter').value || '');
-      fd.append('sport_id', document.getElementById('t-sport').value || '');
-      if (tPhotoFile) fd.append('photo', tPhotoFile);
+      fd.append('photo', file);
+      fd.append('chapter_id', document.getElementById('p-chapter').value || '');
+      fd.append('sport_id', document.getElementById('p-sport').value || '');
+      fd.append('caption', document.getElementById('p-caption').value);
+      fd.append('uploaded_by', currentCoach.name);
+      const res = await fetch('/api/photos', { method: 'POST', body: fd });
+      if (res.ok) uploaded++;
+    }
+    toast(`${uploaded} photo${uploaded !== 1 ? 's' : ''} uploaded for review!`);
+    e.target.reset(); pPhotoFiles = []; document.getElementById('p-preview').innerHTML = '';
+  } catch (err) { toast('Error: ' + err.message, 'error'); }
+  finally { btn.disabled = false; btn.textContent = 'Upload Photos'; }
+});
 
-      const res = await fetch('/api/testimonials', { method: 'POST', body: fd });
-      if (!res.ok) throw new Error(await res.text());
-      toast('Testimonial submitted! The admin will review it.');
-      e.target.reset();
-      tPhotoFile = null;
-      document.getElementById('t-preview').innerHTML = '';
-    } catch (err) {
-      toast('Error: ' + err.message, 'error');
-    } finally {
-      btn.disabled = false;
-      btn.textContent = 'Submit Testimonial';
+// ── Drag-and-drop ─────────────────────────────────────────────────────────────
+function setupDragZone(zoneId, inputId) {
+  const zone = document.getElementById(zoneId);
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault(); zone.classList.remove('dragover');
+    const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+    if (zoneId === 'p-upload-zone') { addPhotoFiles(files); }
+    else if (files[0]) {
+      tPhotoFile = files[0];
+      const preview = document.getElementById('t-preview'); preview.innerHTML = '';
+      const thumb = document.createElement('div'); thumb.className = 'thumb';
+      const img = document.createElement('img'); img.src = URL.createObjectURL(files[0]);
+      const rm = document.createElement('button'); rm.className = 'remove-thumb'; rm.type = 'button'; rm.textContent = '×';
+      rm.onclick = () => { tPhotoFile = null; preview.innerHTML = ''; };
+      thumb.appendChild(img); thumb.appendChild(rm); preview.appendChild(thumb);
     }
   });
-
-  // ── Photo upload ───────────────────────────────────────────────
-  let pPhotoFiles = [];
-
-  document.getElementById('p-photos').addEventListener('change', function () {
-    addPhotoFiles(Array.from(this.files));
-  });
-
-  setupDragZone('p-upload-zone', 'p-photos');
-
-  function addPhotoFiles(files) {
-    const allowed = files.filter(f => f.type.startsWith('image/'));
-    pPhotoFiles = [...pPhotoFiles, ...allowed].slice(0, 10);
-    renderPhotoPreview();
-  }
-
-  function renderPhotoPreview() {
-    const preview = document.getElementById('p-preview');
-    preview.innerHTML = '';
-    pPhotoFiles.forEach((f, i) => {
-      const thumb = document.createElement('div');
-      thumb.className = 'thumb';
-      const img = document.createElement('img');
-      img.src = URL.createObjectURL(f);
-      const rm = document.createElement('button');
-      rm.className = 'remove-thumb';
-      rm.type = 'button';
-      rm.textContent = '×';
-      rm.onclick = () => { pPhotoFiles.splice(i, 1); renderPhotoPreview(); };
-      thumb.appendChild(img);
-      thumb.appendChild(rm);
-      preview.appendChild(thumb);
-    });
-  }
-
-  document.getElementById('photo-form').addEventListener('submit', async e => {
-    e.preventDefault();
-    if (!pPhotoFiles.length) { toast('Please select at least one photo.', 'error'); return; }
-    const btn = document.getElementById('p-submit');
-    btn.disabled = true;
-    btn.textContent = 'Uploading…';
-
-    const coachId = document.getElementById('p-coach').value;
-    const chapterId = document.getElementById('p-chapter').value;
-    const sportId = document.getElementById('p-sport').value;
-    const caption = document.getElementById('p-caption').value;
-    const coachName = document.getElementById('p-coach').options[document.getElementById('p-coach').selectedIndex]?.text;
-
-    try {
-      let uploaded = 0;
-      for (const file of pPhotoFiles) {
-        const fd = new FormData();
-        fd.append('photo', file);
-        fd.append('coach_id', coachId);
-        fd.append('chapter_id', chapterId || '');
-        fd.append('sport_id', sportId || '');
-        fd.append('caption', caption);
-        fd.append('uploaded_by', coachName);
-        const res = await fetch('/api/photos', { method: 'POST', body: fd });
-        if (res.ok) uploaded++;
-      }
-      toast(`${uploaded} photo${uploaded !== 1 ? 's' : ''} uploaded for review!`);
-      e.target.reset();
-      pPhotoFiles = [];
-      document.getElementById('p-preview').innerHTML = '';
-    } catch (err) {
-      toast('Error: ' + err.message, 'error');
-    } finally {
-      btn.disabled = false;
-      btn.textContent = 'Upload Photos';
-    }
-  });
-
-  // ── Drag-and-drop helper ───────────────────────────────────────
-  function setupDragZone(zoneId, inputId) {
-    const zone = document.getElementById(zoneId);
-    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
-    zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
-    zone.addEventListener('drop', e => {
-      e.preventDefault();
-      zone.classList.remove('dragover');
-      const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
-      if (zoneId === 'p-upload-zone') {
-        addPhotoFiles(files);
-      } else if (files[0]) {
-        tPhotoFile = files[0];
-        const preview = document.getElementById('t-preview');
-        preview.innerHTML = '';
-        const thumb = document.createElement('div');
-        thumb.className = 'thumb';
-        const img = document.createElement('img');
-        img.src = URL.createObjectURL(files[0]);
-        const rm = document.createElement('button');
-        rm.className = 'remove-thumb';
-        rm.type = 'button';
-        rm.textContent = '×';
-        rm.onclick = () => { tPhotoFile = null; preview.innerHTML = ''; };
-        thumb.appendChild(img);
-        thumb.appendChild(rm);
-        preview.appendChild(thumb);
-      }
-    });
-  }
+}
 </script>
 </body>
 </html>

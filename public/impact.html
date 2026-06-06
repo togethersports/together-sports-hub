@@ -200,9 +200,10 @@ async function load() {
 }
 
 function renderStats(s) {
+  const total = (s.total_participants ?? 0) + (s.total_people_helped ?? 0);
   document.getElementById('stats-row').innerHTML = `
     <div class="stat-card"><div class="num">${s.total_sessions ?? 0}</div><div class="lbl">Sessions Run</div></div>
-    <div class="stat-card"><div class="num">${s.total_participants ?? 0}</div><div class="lbl">Kids Reached</div></div>
+    <div class="stat-card"><div class="num">${total}</div><div class="lbl">People Reached</div></div>
     <div class="stat-card"><div class="num">${s.active_coaches ?? 0}</div><div class="lbl">Active Coaches</div></div>
     <div class="stat-card"><div class="num">${s.chapters_active ?? 0}</div><div class="lbl">Chapters</div></div>
   `;
