@@ -338,6 +338,7 @@ function Select({ value, onChange, options, placeholder }) {
 const NAV = [
   { id:'overview',     label:'Overview',         icon:'📊' },
   { id:'sessions',     label:'Sessions Log',     icon:'📋' },
+  { id:'volunteer',    label:'Volunteer Logs',   icon:'🤝' },
   { id:'roster',       label:'Coach Roster',      icon:'👥' },
   { id:'add-session',  label:'Add Session',       icon:'➕' },
   { id:'coaches',      label:'Manage Coaches',    icon:'🛠' },
@@ -467,6 +468,9 @@ function Sessions({ chapters, sports, coaches }) {
   const [filters, setFilters] = useState({ chapter_id:'', sport_id:'', coach_id:'', date_from:'', date_to:'' });
   const [detail, setDetail] = useState(null);
   const [participants, setParticipants] = useState([]);
+  const [editing, setEditing] = useState(null);
+  const [ef, setEf] = useState({});
+  const [saving, setSaving] = useState(false);
 
   const load = useCallback(() => {
     const p = new URLSearchParams(Object.fromEntries(Object.entries(filters).filter(([,v])=>v)));
@@ -478,8 +482,20 @@ function Sessions({ chapters, sports, coaches }) {
   const del = async id => {
     if (!confirm('Delete this session?')) return;
     await api(`/api/sessions/${id}`, { method:'DELETE' });
-    toast('Session deleted');
-    load();
+    toast('Session deleted'); load();
+  };
+
+  const openEdit = r => {
+    setEditing(r);
+    setEf({ session_date:r.session_date, chapter_id:String(r.chapter_id||''), sport_id:String(r.sport_id||''), duration_minutes:r.duration_minutes||'', participants:r.participants||'', location:r.location||'', notes:r.notes||'' });
+  };
+
+  const saveEdit = async () => {
+    setSaving(true);
+    const r = await api(`/api/sessions/${editing.id}`, { method:'PUT', headers:{'content-type':'application/json'}, body:JSON.stringify({...ef, coach_id:editing.coach_id}) });
+    setSaving(false);
+    if (r.ok) { toast('Session updated!'); setEditing(null); load(); }
+    else toast(r.error||'Error','err');
   };
 
   const openDetail = async row => {
@@ -517,8 +533,8 @@ function Sessions({ chapters, sports, coaches }) {
           options={sports.map(s=>({value:String(s.id),label:s.name}))}/>
         <Select value={filters.coach_id} onChange={v=>sf('coach_id',v)} placeholder="All Coaches"
           options={coaches.map(c=>({value:String(c.id),label:c.name}))}/>
-        <input className="ui-input" style={{width:'140px'}} type="date" value={filters.date_from} onChange={e=>sf('date_from',e.target.value)} placeholder="From"/>
-        <input className="ui-input" style={{width:'140px'}} type="date" value={filters.date_to} onChange={e=>sf('date_to',e.target.value)} placeholder="To"/>
+        <input className="ui-input" style={{width:'140px'}} type="date" value={filters.date_from} onChange={e=>sf('date_from',e.target.value)}/>
+        <input className="ui-input" style={{width:'140px'}} type="date" value={filters.date_to} onChange={e=>sf('date_to',e.target.value)}/>
         <button className="ui-btn ui-btn--ghost ui-btn--sm" onClick={()=>setFilters({chapter_id:'',sport_id:'',coach_id:'',date_from:'',date_to:''})}>Clear</button>
       </div>
       <div className="ts-card ts-tablecard">
@@ -543,6 +559,7 @@ function Sessions({ chapters, sports, coaches }) {
                     <td>
                       <div style={{display:'flex',gap:'6px'}}>
                         <button className="ui-btn ui-btn--ghost ui-btn--sm" onClick={()=>openDetail(r)}>View</button>
+                        <button className="ui-btn ui-btn--ghost ui-btn--sm" onClick={()=>openEdit(r)}>Edit</button>
                         <button className="ui-btn ui-btn--danger ui-btn--sm" onClick={()=>del(r.id)}>✕</button>
                       </div>
                     </td>
@@ -552,6 +569,26 @@ function Sessions({ chapters, sports, coaches }) {
             </table>
         }
       </div>
+
+      {editing && (
+        <Modal title={`Edit Session — ${fmt(editing.session_date)}`} sub={editing.coach||''}
+          onClose={()=>setEditing(null)}
+          footer={<>
+            <button className="ui-btn ui-btn--ghost" onClick={()=>setEditing(null)}>Cancel</button>
+            <button className="ui-btn ui-btn--primary" onClick={saveEdit} disabled={saving}>{saving?'Saving…':'Save'}</button>
+          </>}
+        >
+          <div className="ts-form-grid">
+            <Field label="Date"><input className="ui-input" type="date" value={ef.session_date} onChange={e=>setEf(x=>({...x,session_date:e.target.value}))}/></Field>
+            <Field label="Participants"><input className="ui-input" type="number" min="0" value={ef.participants} onChange={e=>setEf(x=>({...x,participants:e.target.value}))}/></Field>
+            <Field label="Chapter"><Select value={ef.chapter_id} onChange={v=>setEf(x=>({...x,chapter_id:v}))} placeholder="— None —" options={chapters.map(c=>({value:String(c.id),label:c.name}))}/></Field>
+            <Field label="Sport"><Select value={ef.sport_id} onChange={v=>setEf(x=>({...x,sport_id:v}))} placeholder="— None —" options={sports.map(s=>({value:String(s.id),label:s.name}))}/></Field>
+            <Field label="Location"><input className="ui-input" value={ef.location} onChange={e=>setEf(x=>({...x,location:e.target.value}))}/></Field>
+            <Field label="Duration (min)"><input className="ui-input" type="number" min="0" value={ef.duration_minutes} onChange={e=>setEf(x=>({...x,duration_minutes:e.target.value}))}/></Field>
+            <div className="ts-form-full"><Field label="Notes"><textarea className="ui-input" rows={3} value={ef.notes} onChange={e=>setEf(x=>({...x,notes:e.target.value}))} style={{resize:'vertical'}}/></Field></div>
+          </div>
+        </Modal>
+      )}
 
       {detail && (
         <Modal title={`Session — ${fmt(detail.session_date)}`} sub={`${detail.coach||'Unknown coach'} · ${detail.chapter||''} · ${detail.sport||''}`}
@@ -574,16 +611,125 @@ function Sessions({ chapters, sports, coaches }) {
                     <thead><tr><th>Child</th><th>Parent/Guardian</th><th>Contact</th></tr></thead>
                     <tbody>
                       {participants.map(p => (
-                        <tr key={p.id}>
-                          <td>{p.name}</td>
-                          <td>{p.parent_name||'—'}</td>
-                          <td>{p.parent_contact||'—'}</td>
-                        </tr>
+                        <tr key={p.id}><td>{p.name}</td><td>{p.parent_name||'—'}</td><td>{p.parent_contact||'—'}</td></tr>
                       ))}
                     </tbody>
                   </table>
               }
             </div>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+}
+
+// ── Volunteer Logs ────────────────────────────────────────────────────────────
+const ACTIVITY_TYPES = ['Coaching Session','Community Outreach','Event / Tournament','Mentoring','Fundraising','Admin / Planning','Other'];
+
+function VolunteerLogs({ chapters, coaches }) {
+  const [rows, setRows] = useState([]);
+  const [filterCoach, setFilterCoach] = useState('');
+  const [editing, setEditing] = useState(null);
+  const [ef, setEf] = useState({});
+  const [saving, setSaving] = useState(false);
+
+  const load = useCallback(() => {
+    const p = filterCoach ? `?coach_id=${filterCoach}` : '';
+    api(`/api/volunteer-logs${p}`).then(setRows);
+  }, [filterCoach]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const del = async id => {
+    if (!confirm('Delete this log?')) return;
+    await api(`/api/volunteer-logs/${id}`, { method:'DELETE' });
+    toast('Log deleted'); load();
+  };
+
+  const openEdit = r => {
+    setEditing(r);
+    setEf({ log_date:r.log_date, activity_type:r.activity_type, people_helped:r.people_helped||0, hours:r.hours||0, chapter_id:String(r.chapter_id||''), description:r.description||'' });
+  };
+
+  const saveEdit = async () => {
+    setSaving(true);
+    const r = await api(`/api/volunteer-logs/${editing.id}`, { method:'PUT', headers:{'content-type':'application/json'}, body:JSON.stringify({...ef, coach_id: editing.coach_id}) });
+    setSaving(false);
+    if (r.ok) { toast('Log updated!'); setEditing(null); load(); }
+    else toast(r.error||'Error','err');
+  };
+
+  const totals = rows.reduce((acc, r) => ({
+    people: acc.people + (r.people_helped||0),
+    hours: acc.hours + (r.hours||0),
+  }), { people:0, hours:0 });
+
+  return (
+    <div className="view">
+      <div className="ts-pagehead">
+        <div>
+          <div className="ts-eyebrow">🤝 Volunteer</div>
+          <h1 className="ts-h1">Volunteer Logs</h1>
+          <p className="ts-lede">{rows.length} log{rows.length!==1?'s':''} · {totals.people} people helped · {totals.hours} hrs</p>
+        </div>
+      </div>
+      <div className="ts-filterbar">
+        <Select value={filterCoach} onChange={setFilterCoach} placeholder="All Coaches"
+          options={coaches.map(c=>({value:String(c.id),label:c.name}))}/>
+        <button className="ui-btn ui-btn--ghost ui-btn--sm" onClick={()=>setFilterCoach('')}>Clear</button>
+      </div>
+      <div className="ts-card ts-tablecard">
+        {rows.length === 0
+          ? <div className="ts-table-empty">No volunteer logs yet.</div>
+          : <table className="ts-table">
+              <thead><tr>
+                <th>Date</th><th>Coach</th><th>Activity</th><th>People Helped</th><th>Hours</th><th>Chapter</th><th>Description</th><th></th>
+              </tr></thead>
+              <tbody>
+                {rows.map(r => (
+                  <tr key={r.id}>
+                    <td><strong>{fmt(r.log_date)}</strong></td>
+                    <td>{r.coach||'—'}</td>
+                    <td><span className="ui-tag ui-tag--blue">{r.activity_type}</span></td>
+                    <td style={{textAlign:'right'}}><strong style={{fontFamily:'var(--display)'}}>{r.people_helped||'—'}</strong></td>
+                    <td>{r.hours||'—'}</td>
+                    <td>{r.chapter||'—'}</td>
+                    <td style={{maxWidth:'200px',fontSize:'12.5px',color:'var(--muted)'}}>{r.description||''}</td>
+                    <td>
+                      <div style={{display:'flex',gap:'6px'}}>
+                        <button className="ui-btn ui-btn--ghost ui-btn--sm" onClick={()=>openEdit(r)}>Edit</button>
+                        <button className="ui-btn ui-btn--danger ui-btn--sm" onClick={()=>del(r.id)}>✕</button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+        }
+      </div>
+
+      {editing && (
+        <Modal title={`Edit Log — ${editing.coach||''}`} onClose={()=>setEditing(null)}
+          footer={<>
+            <button className="ui-btn ui-btn--ghost" onClick={()=>setEditing(null)}>Cancel</button>
+            <button className="ui-btn ui-btn--primary" onClick={saveEdit} disabled={saving}>{saving?'Saving…':'Save'}</button>
+          </>}
+        >
+          <div className="ts-form-grid">
+            <Field label="Date"><input className="ui-input" type="date" value={ef.log_date} onChange={e=>setEf(x=>({...x,log_date:e.target.value}))}/></Field>
+            <Field label="Activity Type">
+              <div className="ui-select-wrap">
+                <select className="ui-input" value={ef.activity_type} onChange={e=>setEf(x=>({...x,activity_type:e.target.value}))}>
+                  {ACTIVITY_TYPES.map(t=><option key={t}>{t}</option>)}
+                </select>
+                <span className="ui-select-arrow">▼</span>
+              </div>
+            </Field>
+            <Field label="People Helped"><input className="ui-input" type="number" min="0" value={ef.people_helped} onChange={e=>setEf(x=>({...x,people_helped:e.target.value}))}/></Field>
+            <Field label="Hours"><input className="ui-input" type="number" min="0" step="0.5" value={ef.hours} onChange={e=>setEf(x=>({...x,hours:e.target.value}))}/></Field>
+            <Field label="Chapter"><Select value={ef.chapter_id} onChange={v=>setEf(x=>({...x,chapter_id:v}))} placeholder="— None —" options={chapters.map(c=>({value:String(c.id),label:c.name}))}/></Field>
+            <div className="ts-form-full"><Field label="Description"><textarea className="ui-input" rows={3} value={ef.description} onChange={e=>setEf(x=>({...x,description:e.target.value}))} style={{resize:'vertical'}}/></Field></div>
           </div>
         </Modal>
       )}
@@ -1222,7 +1368,7 @@ function App() {
   );
 
   const pending = (stats.pending_testimonials||0) + (stats.pending_photos||0);
-  const views = { overview:Overview, sessions:Sessions, roster:Roster, 'add-session':AddSession, coaches:ManageCoaches, testimonials:Testimonials, gallery:Gallery, settings:Settings };
+  const views = { overview:Overview, sessions:Sessions, volunteer:VolunteerLogs, roster:Roster, 'add-session':AddSession, coaches:ManageCoaches, testimonials:Testimonials, gallery:Gallery, settings:Settings };
   const ViewComp = views[view] || Overview;
 
   return (
