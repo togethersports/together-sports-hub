@@ -61,6 +61,7 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS participants (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     session_id INTEGER REFERENCES sessions(id),
+    volunteer_log_id INTEGER REFERENCES volunteer_logs(id),
     name TEXT NOT NULL,
     parent_name TEXT,
     parent_contact TEXT,
@@ -107,6 +108,9 @@ db.exec(`
     value TEXT NOT NULL
   );
 `);
+
+// Migrate existing DBs
+try { run('ALTER TABLE participants ADD COLUMN volunteer_log_id INTEGER REFERENCES volunteer_logs(id)'); } catch {}
 
 const seeded = get("SELECT value FROM settings WHERE key='seeded'");
 if (!seeded) {
@@ -287,26 +291,35 @@ app.delete('/api/sessions/:id', (req, res) => {
 
 // ── Participants ──────────────────────────────────────────────────────────────
 app.get('/api/participants', requireAdmin, (req, res) => {
-  let sql = `
-    SELECT p.*, s.session_date, s.location, ch.name AS chapter, sp.name AS sport, c.name AS coach
-    FROM participants p
-    JOIN sessions s ON p.session_id=s.id
-    LEFT JOIN chapters ch ON s.chapter_id=ch.id
-    LEFT JOIN sports sp ON s.sport_id=sp.id
-    LEFT JOIN coaches c ON s.coach_id=c.id
-    WHERE 1=1
-  `;
   const args = [];
-  if (req.query.session_id) { sql += ' AND p.session_id=?'; args.push(req.query.session_id); }
-  sql += ' ORDER BY p.created_at DESC';
+  let sql;
+  if (req.query.volunteer_log_id) {
+    sql = 'SELECT p.* FROM participants p WHERE p.volunteer_log_id=? ORDER BY p.created_at DESC';
+    args.push(req.query.volunteer_log_id);
+  } else {
+    sql = `
+      SELECT p.*, s.session_date, s.location, ch.name AS chapter, sp.name AS sport, c.name AS coach
+      FROM participants p
+      LEFT JOIN sessions s ON p.session_id=s.id
+      LEFT JOIN chapters ch ON s.chapter_id=ch.id
+      LEFT JOIN sports sp ON s.sport_id=sp.id
+      LEFT JOIN coaches c ON s.coach_id=c.id
+      WHERE 1=1
+    `;
+    if (req.query.session_id) { sql += ' AND p.session_id=?'; args.push(req.query.session_id); }
+    sql += ' ORDER BY p.created_at DESC';
+  }
   res.json(all(sql, args));
 });
 
 app.post('/api/participants', (req, res) => {
-  const { session_id, name, parent_name, parent_contact } = req.body;
-  if (!session_id || !name) return res.status(400).json({ error: 'session_id and name required' });
-  const r = run('INSERT INTO participants (session_id,name,parent_name,parent_contact) VALUES (?,?,?,?)',
-    [session_id, name, parent_name||null, parent_contact||null]);
+  const { session_id, volunteer_log_id, name, parent_name, parent_contact } = req.body;
+  if (!name) return res.status(400).json({ error: 'name required' });
+  if (!session_id && !volunteer_log_id) return res.status(400).json({ error: 'session_id or volunteer_log_id required' });
+  const r = run(
+    'INSERT INTO participants (session_id,volunteer_log_id,name,parent_name,parent_contact) VALUES (?,?,?,?,?)',
+    [session_id||null, volunteer_log_id||null, name, parent_name||null, parent_contact||null]
+  );
   res.json({ id: r.lastInsertRowid });
 });
 

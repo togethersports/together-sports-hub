@@ -239,6 +239,13 @@
             <textarea id="v-desc" placeholder="What did you do? Who did you help? Any outcomes worth noting?"></textarea>
           </div>
         </div>
+
+        <hr class="divider" />
+        <div class="section-label">Participants (optional)</div>
+        <div class="participant-list" id="v-participant-list"></div>
+        <button type="button" class="add-participant-btn" id="v-add-participant-btn">+ Add Participant</button>
+
+        <br />
         <button type="submit" class="submit-btn" id="v-submit">Log Activity</button>
       </form>
     </div>
@@ -582,25 +589,62 @@ document.getElementById('session-form').addEventListener('submit', async e => {
   finally { btn.disabled = false; btn.textContent = 'Submit Session'; }
 });
 
+// ── Volunteer participants ────────────────────────────────────────────────────
+let vParticipants = [];
+
+function renderVParticipants() {
+  const list = document.getElementById('v-participant-list');
+  list.innerHTML = '';
+  vParticipants.forEach((p, i) => {
+    const row = document.createElement('div');
+    row.className = 'participant-row';
+    row.innerHTML = `
+      <div class="field"><label>Name</label><input type="text" placeholder="First name" value="${escHtml(p.name)}" data-i="${i}" data-f="name" /></div>
+      <div class="field"><label>Parent / Guardian</label><input type="text" placeholder="Parent name" value="${escHtml(p.parent_name)}" data-i="${i}" data-f="parent_name" /></div>
+      <div class="field"><label>Parent Contact</label><input type="text" placeholder="Email or phone" value="${escHtml(p.parent_contact)}" data-i="${i}" data-f="parent_contact" /></div>
+      ${vParticipants.length > 1 ? `<button type="button" class="remove-btn" data-i="${i}">Remove</button>` : '<div></div>'}
+    `;
+    list.appendChild(row);
+  });
+  list.querySelectorAll('input[data-i]').forEach(inp => {
+    inp.addEventListener('input', e => { vParticipants[+e.target.dataset.i][e.target.dataset.f] = e.target.value; });
+  });
+  list.querySelectorAll('.remove-btn').forEach(btn => {
+    btn.addEventListener('click', e => { vParticipants.splice(+e.target.dataset.i, 1); renderVParticipants(); });
+  });
+}
+
+document.getElementById('v-add-participant-btn').addEventListener('click', () => {
+  vParticipants.push({ name: '', parent_name: '', parent_contact: '' });
+  renderVParticipants();
+});
+
 // ── Volunteer form ────────────────────────────────────────────────────────────
 document.getElementById('volunteer-form').addEventListener('submit', async e => {
   e.preventDefault();
   const btn = document.getElementById('v-submit');
   btn.disabled = true; btn.textContent = 'Logging…';
+  const filledP = vParticipants.filter(p => p.name.trim());
   const payload = {
     coach_id: currentCoach.id,
     log_date: document.getElementById('v-date').value,
     activity_type: document.getElementById('v-type').value,
     description: document.getElementById('v-desc').value,
-    people_helped: +document.getElementById('v-people').value || 0,
+    people_helped: +document.getElementById('v-people').value || filledP.length || 0,
     hours: +document.getElementById('v-hours').value || 0,
     chapter_id: document.getElementById('v-chapter').value || null,
   };
   try {
     const res = await fetch('/api/volunteer-logs', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     if (!res.ok) throw new Error(await res.text());
+    const { id: logId } = await res.json();
+    for (const p of filledP) {
+      await fetch('/api/participants', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ volunteer_log_id: logId, ...p }) });
+    }
     toast('Activity logged!');
     e.target.reset();
+    vParticipants = [];
+    renderVParticipants();
     document.getElementById('v-date').value = new Date().toISOString().slice(0, 10);
     if (currentCoach?.chapter_id) document.getElementById('v-chapter').value = String(currentCoach.chapter_id);
   } catch (err) { toast('Error: ' + err.message, 'error'); }
