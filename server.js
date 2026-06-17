@@ -237,7 +237,10 @@ app.delete('/api/coaches/:id', requireAdmin, (req, res) => {
 });
 
 // ── Sessions ──────────────────────────────────────────────────────────────────
-app.get('/api/sessions', requireAdmin, (req, res) => {
+app.get('/api/sessions', (req, res) => {
+  const isAdmin = (req.headers['x-admin-token'] || req.query.token) === ADMIN_PASSWORD;
+  // Coaches can only fetch their own sessions; admin can fetch all
+  if (!isAdmin && !req.query.coach_id) return res.status(401).json({ error: 'Unauthorized' });
   let sql = `
     SELECT s.*, c.name AS coach, ch.name AS chapter, sp.name AS sport
     FROM sessions s
