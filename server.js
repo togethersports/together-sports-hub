@@ -109,8 +109,17 @@ db.exec(`
   );
 `);
 
-// Migrate existing DBs
-try { run('ALTER TABLE participants ADD COLUMN volunteer_log_id INTEGER REFERENCES volunteer_logs(id)'); } catch {}
+// Migrate existing DBs — each guarded individually so an old copy of
+// data/together.db (gitignored, so it survives checkouts/pulls untouched)
+// picks up columns added after it was first created.
+const migrations = [
+  'ALTER TABLE participants ADD COLUMN volunteer_log_id INTEGER REFERENCES volunteer_logs(id)',
+  'ALTER TABLE coaches ADD COLUMN access_code TEXT',
+  'ALTER TABLE testimonials ADD COLUMN approved INTEGER NOT NULL DEFAULT 0',
+  'ALTER TABLE testimonials ADD COLUMN public INTEGER NOT NULL DEFAULT 0',
+  'ALTER TABLE photos ADD COLUMN approved INTEGER NOT NULL DEFAULT 1',
+];
+for (const sql of migrations) { try { run(sql); } catch {} }
 
 const seeded = get("SELECT value FROM settings WHERE key='seeded'");
 if (!seeded) {
