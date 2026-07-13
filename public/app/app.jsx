@@ -2,7 +2,7 @@
 
 (() => {
   const TS = window.TS;
-  const { useState, useEffect, useCallback, useMemo, useRef } = React;
+  const { useState, useEffect, useCallback, useMemo } = React;
   const { ToastProvider, useToast, Loading } = TS.ui;
   const { Sidebar, Topbar, Login } = TS.shell;
 
@@ -18,7 +18,6 @@
     const [paletteOpen, setPaletteOpen] = useState(false);
     const [data, setData] = useState(EMPTY);
     const [loaded, setLoaded] = useState(false);
-    const galleryUpload = useRef(false);
 
     const setView = useCallback((view, param = null) => {
       setRoute({ view, param });
@@ -108,7 +107,6 @@
           data.volunteerLogs.map((v) => [v.log_date, v.coach, v.activity_type, v.people_helped, v.hours, v.chapter, v.description]));
         toast('Volunteer logs CSV downloaded');
       } else if (action === 'upload-photo') {
-        galleryUpload.current = true;
         setView('gallery', { upload: true });
       } else if (action === 'open-coach') {
         setView('roster', { coachId: arg.id });
