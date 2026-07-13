@@ -18,6 +18,7 @@ no build tooling.
 |---|---|---|
 | Admin dashboard | `http://localhost:3000/admin.html` (also `/`) | admin password |
 | Coach portal | `http://localhost:3000/coach.html` | per-coach access code |
+| Outreach HQ (per coach, AI-assisted) | `http://localhost:3000/outreach.html` | per-coach access code |
 | Public impact page | `http://localhost:3000/impact.html` | open |
 | Testimonial form | `http://localhost:3000/submit.html` | open |
 
@@ -54,6 +55,33 @@ app/app.jsx       root: auth gate, data store, routing
 
 Files share code through `window.TS`; the design system lives inline in
 `admin.html` with additions in `public/outreach.css`.
+
+## Outreach HQ (AI-assisted, per coach)
+
+Every coach gets a chapter-scoped outreach workspace at `/outreach.html`
+(they sign in with the same access code as the coach portal):
+
+- **Pipeline** — partners, venues, schools, donors, volunteers and families,
+  with stages, touch history, and next-action dates that drive a computed
+  follow-up list. Contacts are shared within a chapter so co-coaches
+  collaborate; chapters never see each other's pipelines.
+- **Events** — clinics, tournaments and fundraisers with goals and plans.
+- **AI drafting desk** — Claude drafts intro emails, follow-ups (aware of the
+  touch history), event plans and weekly priorities, grounded in the
+  chapter's real session numbers. **Drafts only**: the system has no email
+  credentials and no send capability by design — coaches copy drafts into
+  their own email or messages app.
+
+Turn the AI on by setting one environment variable on the server:
+
+```bash
+ANTHROPIC_API_KEY='sk-ant-…' npm start
+```
+
+Get a key at https://platform.claude.com. Without the key everything else
+works and the AI buttons explain what's missing. Optional:
+`ANTHROPIC_MODEL` overrides the default model (`claude-opus-4-8`). AI usage
+is rate-limited to 25 drafts per coach per hour.
 
 ## Deploying
 

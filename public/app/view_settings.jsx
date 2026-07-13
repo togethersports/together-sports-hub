@@ -143,6 +143,9 @@
               <a href="/coach.html" target="_blank" rel="noopener">
                 <Ic name="whistle" size={16} /> Coach portal <span>needs access code</span>
               </a>
+              <a href="/outreach.html" target="_blank" rel="noopener">
+                <Ic name="sparkle" size={16} /> Outreach HQ <span>AI-assisted, per coach</span>
+              </a>
               <a href="/submit.html" target="_blank" rel="noopener">
                 <Ic name="quote" size={16} /> Testimonial form <span>for families</span>
               </a>

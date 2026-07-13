@@ -1,0 +1,930 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Together Sports · Outreach HQ</title>
+<link rel="icon" href="assets/ts-mark.png" />
+<link rel="stylesheet" href="vendor/fonts.css" />
+<style>
+  :root {
+    --display: "League Spartan", system-ui, sans-serif;
+    --body: "Montserrat", system-ui, sans-serif;
+    --bg: #F6F5EC; --surface: #FFFFFF; --surface-2: #EFEDDF;
+    --border: #E7E5D4; --text: #20233C; --muted: #7B7E6C;
+    --ink: #0A0D28;
+    --accent: #285400; --accent-deep: #1B3A00; --accent-soft: #E9F1D9; --accent-ink: #FFFFFF;
+    --peach: #F6A15C; --peach-soft: #FCEBDA;
+    --lime: #87CB4A; --lime-soft: #EBF6DF;
+    --danger: #B3261E; --danger-soft: #F7E4E2;
+    --radius: 20px; --radius-sm: 13px;
+    --shadow-sm: 0 1px 2px rgba(10,13,40,.04);
+    --shadow: 0 10px 30px rgba(10,13,40,.08);
+    --shadow-lg: 0 28px 70px rgba(10,13,40,.2);
+    --hero: linear-gradient(150deg, #282C50 0%, #0A0D28 92%);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+  body { font-family: var(--body); color: var(--text); background: var(--bg); -webkit-font-smoothing: antialiased; }
+  button { font-family: inherit; }
+  a { color: var(--accent); }
+  button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid var(--peach); outline-offset: 2px; }
+  .ic { flex: 0 0 auto; }
+
+  /* topbar */
+  .ox-top { background: var(--hero); color: #EDEEF6; padding: 14px 22px; display: flex; align-items: center; gap: 14px; position: sticky; top: 0; z-index: 40; }
+  .ox-logo { width: 38px; height: 38px; object-fit: contain; background: #fff; border-radius: 11px; padding: 4px; }
+  .ox-brand b { font-family: var(--display); font-weight: 700; font-size: 15px; display: block; color: #fff; line-height: 1.05; }
+  .ox-brand span { font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: #9096BB; font-weight: 600; }
+  .ox-chapchip { display: inline-flex; align-items: center; gap: 7px; background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.12); border-radius: 99px; padding: 7px 14px; font-size: 12.5px; font-weight: 600; color: #fff; }
+  .ox-topright { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+  .ox-toplink { color: #9096BB; text-decoration: none; font-size: 12.5px; font-weight: 600; }
+  .ox-toplink:hover { color: #fff; }
+  .ox-user { display: flex; align-items: center; gap: 9px; font-size: 13px; font-weight: 600; color: #fff; }
+
+  .ox-wrap { max-width: 1160px; margin: 0 auto; padding: 26px 22px 80px; }
+  .ox-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; flex-wrap: wrap; margin-bottom: 20px; }
+  .ox-eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: 11.5px; font-weight: 600; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; }
+  .ox-eyebrow .ic { color: var(--accent); }
+  h1 { font-family: var(--display); font-weight: 800; font-size: 30px; letter-spacing: -.8px; margin: 10px 0 6px; line-height: 1.02; color: var(--ink); }
+  .ox-lede { color: var(--muted); font-size: 13.5px; max-width: 62ch; margin: 0; line-height: 1.5; }
+
+  /* seg tabs */
+  .seg { display: inline-flex; background: var(--surface-2); border-radius: 99px; padding: 3px; gap: 2px; }
+  .seg button { background: none; border: 0; padding: 9px 18px; border-radius: 99px; font-family: var(--body); font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer; transition: background .14s, color .14s; }
+  .seg button.on { background: var(--surface); color: var(--accent); box-shadow: var(--shadow-sm); }
+
+  /* cards */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); padding: 20px 22px; }
+  .cardhead { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding-bottom: 12px; }
+  .cardtitle { font-family: var(--display); font-weight: 700; font-size: 16.5px; letter-spacing: -.3px; margin: 0; }
+  .cardsub { font-size: 12px; color: var(--muted); margin: 3px 0 0; }
+  .grid2 { display: grid; grid-template-columns: 1.4fr 1fr; gap: 18px; align-items: start; }
+  .stack { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+  @media (max-width: 900px) { .grid2 { grid-template-columns: 1fr; } }
+
+  /* stats */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
+  @media (max-width: 800px) { .stats { grid-template-columns: 1fr 1fr; } }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px 14px; }
+  .stat b { font-family: var(--display); font-weight: 800; font-size: 34px; letter-spacing: -1.2px; line-height: 1; color: var(--ink); display: block; }
+  .stat span { font-size: 12px; font-weight: 600; color: var(--muted); }
+  .stat.hero { background: var(--hero); border-color: transparent; }
+  .stat.hero b { color: #fff; } .stat.hero span { color: rgba(255,255,255,.72); }
+
+  /* buttons */
+  .btn { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-family: var(--body); font-weight: 600; font-size: 13px; padding: 11px 18px; border-radius: 99px; border: 1px solid transparent; white-space: nowrap; transition: transform .12s, background .14s, border-color .14s; }
+  .btn:hover { transform: translateY(-1px); }
+  .btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+  .btn.primary { background: var(--accent); color: #fff; box-shadow: 0 6px 18px rgba(40,84,0,.22); }
+  .btn.primary:hover { background: var(--accent-deep); }
+  .btn.ghost { background: var(--surface); border-color: var(--border); color: var(--text); }
+  .btn.peach { background: var(--peach); color: var(--ink); }
+  .btn.danger-ghost { background: var(--surface); border-color: var(--border); color: var(--danger); }
+  .btn.sm { padding: 8px 13px; font-size: 12px; }
+  .iconbtn { width: 34px; height: 34px; border-radius: 99px; display: inline-grid; place-items: center; background: var(--surface); border: 1px solid var(--border); color: var(--muted); cursor: pointer; }
+  .iconbtn:hover { color: var(--accent); }
+
+  /* fields */
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label { font-size: 12.5px; font-weight: 600; }
+  .field .hint { font-size: 11.5px; color: var(--muted); }
+  input.in, select.in, textarea.in { font-family: var(--body); font-size: 13.5px; color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 10px 13px; outline: none; width: 100%; transition: border-color .14s, box-shadow .14s; }
+  input.in:focus, select.in:focus, textarea.in:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  textarea.in { resize: vertical; line-height: 1.5; }
+  .formgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .formgrid .full { grid-column: 1 / -1; }
+  @media (max-width: 640px) { .formgrid { grid-template-columns: 1fr; } }
+
+  /* tags + rows */
+  .tag { display: inline-flex; align-items: center; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 99px; white-space: nowrap; }
+  .avatar { border-radius: 99px; display: inline-grid; place-items: center; font-family: var(--display); font-weight: 700; color: #fff; flex: 0 0 auto; }
+  .rowlist { display: flex; flex-direction: column; }
+  .rowitem { display: flex; align-items: center; gap: 12px; padding: 12px 4px; border-top: 1px solid var(--border); cursor: pointer; border-radius: 10px; }
+  .rowitem:hover { background: var(--surface-2); }
+  .rowmain { flex: 1; min-width: 0; }
+  .rowname { font-weight: 600; font-size: 13.5px; }
+  .rowsub { font-size: 11.5px; color: var(--muted); margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rowside { text-align: right; font-size: 11.5px; color: var(--muted); flex: 0 0 auto; }
+
+  /* filter bar */
+  .filterbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+  .search { display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 99px; padding: 9px 14px; color: var(--muted); flex: 1 1 220px; max-width: 320px; }
+  .search input { border: 0; outline: 0; background: transparent; flex: 1; font-family: var(--body); font-size: 13px; color: var(--text); min-width: 0; }
+  .chip { display: inline-flex; align-items: center; gap: 5px; padding: 7px 13px; border-radius: 99px; border: 1px solid var(--border); background: var(--surface); font-size: 12px; font-weight: 600; color: var(--muted); cursor: pointer; }
+  .chip.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .meta { margin-left: auto; font-size: 12px; color: var(--muted); }
+
+  /* contact / event grid */
+  .cardsgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .ccard { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow-sm); cursor: pointer; transition: transform .14s, box-shadow .14s; display: flex; flex-direction: column; gap: 12px; text-align: left; font: inherit; }
+  .ccard:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+  .ccard-top { display: flex; align-items: center; gap: 11px; }
+  .ccard-name { font-family: var(--display); font-weight: 700; font-size: 15px; }
+  .ccard-org { font-size: 12px; color: var(--muted); margin-top: 1px; }
+  .ccard-foot { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 11px; font-size: 11.5px; color: var(--muted); }
+  .due { color: #B3261E; font-weight: 700; }
+  .duesoon { color: #8A4A12; font-weight: 700; }
+
+  /* modal */
+  .backdrop { position: fixed; inset: 0; background: rgba(10,13,40,.44); backdrop-filter: blur(4px); display: flex; align-items: flex-start; justify-content: center; padding: 5vh 16px; z-index: 100; overflow-y: auto; }
+  .modal { background: var(--surface); border-radius: 22px; box-shadow: var(--shadow-lg); width: 100%; max-width: 560px; margin-bottom: 5vh; }
+  .modal.wide { max-width: 720px; }
+  .modal-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; padding: 20px 22px 14px; border-bottom: 1px solid var(--border); }
+  .modal-title { font-family: var(--display); font-weight: 700; font-size: 18px; letter-spacing: -.3px; margin: 0; }
+  .modal-sub { font-size: 12px; color: var(--muted); margin: 3px 0 0; }
+  .modal-body { padding: 20px 22px; }
+  .modal-foot { display: flex; justify-content: flex-end; gap: 10px; padding: 14px 22px 18px; border-top: 1px solid var(--border); flex-wrap: wrap; }
+
+  /* AI panel */
+  .ai { border: 1.5px dashed color-mix(in oklab, var(--accent) 40%, var(--border)); border-radius: 16px; padding: 16px; background: color-mix(in oklab, var(--accent-soft) 40%, var(--surface)); }
+  .ai-head { display: flex; align-items: center; gap: 9px; font-family: var(--display); font-weight: 700; font-size: 14px; color: var(--accent-deep); margin-bottom: 10px; }
+  .ai-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .ai-out { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-top: 12px; font-size: 13px; line-height: 1.65; white-space: pre-wrap; max-height: 380px; overflow-y: auto; }
+  .ai-note { font-size: 11px; color: var(--muted); margin-top: 9px; }
+  .spin { width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 99px; display: inline-block; animation: sp .7s linear infinite; }
+  @keyframes sp { to { transform: rotate(360deg); } }
+
+  /* touches timeline */
+  .touch { display: flex; gap: 11px; padding: 10px 0; border-top: 1px solid var(--border); font-size: 12.5px; }
+  .touch-ic { width: 30px; height: 30px; border-radius: 10px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); flex: 0 0 auto; }
+  .touch b { font-size: 12.5px; }
+  .touch .when { color: var(--muted); font-size: 11px; }
+
+  /* toasts */
+  .toasts { position: fixed; bottom: 22px; right: 22px; display: flex; flex-direction: column; gap: 10px; z-index: 300; }
+  .toast { display: flex; align-items: center; gap: 10px; background: var(--ink); color: #fff; padding: 12px 16px; border-radius: 14px; box-shadow: var(--shadow-lg); font-size: 13px; font-weight: 500; animation: tin .25s ease; max-width: 360px; }
+  .toast.err .ic { color: #FF9B8A; } .toast .ic { color: var(--lime); }
+  @keyframes tin { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: none; } }
+
+  .empty { display: flex; flex-direction: column; align-items: center; gap: 9px; padding: 28px; text-align: center; }
+  .empty .eic { width: 48px; height: 48px; border-radius: 15px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); }
+  .empty b { font-family: var(--display); font-size: 15px; }
+  .empty p { font-size: 12.5px; color: var(--muted); max-width: 40ch; margin: 0; }
+
+  /* login */
+  .login { min-height: 100vh; display: grid; place-items: center; padding: 24px; background:
+    radial-gradient(1200px 500px at 80% -10%, rgba(246,161,92,.14), transparent),
+    radial-gradient(900px 500px at -10% 110%, rgba(135,203,74,.14), transparent), var(--bg); }
+  .login-card { width: 100%; max-width: 400px; background: var(--surface); border: 1px solid var(--border); border-radius: 24px; box-shadow: var(--shadow); padding: 34px 32px; display: flex; flex-direction: column; gap: 16px; }
+  .login-brand { display: flex; align-items: center; gap: 12px; }
+  .login-brand img { width: 44px; height: 44px; }
+  .login-brand b { font-family: var(--display); font-size: 16px; display: block; }
+  .login-brand span { font-size: 10px; letter-spacing: .15em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+  .login h2 { font-family: var(--display); font-weight: 800; font-size: 23px; margin: 4px 0 0; letter-spacing: -.5px; }
+  .login .err { font-size: 12px; color: var(--danger); font-weight: 600; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="vendor/react.js"></script>
+<script src="vendor/react-dom.js"></script>
+<script src="vendor/babel.min.js"></script>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useMemo, useCallback, createContext, useContext } = React;
+
+// ── helpers ─────────────────────────────────────────────
+const CODE_KEY = 'ts_outreach_code';
+const COACH_KEY = 'ts_outreach_coach';
+const getCode = () => localStorage.getItem(CODE_KEY) || '';
+
+async function api(url, opts = {}) {
+  const headers = { 'x-coach-code': getCode(), ...(opts.headers || {}) };
+  if (opts.body) { headers['content-type'] = 'application/json'; opts = { ...opts, body: JSON.stringify(opts.body) }; }
+  const res = await fetch(url, { ...opts, headers });
+  let data = null;
+  try { data = await res.json(); } catch {}
+  if (!res.ok) { const e = new Error(data?.error || `Request failed (${res.status})`); e.status = res.status; throw e; }
+  return data;
+}
+
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const parseD = (s) => { if (!s) return null; const [y,m,d] = String(s).slice(0,10).split('-').map(Number); return (y&&m&&d) ? new Date(y,m-1,d) : null; };
+const fmtD = (s) => { const d = parseD(s); return d ? `${MONTHS[d.getMonth()]} ${d.getDate()}` : '—'; };
+const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
+const plusDays = (n) => { const d = new Date(); d.setDate(d.getDate()+n); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
+const initials = (n) => String(n||'?').trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase();
+const hash = (s) => { let h=0; for (let i=0;i<String(s).length;i++) h=(h*31+String(s).charCodeAt(i))|0; return Math.abs(h); };
+const AV = ['#285400','#8A4A12','#3A3F63','#1B5E52','#7A2E52','#4E4A14'];
+const avColor = (n) => AV[hash(n||'?')%AV.length];
+
+const TRACKS = ['Partner','Venue','School','Donor','Volunteer','Family'];
+const STAGES = ['New','Contacted','In conversation','Committed','Not now'];
+const STAGE_STYLE = {
+  'New':             { bg:'var(--surface-2)', fg:'var(--muted)' },
+  'Contacted':       { bg:'var(--peach-soft)', fg:'#8A4A12' },
+  'In conversation': { bg:'var(--accent-soft)', fg:'var(--accent-deep)' },
+  'Committed':       { bg:'var(--lime-soft)', fg:'#3E6B12' },
+  'Not now':         { bg:'#E4E6F2', fg:'#3A3F63' },
+};
+const EVENT_STATUS = ['Idea','Planning','Scheduled','Done'];
+const TOUCH_TYPES = ['Email','Call','Text','Meeting','Note'];
+
+const P = (...ds) => ds.map((d,i) => <path key={i} d={d} />);
+const ICONS = {
+  spark: P('M12 3l1.9 5.6 5.6 1.9-5.6 1.9L12 18l-1.9-5.6L4.5 10.5l5.6-1.9z','M19 15.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z'),
+  users: [<circle key="c" cx="9.5" cy="7.5" r="3.7"/>, ...P('M2.5 20.5v-1.4a5.6 5.6 0 0 1 5.6-5.6h2.8a5.6 5.6 0 0 1 5.6 5.6v1.4','M15.7 4.1a3.7 3.7 0 0 1 0 6.9','M18.5 13.7a5.6 5.6 0 0 1 3 5v1.8')],
+  cal: [<rect key="r" x="3" y="4" width="18" height="17" rx="2.5"/>, ...P('M8 2v4','M16 2v4','M3 9.5h18')],
+  pin: P('M20 10.5c0 6-8 11.5-8 11.5S4 16.5 4 10.5a8 8 0 0 1 16 0z','M12 13.3a2.8 2.8 0 1 0 0-5.6 2.8 2.8 0 0 0 0 5.6z'),
+  mail: [<rect key="r" x="2.5" y="4.5" width="19" height="15" rx="2.5"/>, ...P('M21.5 7.5 12 13.5 2.5 7.5')],
+  phone: P('M21.5 16.9v2.6a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.4 19.4 0 0 1-6-6A19.8 19.8 0 0 1 1.6 3.8a2 2 0 0 1 2-2.2h2.6a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L7.3 9.4a16 16 0 0 0 6 6l1.2-1.1a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z'),
+  plus: P('M12 5v14','M5 12h14'),
+  x: P('M18 6 6 18','M6 6l12 12'),
+  check: P('M20 6.5 9.5 17 4 11.5'),
+  copy: [<rect key="r" x="9" y="9" width="12.5" height="12.5" rx="2"/>, ...P('M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1')],
+  edit: P('M11 4.5H5a2 2 0 0 0-2 2V19a2 2 0 0 0 2 2h12.5a2 2 0 0 0 2-2v-6','M18.4 2.6a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4z'),
+  trash: P('M3.5 6.5h17','M8.5 6.5v-2a1.5 1.5 0 0 1 1.5-1.5h4a1.5 1.5 0 0 1 1.5 1.5v2','M19 6.5V19a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6.5','M10 11v6','M14 11v6'),
+  search: [<circle key="c" cx="11" cy="11" r="7.5"/>, ...P('M21 21l-4.7-4.7')],
+  heart: P('M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8L12 21.2l8.8-8.8a5.5 5.5 0 0 0 0-7.8z'),
+  alert: P('M10.3 3.9 1.9 18a2 2 0 0 0 1.7 3h16.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z','M12 9.5v4','M12 17.2h.01'),
+  whistle: [<circle key="c" cx="8.5" cy="14.5" r="5.5"/>, ...P('M12.5 10.5 21 5.5v4l-6.2 2.4','M8.5 12v2.5')],
+  clock: [<circle key="c" cx="12" cy="12" r="9"/>, ...P('M12 6.5V12l3.5 2')],
+  note: P('M21 15a2 2 0 0 1-2 2H7.5L3 21.5V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z'),
+  logout: P('M9 21H5.5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2H9','M16 17l5-5-5-5','M21 12H9'),
+  arrow: P('M4.5 12h15','M13 5.5l6.5 6.5-6.5 6.5'),
+  globe: [<circle key="c" cx="12" cy="12" r="9"/>, ...P('M3 12h18','M12 3a14.5 14.5 0 0 1 3.8 9 14.5 14.5 0 0 1-3.8 9 14.5 14.5 0 0 1-3.8-9A14.5 14.5 0 0 1 12 3z')],
+};
+const Ic = ({ name, size = 16 }) => (
+  <svg className="ic" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
+       strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{ICONS[name] || ICONS.spark}</svg>
+);
+
+// ── toasts ──────────────────────────────────────────────
+const ToastCtx = createContext(() => {});
+let tid = 0;
+const ToastProvider = ({ children }) => {
+  const [ts, setTs] = useState([]);
+  const push = useCallback((msg, err) => {
+    const id = ++tid;
+    setTs((x) => [...x, { id, msg, err }]);
+    setTimeout(() => setTs((x) => x.filter((t) => t.id !== id)), 4200);
+  }, []);
+  return (
+    <ToastCtx.Provider value={push}>
+      {children}
+      <div className="toasts">{ts.map((t) => (
+        <div key={t.id} className={`toast${t.err ? ' err' : ''}`}><Ic name={t.err ? 'alert' : 'check'} size={15} />{t.msg}</div>
+      ))}</div>
+    </ToastCtx.Provider>
+  );
+};
+const useToast = () => useContext(ToastCtx);
+
+const copyText = async (text, toast) => {
+  try { await navigator.clipboard.writeText(text); toast('Copied — paste it into your email or messages app'); }
+  catch {
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); toast('Copied — paste it into your email or messages app'); }
+    catch { toast('Couldn’t copy automatically — select the text manually', true); }
+    ta.remove();
+  }
+};
+
+// ── shared bits ─────────────────────────────────────────
+const Tag = ({ style, children }) => <span className="tag" style={{ background: style.bg, color: style.fg }}>{children}</span>;
+const StageTag = ({ stage }) => <Tag style={STAGE_STYLE[stage] || STAGE_STYLE['New']}>{stage}</Tag>;
+
+const Modal = ({ title, sub, wide, onClose, children, foot }) => {
+  useEffect(() => {
+    const h = (e) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
+  }, [onClose]);
+  return (
+    <div className="backdrop" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className={`modal${wide ? ' wide' : ''}`} role="dialog" aria-modal="true">
+        <div className="modal-head">
+          <div><h3 className="modal-title">{title}</h3>{sub && <p className="modal-sub">{sub}</p>}</div>
+          <button className="iconbtn" onClick={onClose} aria-label="Close"><Ic name="x" size={15} /></button>
+        </div>
+        <div className="modal-body">{children}</div>
+        {foot && <div className="modal-foot">{foot}</div>}
+      </div>
+    </div>
+  );
+};
+
+const Empty = ({ icon = 'spark', title, body, action }) => (
+  <div className="empty"><span className="eic"><Ic name={icon} size={20} /></span><b>{title}</b>{body && <p>{body}</p>}{action}</div>
+);
+
+// AI panel: fires /api/assist, shows draft with copy. Drafts only — this app
+// cannot send anything, by design.
+const AiPanel = ({ title, actions, note }) => {
+  const toast = useToast();
+  const [busy, setBusy] = useState(false);
+  const [out, setOut] = useState('');
+  const [instructions, setInstructions] = useState('');
+
+  const run = async (body) => {
+    setBusy(true); setOut('');
+    try {
+      const r = await api('/api/assist', { method: 'POST', body: { ...body, instructions: instructions || undefined } });
+      setOut(r.text);
+    } catch (e) { toast(e.message, true); }
+    finally { setBusy(false); }
+  };
+
+  return (
+    <div className="ai">
+      <div className="ai-head"><Ic name="spark" size={16} />{title}</div>
+      <div className="ai-actions">
+        {actions.map((a) => (
+          <button key={a.label} className="btn primary sm" disabled={busy} onClick={() => run(a.body)}>
+            {busy ? <span className="spin" /> : <Ic name="spark" size={13} />}{a.label}
+          </button>
+        ))}
+        <input className="in" style={{ flex: '1 1 160px', minWidth: 140, padding: '8px 12px', fontSize: 12.5 }}
+               placeholder="Optional: tone, details, language…" value={instructions}
+               onChange={(e) => setInstructions(e.target.value)} />
+      </div>
+      {out && (
+        <>
+          <div className="ai-out">{out}</div>
+          <div style={{ display: 'flex', gap: 8, marginTop: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+            <button className="btn ghost sm" onClick={() => copyText(out, toast)}><Ic name="copy" size={13} /> Copy draft</button>
+            {note && note.onSave && <button className="btn ghost sm" onClick={() => note.onSave(out)}><Ic name="check" size={13} /> {note.saveLabel}</button>}
+          </div>
+        </>
+      )}
+      <div className="ai-note">AI writes drafts only — nothing is ever sent automatically. You copy it, tweak it, and send it yourself.</div>
+    </div>
+  );
+};
+
+// ── contact form + detail ───────────────────────────────
+const ContactForm = ({ contact, onClose, onSaved }) => {
+  const toast = useToast();
+  const isNew = !contact.id;
+  const [f, setF] = useState({
+    name: contact.name || '', organization: contact.organization || '', role: contact.role || '',
+    track: contact.track || 'Partner', email: contact.email || '', phone: contact.phone || '',
+    stage: contact.stage || 'New', notes: contact.notes || '', next_action: contact.next_action || '',
+  });
+  const [busy, setBusy] = useState(false);
+  const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
+
+  const save = async () => {
+    if (!f.name.trim()) { toast('A name is required', true); return; }
+    setBusy(true);
+    try {
+      if (isNew) await api('/api/outreach/contacts', { method: 'POST', body: f });
+      else await api(`/api/outreach/contacts/${contact.id}`, { method: 'PUT', body: f });
+      toast(isNew ? `${f.name.trim()} added to your pipeline` : 'Contact updated');
+      onSaved(); onClose();
+    } catch (e) { toast(e.message, true); }
+    finally { setBusy(false); }
+  };
+
+  return (
+    <Modal title={isNew ? 'Add a contact' : `Edit ${contact.name}`} sub="Partners, venues, donors, volunteers, or families you’re reaching out to." onClose={onClose}
+      foot={<><button className="btn ghost" onClick={onClose}>Cancel</button>
+        <button className="btn primary" disabled={busy} onClick={save}>{busy ? 'Saving…' : isNew ? 'Add contact' : 'Save changes'}</button></>}>
+      <div className="formgrid">
+        <div className="field"><label>Name *</label><input className="in" autoFocus={isNew} value={f.name} onChange={set('name')} placeholder="e.g. Dana Whitfield" /></div>
+        <div className="field"><label>Organization</label><input className="in" value={f.organization} onChange={set('organization')} placeholder="e.g. PS 84 PTA" /></div>
+        <div className="field"><label>Their role</label><input className="in" value={f.role} onChange={set('role')} placeholder="e.g. PTA President" /></div>
+        <div className="field"><label>Track</label><select className="in" value={f.track} onChange={set('track')}>{TRACKS.map((t) => <option key={t}>{t}</option>)}</select></div>
+        <div className="field"><label>Email</label><input className="in" type="email" value={f.email} onChange={set('email')} /></div>
+        <div className="field"><label>Phone</label><input className="in" value={f.phone} onChange={set('phone')} /></div>
+        <div className="field"><label>Stage</label><select className="in" value={f.stage} onChange={set('stage')}>{STAGES.map((s) => <option key={s}>{s}</option>)}</select></div>
+        <div className="field"><label>Next action due</label><input className="in" type="date" value={f.next_action || ''} onChange={set('next_action')} /><span className="hint">Drives your follow-up list.</span></div>
+        <div className="field full"><label>Notes</label><textarea className="in" rows="3" value={f.notes} onChange={set('notes')}
+          placeholder="How you met, what they care about, anything that personalizes your outreach…" /></div>
+      </div>
+    </Modal>
+  );
+};
+
+const ContactDetail = ({ contact, onClose, onChanged, onEdit }) => {
+  const toast = useToast();
+  const [touches, setTouches] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [t, setT] = useState({ touch_date: today(), type: 'Email', summary: '', stage: contact.stage, next_action: contact.next_action || '' });
+
+  const loadTouches = useCallback(() => {
+    api(`/api/outreach/touches?contact_id=${contact.id}`).then(setTouches).catch(() => setTouches([]));
+  }, [contact.id]);
+  useEffect(loadTouches, [loadTouches]);
+
+  const logTouch = async () => {
+    try {
+      await api('/api/outreach/touches', { method: 'POST', body: { contact_id: contact.id, ...t, next_action: t.next_action || null } });
+      toast('Logged — pipeline updated');
+      setT({ ...t, summary: '' });
+      loadTouches(); onChanged();
+    } catch (e) { toast(e.message, true); }
+  };
+
+  const del = async () => {
+    try {
+      await api(`/api/outreach/contacts/${contact.id}`, { method: 'DELETE' });
+      toast(`${contact.name} removed`);
+      onChanged(); onClose();
+    } catch (e) { toast(e.message, true); }
+  };
+
+  return (
+    <Modal wide title={contact.name}
+      sub={[contact.role, contact.organization].filter(Boolean).join(' · ') || contact.track}
+      onClose={onClose}
+      foot={<>
+        <button className="btn danger-ghost sm" onClick={() => setConfirmDelete(true)}><Ic name="trash" size={13} /> Remove</button>
+        <button className="btn ghost" onClick={onEdit}><Ic name="edit" size={14} /> Edit details</button>
+      </>}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+          <StageTag stage={contact.stage} />
+          <Tag style={{ bg: 'var(--surface-2)', fg: 'var(--muted)' }}>{contact.track}</Tag>
+          {contact.email && <span style={{ fontSize: 12.5, color: 'var(--muted)', display: 'inline-flex', alignItems: 'center', gap: 5 }}><Ic name="mail" size={13} />{contact.email}</span>}
+          {contact.phone && <span style={{ fontSize: 12.5, color: 'var(--muted)', display: 'inline-flex', alignItems: 'center', gap: 5 }}><Ic name="phone" size={13} />{contact.phone}</span>}
+        </div>
+        {contact.notes && <p style={{ fontSize: 13, color: 'var(--muted)', background: 'var(--surface-2)', borderRadius: 12, padding: '12px 14px', margin: 0, lineHeight: 1.6 }}>{contact.notes}</p>}
+
+        <AiPanel title="AI drafting desk" actions={[
+          { label: 'Draft intro', body: { kind: 'draft-intro', contact_id: contact.id } },
+          { label: 'Draft follow-up', body: { kind: 'draft-followup', contact_id: contact.id } },
+        ]} />
+
+        <div>
+          <div style={{ fontSize: 11, letterSpacing: '.1em', textTransform: 'uppercase', fontWeight: 700, color: 'var(--muted)', marginBottom: 8 }}>
+            Log a touch
+          </div>
+          <div className="formgrid">
+            <div className="field"><label>Date</label><input className="in" type="date" value={t.touch_date} onChange={(e) => setT({ ...t, touch_date: e.target.value })} /></div>
+            <div className="field"><label>Type</label><select className="in" value={t.type} onChange={(e) => setT({ ...t, type: e.target.value })}>{TOUCH_TYPES.map((x) => <option key={x}>{x}</option>)}</select></div>
+            <div className="field"><label>Move to stage</label><select className="in" value={t.stage} onChange={(e) => setT({ ...t, stage: e.target.value })}>{STAGES.map((s) => <option key={s}>{s}</option>)}</select></div>
+            <div className="field"><label>Next action due</label><input className="in" type="date" value={t.next_action || ''} onChange={(e) => setT({ ...t, next_action: e.target.value })} /></div>
+            <div className="field full"><label>What happened?</label>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <input className="in" value={t.summary} placeholder="e.g. Called — she wants a one-pager before the PTA meeting"
+                       onChange={(e) => setT({ ...t, summary: e.target.value })}
+                       onKeyDown={(e) => { if (e.key === 'Enter') logTouch(); }} />
+                <button className="btn primary sm" onClick={logTouch}><Ic name="plus" size={13} /> Log</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div style={{ fontSize: 11, letterSpacing: '.1em', textTransform: 'uppercase', fontWeight: 700, color: 'var(--muted)', marginBottom: 4 }}>
+            History ({touches ? touches.length : '…'})
+          </div>
+          {touches === null && <div style={{ padding: '14px 0', color: 'var(--muted)', fontSize: 13 }}><span className="spin" /> Loading…</div>}
+          {touches && touches.length === 0 && <p style={{ fontSize: 12.5, color: 'var(--muted)' }}>No touches logged yet — the AI intro draft is a good place to start.</p>}
+          {touches && touches.map((x) => (
+            <div className="touch" key={x.id}>
+              <span className="touch-ic"><Ic name={x.type === 'Email' ? 'mail' : x.type === 'Call' ? 'phone' : x.type === 'Meeting' ? 'users' : 'note'} size={14} /></span>
+              <div>
+                <b>{x.type}</b> <span className="when">· {fmtD(x.touch_date)}{x.coach ? ` · ${x.coach}` : ''}</span>
+                <div style={{ fontSize: 12.5, color: 'var(--text)', marginTop: 2 }}>{x.summary || '—'}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      {confirmDelete && (
+        <Modal title={`Remove ${contact.name}?`} onClose={() => setConfirmDelete(false)}
+          foot={<><button className="btn ghost" onClick={() => setConfirmDelete(false)}>Cancel</button>
+            <button className="btn primary" style={{ background: 'var(--danger)' }} onClick={del}>Remove contact</button></>}>
+          <p style={{ fontSize: 13.5, margin: 0, lineHeight: 1.6 }}>This removes the contact and their touch history. It can’t be undone.</p>
+        </Modal>
+      )}
+    </Modal>
+  );
+};
+
+// ── event form + detail ─────────────────────────────────
+const EventForm = ({ event, onClose, onSaved }) => {
+  const toast = useToast();
+  const isNew = !event.id;
+  const [f, setF] = useState({
+    title: event.title || '', event_date: event.event_date || '', location: event.location || '',
+    status: event.status || 'Idea', goal: event.goal || '', notes: event.notes || '',
+  });
+  const [busy, setBusy] = useState(false);
+  const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
+
+  const save = async () => {
+    if (!f.title.trim()) { toast('A title is required', true); return; }
+    setBusy(true);
+    try {
+      if (isNew) await api('/api/outreach/events', { method: 'POST', body: f });
+      else await api(`/api/outreach/events/${event.id}`, { method: 'PUT', body: f });
+      toast(isNew ? 'Event added' : 'Event updated');
+      onSaved(); onClose();
+    } catch (e) { toast(e.message, true); }
+    finally { setBusy(false); }
+  };
+
+  return (
+    <Modal title={isNew ? 'Plan a new event' : `Edit ${event.title}`} onClose={onClose}
+      foot={<><button className="btn ghost" onClick={onClose}>Cancel</button>
+        <button className="btn primary" disabled={busy} onClick={save}>{busy ? 'Saving…' : isNew ? 'Add event' : 'Save changes'}</button></>}>
+      <div className="formgrid">
+        <div className="field full"><label>Title *</label><input className="in" autoFocus={isNew} value={f.title} onChange={set('title')} placeholder="e.g. Fall Kickoff Clinic" /></div>
+        <div className="field"><label>Date</label><input className="in" type="date" value={f.event_date || ''} onChange={set('event_date')} /></div>
+        <div className="field"><label>Status</label><select className="in" value={f.status} onChange={set('status')}>{EVENT_STATUS.map((s) => <option key={s}>{s}</option>)}</select></div>
+        <div className="field full"><label>Location</label><input className="in" value={f.location} onChange={set('location')} placeholder="e.g. McCarren Park courts" /></div>
+        <div className="field full"><label>What does success look like?</label><input className="in" value={f.goal} onChange={set('goal')} placeholder="e.g. 30 kids signed up, 2 new partner orgs" /></div>
+        <div className="field full"><label>Notes / plan so far</label><textarea className="in" rows="4" value={f.notes} onChange={set('notes')} /></div>
+      </div>
+    </Modal>
+  );
+};
+
+const EventDetail = ({ event, onClose, onChanged, onEdit }) => {
+  const toast = useToast();
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  const savePlan = async (text) => {
+    try {
+      const notes = (event.notes ? event.notes + '\n\n' : '') + '— AI plan —\n' + text;
+      await api(`/api/outreach/events/${event.id}`, { method: 'PUT', body: { notes } });
+      toast('Plan saved into the event notes');
+      onChanged();
+    } catch (e) { toast(e.message, true); }
+  };
+
+  const del = async () => {
+    try {
+      await api(`/api/outreach/events/${event.id}`, { method: 'DELETE' });
+      toast('Event deleted'); onChanged(); onClose();
+    } catch (e) { toast(e.message, true); }
+  };
+
+  const st = { Idea: STAGE_STYLE['New'], Planning: STAGE_STYLE['Contacted'], Scheduled: STAGE_STYLE['In conversation'], Done: STAGE_STYLE['Committed'] }[event.status];
+
+  return (
+    <Modal wide title={event.title} sub={[event.event_date ? fmtD(event.event_date) : 'No date yet', event.location].filter(Boolean).join(' · ')} onClose={onClose}
+      foot={<>
+        <button className="btn danger-ghost sm" onClick={() => setConfirmDelete(true)}><Ic name="trash" size={13} /> Delete</button>
+        <button className="btn ghost" onClick={onEdit}><Ic name="edit" size={14} /> Edit event</button>
+      </>}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <Tag style={st}>{event.status}</Tag>
+          {event.goal && <span style={{ fontSize: 12.5, color: 'var(--muted)' }}>Goal: {event.goal}</span>}
+        </div>
+        {event.notes && <div style={{ fontSize: 13, color: 'var(--text)', background: 'var(--surface-2)', borderRadius: 12, padding: '12px 14px', whiteSpace: 'pre-wrap', lineHeight: 1.6, maxHeight: 220, overflowY: 'auto' }}>{event.notes}</div>}
+        <AiPanel title="AI event planner"
+          actions={[{ label: 'Plan this event', body: { kind: 'plan-event', event_id: event.id } }]}
+          note={{ onSave: savePlan, saveLabel: 'Save into notes' }} />
+      </div>
+      {confirmDelete && (
+        <Modal title="Delete this event?" onClose={() => setConfirmDelete(false)}
+          foot={<><button className="btn ghost" onClick={() => setConfirmDelete(false)}>Cancel</button>
+            <button className="btn primary" style={{ background: 'var(--danger)' }} onClick={del}>Delete event</button></>}>
+          <p style={{ fontSize: 13.5, margin: 0 }}>This can’t be undone.</p>
+        </Modal>
+      )}
+    </Modal>
+  );
+};
+
+// ── tabs ────────────────────────────────────────────────
+const WeekTab = ({ contacts, events, openContact }) => {
+  const due = contacts
+    .filter((c) => c.next_action && c.next_action <= plusDays(7) && c.stage !== 'Committed' && c.stage !== 'Not now')
+    .sort((a, b) => (a.next_action < b.next_action ? -1 : 1));
+  const upcoming = events.filter((e) => e.status !== 'Done' && e.event_date && e.event_date >= today()).slice(0, 5);
+
+  return (
+    <div className="grid2">
+      <div className="stack">
+        <section className="card">
+          <div className="cardhead">
+            <div><h2 className="cardtitle">Follow-ups due</h2><p className="cardsub">From the “next action” dates on your contacts — this list is computed, not guessed</p></div>
+          </div>
+          {due.length === 0
+            ? <Empty icon="check" title="Nothing due this week" body="Set a “next action due” date on a contact and it will show up here." />
+            : <div className="rowlist">
+                {due.map((c) => {
+                  const overdue = c.next_action < today();
+                  return (
+                    <div className="rowitem" key={c.id} onClick={() => openContact(c)}>
+                      <span className="avatar" style={{ width: 34, height: 34, fontSize: 12, background: avColor(c.name) }}>{initials(c.name)}</span>
+                      <div className="rowmain">
+                        <div className="rowname">{c.name}{c.organization ? <span style={{ color: 'var(--muted)', fontWeight: 500 }}> · {c.organization}</span> : ''}</div>
+                        <div className="rowsub">{c.track} · {c.stage}{c.last_touch ? ` · last touch ${fmtD(c.last_touch)}` : ' · never contacted'}</div>
+                      </div>
+                      <div className="rowside">
+                        <div className={overdue ? 'due' : 'duesoon'}>{overdue ? 'overdue' : 'due'} {fmtD(c.next_action)}</div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>}
+        </section>
+        <section className="card">
+          <AiPanel title="Plan my week" actions={[{ label: 'Suggest this week’s moves', body: { kind: 'week-plan' } }]} />
+        </section>
+      </div>
+      <div className="stack">
+        <section className="card">
+          <div className="cardhead"><div><h2 className="cardtitle">Coming up</h2><p className="cardsub">Your next events</p></div></div>
+          {upcoming.length === 0
+            ? <Empty icon="cal" title="No events scheduled" body="Add an event on the Events tab and plan it with the AI." />
+            : <div className="rowlist">
+                {upcoming.map((e) => (
+                  <div className="rowitem" key={e.id} style={{ cursor: 'default' }}>
+                    <span className="touch-ic" style={{ width: 34, height: 34 }}><Ic name="cal" size={15} /></span>
+                    <div className="rowmain">
+                      <div className="rowname">{e.title}</div>
+                      <div className="rowsub">{fmtD(e.event_date)}{e.location ? ` · ${e.location}` : ''}</div>
+                    </div>
+                    <Tag style={STAGE_STYLE['In conversation']}>{e.status}</Tag>
+                  </div>
+                ))}
+              </div>}
+        </section>
+        <section className="card" style={{ background: 'var(--hero)', borderColor: 'transparent', color: '#fff' }}>
+          <div style={{ fontFamily: 'var(--display)', fontWeight: 700, fontSize: 15, marginBottom: 8 }}>How this works</div>
+          <p style={{ fontSize: 12.5, lineHeight: 1.65, color: 'rgba(255,255,255,.75)', margin: 0 }}>
+            Keep every partner, venue, donor and family in your pipeline. Log each touch as it happens.
+            The AI drafts your intros, follow-ups and event plans — grounded in your chapter’s real numbers —
+            and you send them from your own email or phone. Nothing goes out automatically.
+          </p>
+        </section>
+      </div>
+    </div>
+  );
+};
+
+const PipelineTab = ({ contacts, reload, openContactId, setOpenContactId }) => {
+  const [q, setQ] = useState('');
+  const [track, setTrack] = useState('');
+  const [stage, setStage] = useState('');
+  const [adding, setAdding] = useState(false);
+  const [editing, setEditing] = useState(null);
+
+  const list = useMemo(() => {
+    let l = contacts;
+    if (track) l = l.filter((c) => c.track === track);
+    if (stage) l = l.filter((c) => c.stage === stage);
+    const n = q.trim().toLowerCase();
+    if (n) l = l.filter((c) => [c.name, c.organization, c.role, c.notes].some((v) => (v || '').toLowerCase().includes(n)));
+    return l;
+  }, [contacts, q, track, stage]);
+
+  const open = openContactId != null ? contacts.find((c) => c.id === openContactId) : null;
+
+  return (
+    <>
+      <div className="filterbar">
+        <div className="search"><Ic name="search" size={14} /><input value={q} placeholder="Search contacts…" onChange={(e) => setQ(e.target.value)} /></div>
+        {TRACKS.map((t) => (
+          <button key={t} className={`chip${track === t ? ' on' : ''}`} onClick={() => setTrack(track === t ? '' : t)}>{t}</button>
+        ))}
+        <select className="in" style={{ width: 'auto', padding: '8px 30px 8px 12px' }} value={stage} onChange={(e) => setStage(e.target.value)}>
+          <option value="">All stages</option>{STAGES.map((s) => <option key={s}>{s}</option>)}
+        </select>
+        <span className="meta"><b>{list.length}</b> contact{list.length === 1 ? '' : 's'}</span>
+        <button className="btn primary sm" onClick={() => setAdding(true)}><Ic name="plus" size={13} /> Add contact</button>
+      </div>
+
+      {list.length === 0
+        ? <section className="card"><Empty icon="users" title={contacts.length ? 'Nothing matches those filters' : 'Your pipeline is empty'}
+            body={contacts.length ? 'Try clearing the filters.' : 'Add the people who could help your chapter grow — a PTA president, the rec-center manager, a local shop owner.'}
+            action={!contacts.length && <button className="btn primary sm" onClick={() => setAdding(true)}><Ic name="plus" size={13} /> Add your first contact</button>} /></section>
+        : <div className="cardsgrid">
+            {list.map((c) => {
+              const overdue = c.next_action && c.next_action < today() && c.stage !== 'Committed' && c.stage !== 'Not now';
+              return (
+                <button className="ccard" key={c.id} onClick={() => setOpenContactId(c.id)}>
+                  <div className="ccard-top">
+                    <span className="avatar" style={{ width: 40, height: 40, fontSize: 13, background: avColor(c.name) }}>{initials(c.name)}</span>
+                    <div style={{ minWidth: 0 }}>
+                      <div className="ccard-name">{c.name}</div>
+                      <div className="ccard-org">{[c.role, c.organization].filter(Boolean).join(' · ') || c.track}</div>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                    <StageTag stage={c.stage} />
+                    <Tag style={{ bg: 'var(--surface-2)', fg: 'var(--muted)' }}>{c.track}</Tag>
+                  </div>
+                  <div className="ccard-foot">
+                    <span>{c.last_touch ? `Last touch ${fmtD(c.last_touch)}` : 'Never contacted'}</span>
+                    <span className={overdue ? 'due' : ''}>{c.next_action ? `next: ${fmtD(c.next_action)}` : ''}</span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>}
+
+      {adding && <ContactForm contact={{}} onClose={() => setAdding(false)} onSaved={reload} />}
+      {editing && <ContactForm contact={editing} onClose={() => setEditing(null)} onSaved={reload} />}
+      {open && !editing && (
+        <ContactDetail contact={open} onClose={() => setOpenContactId(null)} onChanged={reload}
+                       onEdit={() => setEditing(open)} />
+      )}
+    </>
+  );
+};
+
+const EventsTab = ({ events, reload }) => {
+  const [adding, setAdding] = useState(false);
+  const [editing, setEditing] = useState(null);
+  const [openId, setOpenId] = useState(null);
+  const open = openId != null ? events.find((e) => e.id === openId) : null;
+  const stStyle = { Idea: STAGE_STYLE['New'], Planning: STAGE_STYLE['Contacted'], Scheduled: STAGE_STYLE['In conversation'], Done: STAGE_STYLE['Committed'] };
+
+  return (
+    <>
+      <div className="filterbar">
+        <span className="meta" style={{ marginLeft: 0 }}><b>{events.length}</b> event{events.length === 1 ? '' : 's'}</span>
+        <span style={{ flex: 1 }} />
+        <button className="btn primary sm" onClick={() => setAdding(true)}><Ic name="plus" size={13} /> Plan an event</button>
+      </div>
+      {events.length === 0
+        ? <section className="card"><Empty icon="cal" title="No events yet"
+            body="Clinics, open plays, tournaments, fundraisers — add an idea and let the AI help you plan it."
+            action={<button className="btn primary sm" onClick={() => setAdding(true)}><Ic name="plus" size={13} /> Plan your first event</button>} /></section>
+        : <div className="cardsgrid">
+            {events.map((e) => (
+              <button className="ccard" key={e.id} onClick={() => setOpenId(e.id)}>
+                <div>
+                  <div className="ccard-name">{e.title}</div>
+                  <div className="ccard-org" style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 3 }}>
+                    <Ic name="cal" size={12} />{e.event_date ? fmtD(e.event_date) : 'No date yet'}{e.location ? ` · ${e.location}` : ''}
+                  </div>
+                </div>
+                {e.goal && <div style={{ fontSize: 12, color: 'var(--muted)', lineHeight: 1.5 }}>{e.goal}</div>}
+                <div className="ccard-foot">
+                  <Tag style={stStyle[e.status]}>{e.status}</Tag>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>Open <Ic name="arrow" size={12} /></span>
+                </div>
+              </button>
+            ))}
+          </div>}
+      {adding && <EventForm event={{}} onClose={() => setAdding(false)} onSaved={reload} />}
+      {editing && <EventForm event={editing} onClose={() => setEditing(null)} onSaved={reload} />}
+      {open && !editing && (
+        <EventDetail event={open} onClose={() => setOpenId(null)} onChanged={reload} onEdit={() => setEditing(open)} />
+      )}
+    </>
+  );
+};
+
+// ── login + app ─────────────────────────────────────────
+const Login = ({ onLogin }) => {
+  const [code, setCode] = useState('');
+  const [err, setErr] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  const submit = async (e) => {
+    e.preventDefault();
+    if (!code.trim() || busy) return;
+    setBusy(true);
+    try {
+      const res = await fetch('/api/coach-auth', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ access_code: code.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || 'That code didn’t work');
+      localStorage.setItem(CODE_KEY, code.trim());
+      localStorage.setItem(COACH_KEY, JSON.stringify(data.coach));
+      onLogin(data.coach);
+    } catch (ex) { setErr(ex.message); }
+    finally { setBusy(false); }
+  };
+
+  return (
+    <div className="login">
+      <form className="login-card" onSubmit={submit}>
+        <div className="login-brand">
+          <img src="assets/ts-mark.png" alt="" />
+          <div><b>Together Sports</b><span>Outreach HQ</span></div>
+        </div>
+        <h2>Grow your chapter</h2>
+        <p style={{ fontSize: 13, color: 'var(--muted)', margin: 0, lineHeight: 1.6 }}>
+          Your personal outreach workspace — partners, events, volunteers and families,
+          with an AI assistant that drafts the messages for you.
+        </p>
+        <div className="field">
+          <label>Coach access code</label>
+          <input className="in" autoFocus value={code} placeholder="e.g. TENNIS7" style={{ fontFamily: 'ui-monospace, Menlo, monospace', letterSpacing: '.1em', textTransform: 'uppercase' }}
+                 onChange={(e) => { setCode(e.target.value.toUpperCase()); setErr(''); }} />
+          {err && <span className="err">{err}</span>}
+          <span className="hint">Same code you use for the coach portal. No code yet? Ask your program admin.</span>
+        </div>
+        <button className="btn primary" style={{ justifyContent: 'center' }} disabled={busy || !code.trim()} type="submit">
+          {busy ? 'Checking…' : 'Open my workspace'}
+        </button>
+        <a href="/coach.html" style={{ fontSize: 12.5, color: 'var(--muted)', textDecoration: 'none', textAlign: 'center' }}>← Back to the coach portal</a>
+      </form>
+    </div>
+  );
+};
+
+const App = ({ coach, onLogout }) => {
+  const toast = useToast();
+  const [tab, setTab] = useState('week');
+  const [contacts, setContacts] = useState([]);
+  const [events, setEvents] = useState([]);
+  const [loaded, setLoaded] = useState(false);
+  const [openContactId, setOpenContactId] = useState(null);
+
+  const reload = useCallback(async () => {
+    try {
+      const [c, e] = await Promise.all([api('/api/outreach/contacts'), api('/api/outreach/events')]);
+      setContacts(c); setEvents(e); setLoaded(true);
+    } catch (ex) {
+      if (ex.status === 401) onLogout();
+      else toast(ex.message, true);
+    }
+  }, [onLogout, toast]);
+  useEffect(() => { reload(); }, [reload]);
+
+  const inConv = contacts.filter((c) => c.stage === 'In conversation').length;
+  const committed = contacts.filter((c) => c.stage === 'Committed').length;
+  const dueCount = contacts.filter((c) => c.next_action && c.next_action <= plusDays(7) && c.stage !== 'Committed' && c.stage !== 'Not now').length;
+
+  const openContact = (c) => { setTab('pipeline'); setOpenContactId(c.id); };
+
+  return (
+    <>
+      <header className="ox-top">
+        <img className="ox-logo" src="assets/ts-mark.png" alt="" />
+        <div className="ox-brand"><b>Outreach HQ</b><span>Together Sports</span></div>
+        {coach.chapter && <span className="ox-chapchip"><Ic name="pin" size={13} />{coach.chapter} chapter</span>}
+        <div className="ox-topright">
+          <a className="ox-toplink" href="/coach.html">Coach portal</a>
+          <a className="ox-toplink" href="/impact.html" target="_blank" rel="noopener">Impact page</a>
+          <span className="ox-user">
+            <span className="avatar" style={{ width: 32, height: 32, fontSize: 11.5, background: 'var(--peach)', color: 'var(--ink)' }}>{initials(coach.name)}</span>
+            {coach.name}
+          </span>
+          <button className="iconbtn" style={{ background: 'rgba(255,255,255,.09)', borderColor: 'rgba(255,255,255,.12)', color: '#9096BB' }}
+                  title="Sign out" onClick={onLogout}><Ic name="logout" size={15} /></button>
+        </div>
+      </header>
+
+      <main className="ox-wrap">
+        <div className="ox-head">
+          <div>
+            <span className="ox-eyebrow"><Ic name="heart" size={13} />Chapter growth</span>
+            <h1>Hey {coach.name.split(' ')[0]} — let’s grow {coach.chapter ? `${coach.chapter}` : 'your chapter'}.</h1>
+            <p className="ox-lede">Track the people who can help, plan your events, and let the AI draft the outreach. You stay the sender.</p>
+          </div>
+          <div className="seg">
+            <button className={tab === 'week' ? 'on' : ''} onClick={() => setTab('week')}>This week{dueCount ? ` (${dueCount})` : ''}</button>
+            <button className={tab === 'pipeline' ? 'on' : ''} onClick={() => setTab('pipeline')}>Pipeline</button>
+            <button className={tab === 'events' ? 'on' : ''} onClick={() => setTab('events')}>Events</button>
+          </div>
+        </div>
+
+        <div className="stats">
+          <div className="stat hero"><b>{contacts.length}</b><span>contacts in your pipeline</span></div>
+          <div className="stat"><b>{inConv}</b><span>in conversation</span></div>
+          <div className="stat"><b>{committed}</b><span>committed</span></div>
+          <div className="stat"><b>{dueCount}</b><span>follow-ups due this week</span></div>
+        </div>
+
+        {!loaded
+          ? <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: 'var(--muted)', fontSize: 13 }}><span className="spin" /> Loading your workspace…</div>
+          : tab === 'week' ? <WeekTab contacts={contacts} events={events} openContact={openContact} />
+          : tab === 'pipeline' ? <PipelineTab contacts={contacts} reload={reload} openContactId={openContactId} setOpenContactId={setOpenContactId} />
+          : <EventsTab events={events} reload={reload} />}
+      </main>
+    </>
+  );
+};
+
+const Root = () => {
+  const [coach, setCoach] = useState(() => {
+    try { return getCode() ? JSON.parse(localStorage.getItem(COACH_KEY)) : null; } catch { return null; }
+  });
+  const [chapterName, setChapterName] = useState(null);
+
+  // Resolve the chapter name for the header chip.
+  useEffect(() => {
+    if (!coach) return;
+    fetch('/api/chapters').then((r) => r.json())
+      .then((chs) => setChapterName(chs.find((c) => c.id === coach.chapter_id)?.name || null))
+      .catch(() => {});
+  }, [coach]);
+
+  const logout = () => {
+    localStorage.removeItem(CODE_KEY);
+    localStorage.removeItem(COACH_KEY);
+    setCoach(null);
+  };
+
+  return (
+    <ToastProvider>
+      {coach
+        ? <App coach={{ ...coach, chapter: chapterName }} onLogout={logout} />
+        : <Login onLogin={setCoach} />}
+    </ToastProvider>
+  );
+};
+
+ReactDOM.createRoot(document.getElementById('root')).render(<Root />);
+</script>
+</body>
+</html>
