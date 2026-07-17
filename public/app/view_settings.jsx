@@ -2,8 +2,8 @@
 
 (() => {
   const TS = window.TS;
-  const { useState } = React;
-  const { Ic, Btn, PageHead, Field, Input, useToast } = TS.ui;
+  const { useState, useEffect } = React;
+  const { Ic, Btn, IconBtn, PageHead, Field, Input, Confirm, useToast } = TS.ui;
 
   const SWATCHES = [
     { name: 'Ink', hex: '#0A0D28' },
@@ -13,6 +13,108 @@
     { name: 'Cream', hex: '#F6F5EC' },
     { name: 'Sand', hex: '#EFEDDF' },
   ];
+
+  // A view key unlocks /viewer.html — the same depth as the admin dashboard
+  // (sessions, participants, parent contacts, coaches, stories, photos) with
+  // no write access at all: no create/edit/delete endpoint accepts a view
+  // key, so a link can only ever be read, never used to change anything.
+  const ViewKeysCard = ({ toast }) => {
+    const [keys, setKeys] = useState(null);
+    const [label, setLabel] = useState('');
+    const [busy, setBusy] = useState(false);
+    const [revoking, setRevoking] = useState(null);
+
+    const load = async () => {
+      try { setKeys(await TS.api('/api/view-keys')); }
+      catch (e) { toast(e.message, { error: true }); }
+    };
+    useEffect(() => { load(); }, []);
+
+    const shareUrl = (code) => `${window.location.origin}/viewer.html?key=${code}`;
+
+    const copy = async (text, what) => {
+      try { await navigator.clipboard.writeText(text); toast(`${what} copied`); }
+      catch { toast('Couldn’t copy — select and copy manually', { error: true }); }
+    };
+
+    const create = async () => {
+      if (!label.trim() || busy) return;
+      setBusy(true);
+      try {
+        const row = await TS.api('/api/view-keys', { method: 'POST', body: { label: label.trim() } });
+        setLabel('');
+        await load();
+        copy(shareUrl(row.key_code), 'Share link');
+      } catch (e) { toast(e.message, { error: true }); }
+      finally { setBusy(false); }
+    };
+
+    const revoke = async (row) => {
+      try {
+        await TS.api(`/api/view-keys/${row.id}`, { method: 'DELETE' });
+        toast(`Revoked “${row.label}” — that link no longer works`);
+        setRevoking(null);
+        load();
+      } catch (e) { toast(e.message, { error: true }); }
+    };
+
+    return (
+      <section className="ts-card ts-setcard">
+        <div className="ts-setcard-head">
+          <Ic name="eye" size={18} />
+          <div>
+            <h2 className="ts-card-title">Shareable view-only links</h2>
+            <p className="ts-card-sub">
+              Let someone outside your coach team see everything you see — sessions, kids, parent contacts,
+              coaches, stories, photos — with no ability to change anything. Good for a board member,
+              funder, or a college counselor who wants the full picture.
+            </p>
+          </div>
+        </div>
+
+        <div className="ts-notifrow" style={{ borderBottom: keys?.length ? undefined : 0, alignItems: 'flex-end', gap: 12 }}>
+          <div style={{ flex: 1 }}>
+            <Field label="Label" hint="Who is this link for? (shown to you only)">
+              <Input value={label} placeholder="e.g. Maya's college counselor"
+                     onKeyDown={(e) => { if (e.key === 'Enter') create(); }}
+                     onChange={(e) => setLabel(e.target.value)} />
+            </Field>
+          </div>
+          <Btn kind="primary" icon="plus" onClick={create} disabled={busy || !label.trim()}>
+            {busy ? 'Creating…' : 'Create link'}
+          </Btn>
+        </div>
+
+        {keys === null ? (
+          <p className="ts-card-sub" style={{ padding: '12px 0' }}>Loading…</p>
+        ) : keys.length === 0 ? (
+          <p className="ts-card-sub" style={{ padding: '12px 0' }}>No links yet — create one above.</p>
+        ) : (
+          <div>
+            {keys.map((k) => (
+              <div className="ts-datarow" key={k.id} style={{ alignItems: 'center' }}>
+                <div className="ts-datarow-main">
+                  <div className="ts-notif-title">{k.label}</div>
+                  <div className="ts-notif-desc">
+                    Created {TS.fmtDate(k.created_at)} · {k.last_used_at ? `last viewed ${TS.fmtDate(k.last_used_at)}` : 'never opened yet'}
+                  </div>
+                </div>
+                <Btn sm icon="copy" onClick={() => copy(shareUrl(k.key_code), 'Share link')}>Copy link</Btn>
+                <IconBtn icon="trash" danger title="Revoke" onClick={() => setRevoking(k)} />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {revoking && (
+          <Confirm title={`Revoke “${revoking.label}”?`}
+            body="This link stops working immediately. Anyone who has it will be signed out next time they load the page."
+            confirmLabel="Revoke link"
+            onConfirm={() => revoke(revoking)} onClose={() => setRevoking(null)} />
+        )}
+      </section>
+    );
+  };
 
   const Settings = ({ data, reload, setView }) => {
     const toast = useToast();
@@ -127,6 +229,8 @@
               ))}
             </div>
           </section>
+
+          <ViewKeysCard toast={toast} />
 
           <section className="ts-card ts-setcard">
             <div className="ts-setcard-head">

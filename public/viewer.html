@@ -1,0 +1,562 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Together Sports · Impact Viewer</title>
+<link rel="icon" href="assets/ts-mark.png" />
+<link rel="stylesheet" href="vendor/fonts.css" />
+<style>
+  :root {
+    --display: "League Spartan", system-ui, sans-serif;
+    --body: "Montserrat", system-ui, sans-serif;
+    --bg: #F6F5EC; --surface: #FFFFFF; --surface-2: #EFEDDF;
+    --border: #E7E5D4; --text: #20233C; --muted: #7B7E6C;
+    --ink: #0A0D28;
+    --accent: #285400; --accent-deep: #1B3A00; --accent-soft: #E9F1D9;
+    --peach: #F6A15C; --peach-soft: #FCEBDA;
+    --lime: #87CB4A; --lime-soft: #EBF6DF;
+    --danger: #B3261E; --danger-soft: #F7E4E2;
+    --radius: 20px; --radius-sm: 13px;
+    --shadow-sm: 0 1px 2px rgba(10,13,40,.04);
+    --shadow: 0 10px 30px rgba(10,13,40,.08);
+    --shadow-lg: 0 28px 70px rgba(10,13,40,.2);
+    --hero: linear-gradient(150deg, #282C50 0%, #0A0D28 92%);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+  body { font-family: var(--body); color: var(--text); background: var(--bg); -webkit-font-smoothing: antialiased; }
+  button { font-family: inherit; }
+  a { color: var(--accent); }
+  button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid var(--peach); outline-offset: 2px; }
+  .ic { flex: 0 0 auto; }
+
+  /* topbar */
+  .vw-top { background: var(--hero); color: #EDEEF6; padding: 14px 22px; display: flex; align-items: center; gap: 14px; position: sticky; top: 0; z-index: 40; }
+  .vw-logo { width: 38px; height: 38px; object-fit: contain; background: #fff; border-radius: 11px; padding: 4px; }
+  .vw-brand b { font-family: var(--display); font-weight: 700; font-size: 15px; display: block; color: #fff; line-height: 1.05; }
+  .vw-brand span { font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: #9096BB; font-weight: 600; }
+  .vw-viewchip { display: inline-flex; align-items: center; gap: 7px; background: rgba(135,203,74,.16); border: 1px solid rgba(135,203,74,.3); border-radius: 99px; padding: 7px 14px; font-size: 12.5px; font-weight: 600; color: #C9EFA5; }
+  .vw-topright { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+  .vw-signout { background: none; border: 1px solid rgba(255,255,255,.16); color: #9096BB; border-radius: 99px; padding: 8px 14px; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+  .vw-signout:hover { color: #fff; border-color: rgba(255,255,255,.3); }
+
+  .vw-wrap { max-width: 1160px; margin: 0 auto; padding: 26px 22px 80px; }
+  .vw-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; flex-wrap: wrap; margin-bottom: 20px; }
+  .vw-eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: 11.5px; font-weight: 600; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; }
+  .vw-eyebrow .ic { color: var(--accent); }
+  h1 { font-family: var(--display); font-weight: 800; font-size: 28px; letter-spacing: -.7px; margin: 8px 0 6px; line-height: 1.05; color: var(--ink); }
+  .vw-lede { color: var(--muted); font-size: 13.5px; max-width: 68ch; margin: 0; line-height: 1.5; }
+
+  /* seg tabs */
+  .seg { display: inline-flex; background: var(--surface-2); border-radius: 99px; padding: 3px; gap: 2px; flex-wrap: wrap; }
+  .seg button { background: none; border: 0; padding: 9px 16px; border-radius: 99px; font-family: var(--body); font-size: 12.5px; font-weight: 600; color: var(--muted); cursor: pointer; transition: background .14s, color .14s; white-space: nowrap; }
+  .seg button.on { background: var(--surface); color: var(--accent); box-shadow: var(--shadow-sm); }
+
+  /* cards */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); padding: 20px 22px; }
+  .cardhead { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding-bottom: 12px; }
+  .cardtitle { font-family: var(--display); font-weight: 700; font-size: 16.5px; letter-spacing: -.3px; margin: 0; }
+  .cardsub { font-size: 12px; color: var(--muted); margin: 3px 0 0; }
+
+  /* stats */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
+  @media (max-width: 800px) { .stats { grid-template-columns: 1fr 1fr; } }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px 14px; }
+  .stat b { font-family: var(--display); font-weight: 800; font-size: 32px; letter-spacing: -1.2px; line-height: 1; color: var(--ink); display: block; }
+  .stat span { font-size: 12px; font-weight: 600; color: var(--muted); }
+  .stat.hero { background: var(--hero); border-color: transparent; }
+  .stat.hero b { color: #fff; } .stat.hero span { color: rgba(255,255,255,.72); }
+
+  .bars { display: flex; flex-direction: column; gap: 10px; }
+  .barrow { display: grid; grid-template-columns: 90px 1fr 34px; align-items: center; gap: 10px; font-size: 12.5px; }
+  .barrow .label { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .barrow .track { height: 8px; border-radius: 99px; background: var(--surface-2); overflow: hidden; }
+  .barrow .fill { height: 100%; border-radius: 99px; background: var(--accent); }
+  .barrow .n { text-align: right; color: var(--muted); font-weight: 600; }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
+  @media (max-width: 900px) { .grid2 { grid-template-columns: 1fr; } }
+
+  /* fields */
+  .search { display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 99px; padding: 9px 14px; color: var(--muted); flex: 1 1 220px; max-width: 340px; }
+  .search input { border: 0; outline: 0; background: transparent; flex: 1; font-family: var(--body); font-size: 13px; color: var(--text); min-width: 0; }
+  .filterbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+  .meta { margin-left: auto; font-size: 12px; color: var(--muted); }
+
+  /* tags */
+  .tag { display: inline-flex; align-items: center; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 99px; white-space: nowrap; }
+  .avatar { border-radius: 99px; display: inline-grid; place-items: center; font-family: var(--display); font-weight: 700; color: #fff; flex: 0 0 auto; }
+
+  /* table-ish rows */
+  .rowlist { display: flex; flex-direction: column; }
+  .rowitem { display: flex; align-items: center; gap: 12px; padding: 13px 6px; border-top: 1px solid var(--border); }
+  .rowitem:first-child { border-top: 0; }
+  .rowmain { flex: 1; min-width: 0; }
+  .rowname { font-weight: 600; font-size: 13.5px; }
+  .rowsub { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+  .rownotes { font-size: 12px; color: var(--text); margin-top: 6px; line-height: 1.5; background: var(--surface-2); border-radius: 10px; padding: 8px 11px; }
+  .rowside { text-align: right; font-size: 11.5px; color: var(--muted); flex: 0 0 auto; white-space: nowrap; }
+
+  /* photo grid */
+  .photogrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+  .photocard { border-radius: 14px; overflow: hidden; border: 1px solid var(--border); background: var(--surface-2); position: relative; }
+  .photocard img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; }
+  .photocard .cap { font-size: 11px; padding: 7px 9px; color: var(--muted); }
+  .photocard .pend { position: absolute; top: 7px; left: 7px; }
+
+  .empty { display: flex; flex-direction: column; align-items: center; gap: 9px; padding: 40px 20px; text-align: center; }
+  .empty .eic { width: 48px; height: 48px; border-radius: 15px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); }
+  .empty b { font-family: var(--display); font-size: 15px; }
+  .empty p { font-size: 12.5px; color: var(--muted); max-width: 40ch; margin: 0; }
+
+  /* toasts */
+  .toasts { position: fixed; bottom: 22px; right: 22px; display: flex; flex-direction: column; gap: 10px; z-index: 300; }
+  .toast { display: flex; align-items: center; gap: 10px; background: var(--ink); color: #fff; padding: 12px 16px; border-radius: 14px; box-shadow: var(--shadow-lg); font-size: 13px; font-weight: 500; animation: tin .25s ease; max-width: 360px; }
+  .toast.err { background: var(--danger); }
+  @keyframes tin { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: none; } }
+
+  /* login */
+  .login { min-height: 100vh; display: grid; place-items: center; padding: 24px; background:
+    radial-gradient(1200px 500px at 80% -10%, rgba(246,161,92,.14), transparent),
+    radial-gradient(900px 500px at -10% 110%, rgba(135,203,74,.14), transparent), var(--bg); }
+  .login-card { width: 100%; max-width: 400px; background: var(--surface); border: 1px solid var(--border); border-radius: 24px; box-shadow: var(--shadow); padding: 34px 32px; display: flex; flex-direction: column; gap: 16px; }
+  .login-brand { display: flex; align-items: center; gap: 12px; }
+  .login-brand img { width: 44px; height: 44px; }
+  .login-brand b { font-family: var(--display); font-size: 16px; display: block; }
+  .login-brand span { font-size: 10px; letter-spacing: .15em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+  .login h2 { font-family: var(--display); font-weight: 800; font-size: 22px; margin: 4px 0 0; letter-spacing: -.5px; }
+  .login p.lede { color: var(--muted); font-size: 13px; margin: 0; line-height: 1.5; }
+  .login .err { font-size: 12px; color: var(--danger); font-weight: 600; }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label { font-size: 12.5px; font-weight: 600; }
+  input.in { font-family: var(--body); font-size: 13.5px; color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 10px 13px; outline: none; width: 100%; transition: border-color .14s, box-shadow .14s; }
+  input.in:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; font-family: var(--body); font-weight: 600; font-size: 13px; padding: 11px 18px; border-radius: 99px; border: 1px solid transparent; white-space: nowrap; transition: transform .12s, background .14s; }
+  .btn:hover { transform: translateY(-1px); }
+  .btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+  .btn.primary { background: var(--accent); color: #fff; box-shadow: 0 6px 18px rgba(40,84,0,.22); width: 100%; }
+  .btn.primary:hover { background: var(--accent-deep); }
+
+  .spin { width: 15px; height: 15px; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 99px; display: inline-block; animation: sp .7s linear infinite; }
+  @keyframes sp { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="vendor/react.js"></script>
+<script src="vendor/react-dom.js"></script>
+<script src="vendor/babel.min.js"></script>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useMemo, useCallback, createContext, useContext } = React;
+
+// ── auth ────────────────────────────────────────────────
+const KEY_STORAGE = 'ts_view_key';
+const getStoredKey = () => localStorage.getItem(KEY_STORAGE) || '';
+
+async function api(url, key) {
+  const res = await fetch(url, { headers: { 'x-view-key': key } });
+  let data = null;
+  try { data = await res.json(); } catch {}
+  if (!res.ok) { const e = new Error(data?.error || `Request failed (${res.status})`); e.status = res.status; throw e; }
+  return data;
+}
+
+// ── helpers ─────────────────────────────────────────────
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const parseD = (s) => { if (!s) return null; const [y,m,d] = String(s).slice(0,10).split('-').map(Number); return (y&&m&&d) ? new Date(y,m-1,d) : null; };
+const fmtD = (s) => { const d = parseD(s); return d ? `${MONTHS[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}` : '—'; };
+const initials = (n) => String(n||'?').trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase();
+const hash = (s) => { let h=0; for (let i=0;i<String(s).length;i++) h=(h*31+String(s).charCodeAt(i))|0; return Math.abs(h); };
+const AV = ['#285400','#8A4A12','#3A3F63','#1B5E52','#7A2E52','#4E4A14'];
+const avColor = (n) => AV[hash(n||'?')%AV.length];
+const SPORT_STYLES = [
+  { bg: 'var(--lime-soft)', fg: '#3E6B12' }, { bg: 'var(--peach-soft)', fg: '#8A4A12' },
+  { bg: 'var(--accent-soft)', fg: 'var(--accent-deep)' }, { bg: '#E4E6F2', fg: '#3A3F63' },
+];
+const sportStyle = (n) => n ? SPORT_STYLES[hash(n) % SPORT_STYLES.length] : { bg: 'var(--surface-2)', fg: 'var(--muted)' };
+
+const P = (...ds) => ds.map((d,i) => <path key={i} d={d} />);
+const ICONS = {
+  eye: [<circle key="c" cx="12" cy="12" r="3"/>, ...P('M1.5 12S5.5 4.5 12 4.5 22.5 12 22.5 12 18.5 19.5 12 19.5 1.5 12 1.5 12z')],
+  cal: [<rect key="r" x="3" y="4" width="18" height="17" rx="2.5"/>, ...P('M8 2v4','M16 2v4','M3 9.5h18')],
+  users: [<circle key="c" cx="9.5" cy="7.5" r="3.7"/>, ...P('M2.5 20.5v-1.4a5.6 5.6 0 0 1 5.6-5.6h2.8a5.6 5.6 0 0 1 5.6 5.6v1.4','M15.7 4.1a3.7 3.7 0 0 1 0 6.9','M18.5 13.7a5.6 5.6 0 0 1 3 5v1.8')],
+  contact: [<rect key="r" x="3" y="3.5" width="18" height="17" rx="2.5"/>, <circle key="c" cx="9.3" cy="9.8" r="2.3"/>, ...P('M5.5 16.8a4.2 4.2 0 0 1 7.6 0','M15.5 8.5H18','M15.5 12.5H18')],
+  heart: P('M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8L12 21.2l8.8-8.8a5.5 5.5 0 0 0 0-7.8z'),
+  quote: P('M21 15a2 2 0 0 1-2 2H7.5L3 21.5V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z'),
+  image: [<rect key="r" x="3" y="4" width="18" height="16" rx="2.5"/>, <circle key="c" cx="8.8" cy="9.3" r="1.6"/>, ...P('M21 15.5 15.5 10 5 20')],
+  whistle: [<circle key="c" cx="8.5" cy="14.5" r="5.5"/>, ...P('M12.5 10.5 21 5.5v4l-6.2 2.4','M8.5 12v2.5')],
+  search: [<circle key="c" cx="11" cy="11" r="7.5"/>, ...P('M21 21l-4.7-4.7')],
+  alert: P('M10.3 3.9 1.9 18a2 2 0 0 0 1.7 3h16.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z','M12 9.5v4','M12 17.2h.01'),
+  check: P('M20 6.5 9.5 17 4 11.5'),
+  logout: P('M9 21H5.5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2H9','M16 17l5-5-5-5','M21 12H9'),
+  home: P('M3 10 12 3l9 7','M5 9.5V21h14V9.5','M9.5 21v-6h5v6'),
+  clock: [<circle key="c" cx="12" cy="12" r="9"/>, ...P('M12 6.5V12l3.5 2')],
+  phone: P('M21.5 16.9v2.6a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.4 19.4 0 0 1-6-6A19.8 19.8 0 0 1 1.6 3.8a2 2 0 0 1 2-2.2h2.6a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L7.3 9.4a16 16 0 0 0 6 6l1.2-1.1a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z'),
+  mail: [<rect key="r" x="2.5" y="4.5" width="19" height="15" rx="2.5"/>, ...P('M21.5 7.5 12 13.5 2.5 7.5')],
+};
+const Ic = ({ name, size = 16 }) => (
+  <svg className="ic" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
+       strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{ICONS[name] || ICONS.eye}</svg>
+);
+
+// ── toasts ──────────────────────────────────────────────
+const ToastCtx = createContext(() => {});
+let tid = 0;
+const ToastProvider = ({ children }) => {
+  const [ts, setTs] = useState([]);
+  const push = useCallback((msg, err) => {
+    const id = ++tid;
+    setTs((x) => [...x, { id, msg, err }]);
+    setTimeout(() => setTs((x) => x.filter((t) => t.id !== id)), 4200);
+  }, []);
+  return (
+    <ToastCtx.Provider value={push}>
+      {children}
+      <div className="toasts">{ts.map((t) => (
+        <div key={t.id} className={`toast${t.err ? ' err' : ''}`}><Ic name={t.err ? 'alert' : 'check'} size={15} />{t.msg}</div>
+      ))}</div>
+    </ToastCtx.Provider>
+  );
+};
+const useToast = () => useContext(ToastCtx);
+
+const Tag = ({ style, children }) => <span className="tag" style={{ background: style.bg, color: style.fg }}>{children}</span>;
+const Avatar = ({ name, size = 32 }) => (
+  <span className="avatar" style={{ width: size, height: size, fontSize: size * 0.38, background: avColor(name) }}>
+    {initials(name)}
+  </span>
+);
+const Empty = ({ icon = 'eye', title, body }) => (
+  <div className="empty"><span className="eic"><Ic name={icon} size={20} /></span><b>{title}</b>{body && <p>{body}</p>}</div>
+);
+
+// ── Login ───────────────────────────────────────────────
+const Login = ({ onKey }) => {
+  const [val, setVal] = useState('');
+  const [err, setErr] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  const submit = async (e) => {
+    e.preventDefault();
+    if (!val.trim() || busy) return;
+    setBusy(true); setErr('');
+    try {
+      await api('/api/viewer/bundle', val.trim());
+      localStorage.setItem(KEY_STORAGE, val.trim());
+      onKey(val.trim());
+    } catch (ex) { setErr(ex.status === 401 ? 'That link isn’t valid or has been revoked.' : ex.message); }
+    finally { setBusy(false); }
+  };
+
+  return (
+    <div className="login">
+      <div className="login-card">
+        <div className="login-brand">
+          <img src="assets/ts-mark.png" alt="" />
+          <div><b>Together Sports</b><span>Impact Viewer</span></div>
+        </div>
+        <h2>See the full picture</h2>
+        <p className="lede">You've been given view-only access to Together Sports' program data — sessions, kids reached, coaches and stories. Paste the key from your link below.</p>
+        <form onSubmit={submit} className="field">
+          <label htmlFor="vk">Access key</label>
+          <input id="vk" className="in" value={val} onChange={(e) => { setVal(e.target.value); setErr(''); }}
+                 placeholder="Paste your access key" autoFocus />
+          {err && <span style={{ color: 'var(--danger)', fontSize: 12, fontWeight: 600 }}>{err}</span>}
+          <button className="btn primary" type="submit" disabled={busy || !val.trim()} style={{ marginTop: 4 }}>
+            {busy ? <><span className="spin" /> Checking…</> : 'Open dashboard'}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+// ── content sections ────────────────────────────────────
+const Overview = ({ d }) => {
+  const maxChap = Math.max(1, ...d.stats.by_chapter.map(c => c.sessions));
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+      <div className="stats">
+        <div className="stat hero"><b>{d.stats.total_sessions}</b><span>sessions run</span></div>
+        <div className="stat"><b>{d.stats.total_participants}</b><span>kids reached</span></div>
+        <div className="stat"><b>{d.stats.active_coaches}</b><span>active coaches</span></div>
+        <div className="stat"><b>{d.stats.total_hours}</b><span>volunteer hours</span></div>
+      </div>
+      <div className="grid2">
+        <div className="card">
+          <div className="cardhead"><div><p className="cardtitle">Sessions by chapter</p><p className="cardsub">Where the work is happening</p></div></div>
+          {d.stats.by_chapter.length === 0 ? <Empty icon="cal" title="No sessions yet" /> : (
+            <div className="bars">
+              {d.stats.by_chapter.map((c) => (
+                <div className="barrow" key={c.name}>
+                  <span className="label">{c.name}</span>
+                  <span className="track"><span className="fill" style={{ width: `${Math.round(c.sessions/maxChap*100)}%` }} /></span>
+                  <span className="n">{c.sessions}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        <div className="card">
+          <div className="cardhead"><div><p className="cardtitle">Sessions by sport</p><p className="cardsub">What's being played</p></div></div>
+          {d.stats.by_sport.length === 0 ? <Empty icon="cal" title="No sessions yet" /> : (
+            <div className="bars">
+              {d.stats.by_sport.map((s) => {
+                const max = Math.max(1, ...d.stats.by_sport.map(x => x.sessions));
+                return (
+                  <div className="barrow" key={s.name}>
+                    <span className="label">{s.name}</span>
+                    <span className="track"><span className="fill" style={{ width: `${Math.round(s.sessions/max*100)}%` }} /></span>
+                    <span className="n">{s.sessions}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const SessionsTab = ({ d }) => {
+  const [q, setQ] = useState('');
+  const rows = useMemo(() => {
+    const s = q.trim().toLowerCase();
+    return d.sessions.filter(r => !s || [r.coach, r.chapter, r.sport, r.location, r.notes].some(x => (x||'').toLowerCase().includes(s)));
+  }, [d.sessions, q]);
+  return (
+    <div className="card">
+      <div className="filterbar">
+        <div className="search"><Ic name="search" size={15} /><input placeholder="Search coach, chapter, sport, location…" value={q} onChange={(e) => setQ(e.target.value)} /></div>
+        <span className="meta">{rows.length} of {d.sessions.length} sessions</span>
+      </div>
+      {rows.length === 0 ? <Empty icon="cal" title="No sessions found" /> : (
+        <div className="rowlist">
+          {rows.map((s) => {
+            const sp = sportStyle(s.sport);
+            return (
+              <div className="rowitem" key={s.id} style={{ alignItems: 'flex-start' }}>
+                <Avatar name={s.coach || '?'} />
+                <div className="rowmain">
+                  <div className="rowname">{s.coach || 'Unassigned coach'} {s.sport && <Tag style={sp}>{s.sport}</Tag>}</div>
+                  <div className="rowsub">{fmtD(s.session_date)} · {s.chapter || '—'}{s.location ? ` · ${s.location}` : ''}{s.duration_minutes ? ` · ${s.duration_minutes} min` : ''} · {s.participants || 0} kids</div>
+                  {s.notes && <div className="rownotes">{s.notes}</div>}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const ParticipantsTab = ({ d }) => {
+  const [q, setQ] = useState('');
+  const rows = useMemo(() => {
+    const s = q.trim().toLowerCase();
+    return d.participants.filter(r => !s || [r.name, r.parent_name, r.parent_contact, r.chapter, r.coach].some(x => (x||'').toLowerCase().includes(s)));
+  }, [d.participants, q]);
+  return (
+    <div className="card">
+      <div className="filterbar">
+        <div className="search"><Ic name="search" size={15} /><input placeholder="Search kid, parent, chapter…" value={q} onChange={(e) => setQ(e.target.value)} /></div>
+        <span className="meta">{rows.length} of {d.participants.length} kids</span>
+      </div>
+      {rows.length === 0 ? <Empty icon="contact" title="No participants found" /> : (
+        <div className="rowlist">
+          {rows.map((p) => (
+            <div className="rowitem" key={p.id}>
+              <Avatar name={p.name} />
+              <div className="rowmain">
+                <div className="rowname">{p.name}</div>
+                <div className="rowsub">
+                  {p.parent_name ? `Parent: ${p.parent_name}` : 'No parent name on file'}
+                  {p.parent_contact ? ` · ${p.parent_contact}` : ''}
+                </div>
+              </div>
+              <div className="rowside">{p.coach || '—'}<br/>{fmtD(p.session_date)}{p.chapter ? ` · ${p.chapter}` : ''}</div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const VolunteerTab = ({ d }) => (
+  <div className="card">
+    <div className="filterbar"><span className="meta">{d.volunteerLogs.length} logged activities</span></div>
+    {d.volunteerLogs.length === 0 ? <Empty icon="heart" title="No volunteer activity yet" /> : (
+      <div className="rowlist">
+        {d.volunteerLogs.map((v) => (
+          <div className="rowitem" key={v.id} style={{ alignItems: 'flex-start' }}>
+            <Avatar name={v.coach || '?'} />
+            <div className="rowmain">
+              <div className="rowname">{v.activity_type} <span style={{ color: 'var(--muted)', fontWeight: 500 }}>— {v.coach || 'Unassigned'}</span></div>
+              <div className="rowsub">{fmtD(v.log_date)}{v.chapter ? ` · ${v.chapter}` : ''}{v.people_helped ? ` · ${v.people_helped} people helped` : ''}{v.hours ? ` · ${v.hours}h` : ''}</div>
+              {v.description && <div className="rownotes">{v.description}</div>}
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+);
+
+const StoriesTab = ({ d }) => (
+  <div className="card">
+    <div className="filterbar"><span className="meta">{d.testimonials.length} stories</span></div>
+    {d.testimonials.length === 0 ? <Empty icon="quote" title="No stories yet" /> : (
+      <div className="rowlist">
+        {d.testimonials.map((t) => (
+          <div className="rowitem" key={t.id} style={{ alignItems: 'flex-start' }}>
+            <Avatar name={t.coach_name} />
+            <div className="rowmain">
+              <div className="rowname">
+                {t.coach_name}
+                {!!t.public && <Tag style={{ bg: 'var(--lime-soft)', fg: '#3E6B12' }}>Public</Tag>}
+                {!t.approved && <Tag style={{ bg: 'var(--peach-soft)', fg: '#8A4A12' }}>Pending review</Tag>}
+              </div>
+              <div className="rowsub">{t.chapter || '—'}{t.sport ? ` · ${t.sport}` : ''}{t.child_name ? ` · about ${t.child_name}` : ''}{t.parent_name ? ` · ${t.parent_name}` : ''}{t.parent_contact ? ` (${t.parent_contact})` : ''}</div>
+              <div className="rownotes">“{t.quote}”</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+);
+
+const PhotosTab = ({ d }) => (
+  <div className="card">
+    <div className="filterbar"><span className="meta">{d.photos.length} photos</span></div>
+    {d.photos.length === 0 ? <Empty icon="image" title="No photos yet" /> : (
+      <div className="photogrid">
+        {d.photos.map((p) => (
+          <div className="photocard" key={p.id}>
+            {!p.approved && <span className="pend"><Tag style={{ bg: 'var(--peach-soft)', fg: '#8A4A12' }}>Pending</Tag></span>}
+            <img src={p.url} alt={p.caption || ''} loading="lazy" />
+            <div className="cap">{p.caption || `${p.chapter || ''}${p.sport ? ` · ${p.sport}` : ''}`}</div>
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+);
+
+const CoachesTab = ({ d }) => (
+  <div className="card">
+    <div className="filterbar"><span className="meta">{d.coaches.length} coaches</span></div>
+    {d.coaches.length === 0 ? <Empty icon="whistle" title="No coaches yet" /> : (
+      <div className="rowlist">
+        {d.coaches.map((c) => (
+          <div className="rowitem" key={c.id}>
+            <Avatar name={c.name} />
+            <div className="rowmain">
+              <div className="rowname">{c.name} {!c.active && <Tag style={{ bg: 'var(--surface-2)', fg: 'var(--muted)' }}>Inactive</Tag>}</div>
+              <div className="rowsub">
+                {c.chapter || '—'}{c.sport ? ` · ${c.sport}` : ''}
+                {c.email ? ` · ${c.email}` : ''}{c.phone ? ` · ${c.phone}` : ''}
+              </div>
+              {c.bio && <div className="rownotes">{c.bio}</div>}
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+);
+
+// ── shell ───────────────────────────────────────────────
+const TABS = [
+  { id: 'overview', label: 'Overview', icon: 'home' },
+  { id: 'sessions', label: 'Sessions', icon: 'cal' },
+  { id: 'participants', label: 'Participants', icon: 'contact' },
+  { id: 'volunteer', label: 'Volunteer', icon: 'heart' },
+  { id: 'stories', label: 'Stories', icon: 'quote' },
+  { id: 'photos', label: 'Photos', icon: 'image' },
+  { id: 'coaches', label: 'Coaches', icon: 'whistle' },
+];
+
+const Dashboard = ({ viewKey, onSignOut }) => {
+  const toast = useToast();
+  const [d, setD] = useState(null);
+  const [tab, setTab] = useState('overview');
+
+  useEffect(() => {
+    api('/api/viewer/bundle', viewKey).then(setD).catch((e) => {
+      toast(e.message, true);
+      if (e.status === 401) onSignOut();
+    });
+  }, [viewKey]);
+
+  if (!d) return <div className="vw-wrap"><Empty icon="eye" title="Loading the dashboard…" /></div>;
+
+  const Body = { overview: Overview, sessions: SessionsTab, participants: ParticipantsTab,
+                 volunteer: VolunteerTab, stories: StoriesTab, photos: PhotosTab, coaches: CoachesTab }[tab];
+
+  return (
+    <>
+      <div className="vw-top">
+        <img className="vw-logo" src="assets/ts-mark.png" alt="" />
+        <div className="vw-brand"><b>Together Sports</b><span>Impact Viewer</span></div>
+        <span className="vw-viewchip"><Ic name="eye" size={13} /> View only</span>
+        <div className="vw-topright">
+          <button className="vw-signout" onClick={onSignOut}><Ic name="logout" size={13} /> Sign out</button>
+        </div>
+      </div>
+      <div className="vw-wrap">
+        <div className="vw-head">
+          <div>
+            <div className="vw-eyebrow"><Ic name="eye" size={13} /> {d.org_label}</div>
+            <h1>The full picture, read-only.</h1>
+            <p className="vw-lede">Every session, every kid, every coach — exactly what the Together Sports team sees. Nothing here can be changed from this view.</p>
+          </div>
+          <div className="seg">
+            {TABS.map((t) => (
+              <button key={t.id} className={tab === t.id ? 'on' : ''} onClick={() => setTab(t.id)}>{t.label}</button>
+            ))}
+          </div>
+        </div>
+        <Body d={d} />
+      </div>
+    </>
+  );
+};
+
+const Root = () => {
+  const [key, setKey] = useState(null); // null = not checked yet
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const fromUrl = params.get('key');
+    if (fromUrl) {
+      localStorage.setItem(KEY_STORAGE, fromUrl.trim());
+      window.history.replaceState({}, '', window.location.pathname);
+      setKey(fromUrl.trim());
+      return;
+    }
+    setKey(getStoredKey() || '');
+  }, []);
+
+  const signOut = () => { localStorage.removeItem(KEY_STORAGE); setKey(''); };
+
+  if (key === null) return null; // brief tick while we check the URL/localStorage
+  return (
+    <ToastProvider>
+      {key ? <Dashboard viewKey={key} onSignOut={signOut} /> : <Login onKey={setKey} />}
+    </ToastProvider>
+  );
+};
+
+ReactDOM.createRoot(document.getElementById('root')).render(<Root />);
+</script>
+</body>
+</html>
