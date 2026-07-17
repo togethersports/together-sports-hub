@@ -211,6 +211,7 @@ if (!seeded) {
   run("INSERT INTO settings VALUES ('seeded','1')");
   run("INSERT OR IGNORE INTO settings VALUES ('org_name','Together Sports')");
   run("INSERT OR IGNORE INTO settings VALUES ('contact_email','info@togethersports.org')");
+  run("INSERT OR IGNORE INTO settings VALUES ('public_site_enabled','1')");
   console.log('Database seeded.');
 }
 
@@ -650,6 +651,12 @@ app.post('/api/settings', requireAdmin, (req, res) => {
     if (k !== 'seeded' && k !== 'admin_password') run('INSERT OR REPLACE INTO settings VALUES (?,?)', [k, v]);
   }
   res.json({ ok: true });
+});
+
+app.get('/api/settings-public', (req, res) => {
+  res.json(Object.fromEntries(
+    all('SELECT key,value FROM settings WHERE key = ?', ['public_site_enabled']).map(r => [r.key, r.value])
+  ));
 });
 
 // ── Shareable view-only links ───────────────────────────────────────────────

@@ -181,6 +181,18 @@ function closeLightbox() {
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
 
 async function load() {
+  // Check if public site is enabled
+  try {
+    const settingsRes = await fetch('/api/settings-public');
+    const settings = await settingsRes.json();
+    if (settings.public_site_enabled === '0') {
+      showComingSoon();
+      return;
+    }
+  } catch (e) {
+    // If we can't check settings, allow the page to load
+  }
+
   // Load stats + chapter breakdown
   try {
     const [statsRes, testimonialsRes, photosRes] = await Promise.all([
@@ -200,6 +212,17 @@ async function load() {
   } catch (e) {
     document.getElementById('stats-row').innerHTML = '<div class="empty">Unable to load data.</div>';
   }
+}
+
+function showComingSoon() {
+  document.getElementById('stats-row').innerHTML = `
+    <div style="grid-column:1/-1;text-align:center;padding:80px 24px">
+      <div style="font-family:var(--display);font-size:2.2rem;font-weight:800;margin-bottom:12px">Coming Soon</div>
+      <div style="color:var(--muted);font-size:.95rem;max-width:400px;margin:0 auto">
+        Our impact page is being prepared. Check back soon to see what Together Sports is building.
+      </div>
+    </div>
+  `;
 }
 
 function renderStats(s) {
