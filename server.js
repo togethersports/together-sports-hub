@@ -231,7 +231,7 @@ function requireCoach(req, res, next) {
   const code = req.headers['x-coach-code'];
   if (!code) return res.status(401).json({ error: 'Unauthorized' });
   const coach = get(
-    "SELECT id,name,chapter_id,sport_id FROM coaches WHERE access_code=? AND active=1 AND name!='Coach TBD'",
+    "SELECT id,name,chapter_id,sport_id FROM coaches WHERE UPPER(access_code)=UPPER(?) AND active=1 AND name!='Coach TBD'",
     [String(code).trim()]
   );
   if (!coach) return res.status(401).json({ error: 'Invalid access code' });
@@ -276,7 +276,7 @@ app.post('/api/coach-auth', (req, res) => {
   const { access_code } = req.body;
   if (!access_code) return res.status(400).json({ error: 'Access code required' });
   const coach = get(
-    "SELECT id,name,chapter_id,sport_id FROM coaches WHERE access_code=? AND active=1 AND name!='Coach TBD'",
+    "SELECT id,name,chapter_id,sport_id FROM coaches WHERE UPPER(access_code)=UPPER(?) AND active=1 AND name!='Coach TBD'",
     [access_code.trim()]
   );
   coach ? res.json({ ok: true, coach }) : res.status(401).json({ error: 'Invalid access code' });

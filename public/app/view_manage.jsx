@@ -76,10 +76,10 @@
               {data.sports.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
             </Select>
           </Field>
-          <Field label="Portal access code" hint="What the coach types to open the coach portal.">
+          <Field label="Portal access code" hint="What the coach types to open the coach portal. Not case-sensitive.">
             <div style={{ display: 'flex', gap: 8 }}>
-              <Input value={f.access_code} placeholder="e.g. TENNIS7" style={{ fontFamily: 'ui-monospace, Menlo, monospace' }}
-                     onChange={(e) => set('access_code')(e.target.value.toUpperCase())} />
+              <Input value={f.access_code} placeholder="e.g. tennis7" style={{ fontFamily: 'ui-monospace, Menlo, monospace' }}
+                     onChange={(e) => set('access_code')(e.target.value)} />
               <Btn sm type="button" icon="key" onClick={() => set('access_code')(TS.genAccessCode())}>Generate</Btn>
             </div>
           </Field>

@@ -807,8 +807,8 @@ const Login = ({ onLogin }) => {
         </p>
         <div className="field">
           <label>Coach access code</label>
-          <input className="in" autoFocus value={code} placeholder="e.g. TENNIS7" style={{ fontFamily: 'ui-monospace, Menlo, monospace', letterSpacing: '.1em', textTransform: 'uppercase' }}
-                 onChange={(e) => { setCode(e.target.value.toUpperCase()); setErr(''); }} />
+          <input className="in" autoFocus value={code} placeholder="e.g. tennis7" style={{ fontFamily: 'ui-monospace, Menlo, monospace', letterSpacing: '.1em' }}
+                 onChange={(e) => { setCode(e.target.value); setErr(''); }} />
           {err && <span className="err">{err}</span>}
           <span className="hint">Same code you use for the coach portal. No code yet? Ask your program admin.</span>
         </div>
