@@ -15,6 +15,7 @@
     { label: 'People', items: [
       { id: 'roster', label: 'Coaches', icon: 'whistle' },
       { id: 'manage', label: 'Manage Coaches', icon: 'users' },
+      { id: 'partners', label: 'Partner Log', icon: 'globe' },
     ]},
     { label: 'Content', items: [
       { id: 'gallery', label: 'Gallery', icon: 'image' },

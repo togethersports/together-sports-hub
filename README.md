@@ -23,8 +23,12 @@ no build tooling.
 | Public impact page | `http://localhost:3000/impact.html` | open |
 | Testimonial form | `http://localhost:3000/submit.html` | open |
 
-The default admin password is `together-sports`. Change it by setting the
-`ADMIN_PASSWORD` environment variable before starting the server:
+The default admin password is `together-sports`. Change it in
+**Admin → Settings → Admin password** (stored in the database, takes effect
+immediately). The `ADMIN_PASSWORD` environment variable seeds the initial
+password and is the recovery fallback — if the changed password is ever
+lost, delete the `admin_password` row from the `settings` table in
+`data/together.db` and the env var (or default) works again:
 
 ```bash
 ADMIN_PASSWORD='something-strong' npm start
@@ -84,6 +88,15 @@ works and the AI buttons explain what's missing. Optional:
 `ANTHROPIC_MODEL` overrides the default model (`claude-opus-4-8`). AI usage
 is rate-limited to 25 drafts per coach per hour.
 
+## Partner Log
+
+**Admin → Partner Log** tracks the schools, businesses, nonprofits, venues
+and funders behind the program — type, status (Active / Prospect / Past),
+contact person, chapter, start date, and what they provide. Partners with
+status Active feed the "active partnerships" metric on the Impact Viewer
+(names, types and statuses are shown there; contact details and notes are
+not).
+
 ## Impact Viewer (shareable, read-only)
 
 For someone outside the coach team — a board member, funder, or a college
@@ -92,13 +105,18 @@ able to change it: Admin → Settings → **Shareable view-only links** → give
 a label and hit **Create link**. That copies a URL like
 `/viewer.html?key=…` to the clipboard; send it to them directly.
 
-Opening the link signs them into `/viewer.html`, a separate read-only app
-showing the same depth as the admin dashboard — sessions, kids reached,
-parent contacts, volunteer logs, stories, photos, and the coach roster —
-across every chapter, with tabs and search but no create/edit/delete
-anywhere. No write endpoint on the server accepts a view key, so the link
-can never be used to change data, no matter what's clicked. Coach access
-codes are never included in the response.
+Opening the link signs them into `/viewer.html`, a read-only **impact
+summary**: headline metrics (kids served, dollars raised, chapters, active
+partnerships), external validation (family stories), and the full records
+behind every number — sessions, participants with parent contacts,
+volunteer logs, partners, photos, and the coach roster — with tabs and
+search but no create/edit/delete anywhere. No write endpoint on the server
+accepts a view key, so the link can never be used to change data. Coach
+access codes and partner contact details are never included.
+
+The **dollars raised** figure is entered by hand in Admin → Settings
+(Organization card); **partnerships** counts Active partners in the
+Partner Log.
 
 Revoke a link any time from the same Settings card — it stops working
 immediately, no matter how many people have it.

@@ -277,16 +277,46 @@ const Login = ({ onKey }) => {
 };
 
 // ── content sections ────────────────────────────────────
+const fmtMoney = (n) => '$' + Number(n || 0).toLocaleString('en-US', { maximumFractionDigits: 0 });
+
 const Overview = ({ d }) => {
   const maxChap = Math.max(1, ...d.stats.by_chapter.map(c => c.sessions));
+  const validation = d.testimonials.filter((t) => t.public || t.approved).slice(0, 3);
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
       <div className="stats">
-        <div className="stat hero"><b>{d.stats.total_sessions}</b><span>sessions run</span></div>
-        <div className="stat"><b>{d.stats.total_participants}</b><span>kids reached</span></div>
+        <div className="stat hero"><b>{d.stats.total_participants}</b><span>kids served</span></div>
+        <div className="stat"><b>{fmtMoney(d.stats.dollars_raised)}</b><span>dollars raised</span></div>
+        <div className="stat"><b>{d.stats.chapters}</b><span>chapters running sessions</span></div>
+        <div className="stat"><b>{d.stats.partnerships}</b><span>active partnerships</span></div>
+      </div>
+      <div className="stats">
+        <div className="stat"><b>{d.stats.total_sessions}</b><span>sessions run</span></div>
         <div className="stat"><b>{d.stats.active_coaches}</b><span>active coaches</span></div>
         <div className="stat"><b>{d.stats.total_hours}</b><span>volunteer hours</span></div>
+        <div className="stat"><b>{d.testimonials.length}</b><span>family stories collected</span></div>
       </div>
+      {validation.length > 0 && (
+        <div className="card">
+          <div className="cardhead"><div>
+            <p className="cardtitle">External validation</p>
+            <p className="cardsub">What families say — {d.stats.public_stories} published publicly, {d.testimonials.length} collected in total</p>
+          </div></div>
+          <div className="rowlist">
+            {validation.map((t) => (
+              <div className="rowitem" key={t.id} style={{ alignItems: 'flex-start' }}>
+                <Avatar name={t.parent_name || t.coach_name} />
+                <div className="rowmain">
+                  <div className="rownotes" style={{ marginTop: 0 }}>“{t.quote}”</div>
+                  <div className="rowsub" style={{ marginTop: 6 }}>
+                    {t.parent_name || 'A parent'}{t.child_name ? `, parent of ${t.child_name}` : ''}{t.chapter ? ` · ${t.chapter}` : ''}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       <div className="grid2">
         <div className="card">
           <div className="cardhead"><div><p className="cardtitle">Sessions by chapter</p><p className="cardsub">Where the work is happening</p></div></div>
@@ -451,6 +481,40 @@ const PhotosTab = ({ d }) => (
   </div>
 );
 
+const TYPE_STYLE = {
+  School:    { bg: 'var(--accent-soft)', fg: 'var(--accent-deep)' },
+  Business:  { bg: '#E4E6F2',            fg: '#3A3F63' },
+  Nonprofit: { bg: 'var(--lime-soft)',   fg: '#3E6B12' },
+  Venue:     { bg: 'var(--peach-soft)',  fg: '#8A4A12' },
+  Funder:    { bg: '#F2E4EE',            fg: '#7A2E52' },
+  Community: { bg: 'var(--surface-2)',   fg: 'var(--muted)' },
+};
+const PARTNER_STATUS_STYLE = {
+  Active:   { bg: 'var(--lime-soft)',  fg: '#3E6B12' },
+  Prospect: { bg: 'var(--peach-soft)', fg: '#8A4A12' },
+  Past:     { bg: 'var(--surface-2)',  fg: 'var(--muted)' },
+};
+
+const PartnersTab = ({ d }) => (
+  <div className="card">
+    <div className="filterbar"><span className="meta">{d.partners.length} partner organization{d.partners.length === 1 ? '' : 's'} · {d.stats.partnerships} active</span></div>
+    {d.partners.length === 0 ? <Empty icon="users" title="No partners logged yet" /> : (
+      <div className="rowlist">
+        {d.partners.map((p) => (
+          <div className="rowitem" key={p.id}>
+            <Avatar name={p.name} />
+            <div className="rowmain">
+              <div className="rowname">{p.name} <Tag style={TYPE_STYLE[p.org_type] || TYPE_STYLE.Community}>{p.org_type}</Tag></div>
+              <div className="rowsub">{p.chapter || 'Org-wide'}{p.since ? ` · partner since ${fmtD(p.since)}` : ''}</div>
+            </div>
+            <div className="rowside"><Tag style={PARTNER_STATUS_STYLE[p.status] || PARTNER_STATUS_STYLE.Active}>{p.status}</Tag></div>
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+);
+
 const CoachesTab = ({ d }) => (
   <div className="card">
     <div className="filterbar"><span className="meta">{d.coaches.length} coaches</span></div>
@@ -476,10 +540,11 @@ const CoachesTab = ({ d }) => (
 
 // ── shell ───────────────────────────────────────────────
 const TABS = [
-  { id: 'overview', label: 'Overview', icon: 'home' },
+  { id: 'overview', label: 'Impact summary', icon: 'home' },
   { id: 'sessions', label: 'Sessions', icon: 'cal' },
   { id: 'participants', label: 'Participants', icon: 'contact' },
   { id: 'volunteer', label: 'Volunteer', icon: 'heart' },
+  { id: 'partners', label: 'Partners', icon: 'users' },
   { id: 'stories', label: 'Stories', icon: 'quote' },
   { id: 'photos', label: 'Photos', icon: 'image' },
   { id: 'coaches', label: 'Coaches', icon: 'whistle' },
@@ -500,7 +565,8 @@ const Dashboard = ({ viewKey, onSignOut }) => {
   if (!d) return <div className="vw-wrap"><Empty icon="eye" title="Loading the dashboard…" /></div>;
 
   const Body = { overview: Overview, sessions: SessionsTab, participants: ParticipantsTab,
-                 volunteer: VolunteerTab, stories: StoriesTab, photos: PhotosTab, coaches: CoachesTab }[tab];
+                 volunteer: VolunteerTab, partners: PartnersTab, stories: StoriesTab,
+                 photos: PhotosTab, coaches: CoachesTab }[tab];
 
   return (
     <>
@@ -516,8 +582,8 @@ const Dashboard = ({ viewKey, onSignOut }) => {
         <div className="vw-head">
           <div>
             <div className="vw-eyebrow"><Ic name="eye" size={13} /> {d.org_label}</div>
-            <h1>The full picture, read-only.</h1>
-            <p className="vw-lede">Every session, every kid, every coach — exactly what the Together Sports team sees. Nothing here can be changed from this view.</p>
+            <h1>Together Sports — impact summary</h1>
+            <p className="vw-lede">Quantified impact in one place: kids served, dollars raised, chapters, partnerships, and what families say — with the full session-level records behind every number. Read-only by design.</p>
           </div>
           <div className="seg">
             {TABS.map((t) => (
