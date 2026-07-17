@@ -14,6 +14,53 @@
     { name: 'Sand', hex: '#EFEDDF' },
   ];
 
+  const PasswordCard = ({ toast }) => {
+    const [f, setF] = useState({ current: '', next: '', confirm: '' });
+    const [busy, setBusy] = useState(false);
+    const set = (k) => (e) => setF((x) => ({ ...x, [k]: e.target.value }));
+
+    const change = async () => {
+      if (f.next !== f.confirm) { toast('New passwords don’t match', { error: true }); return; }
+      if (f.next.length < 8) { toast('New password must be at least 8 characters', { error: true }); return; }
+      setBusy(true);
+      try {
+        await TS.api('/api/change-password', { method: 'POST', body: { current: f.current, next: f.next } });
+        TS.setToken(f.next); // keep this session signed in with the new password
+        setF({ current: '', next: '', confirm: '' });
+        toast('Admin password changed');
+      } catch (e) { toast(e.message, { error: true }); }
+      finally { setBusy(false); }
+    };
+
+    return (
+      <section className="ts-card ts-setcard">
+        <div className="ts-setcard-head">
+          <Ic name="shield" size={18} />
+          <div>
+            <h2 className="ts-card-title">Admin password</h2>
+            <p className="ts-card-sub">Change the password used to open this dashboard. Takes effect immediately.</p>
+          </div>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <Field label="Current password">
+            <Input type="password" value={f.current} autoComplete="current-password" onChange={set('current')} />
+          </Field>
+          <Field label="New password" hint="At least 8 characters.">
+            <Input type="password" value={f.next} autoComplete="new-password" onChange={set('next')} />
+          </Field>
+          <Field label="Confirm new password">
+            <Input type="password" value={f.confirm} autoComplete="new-password" onChange={set('confirm')} />
+          </Field>
+          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <Btn kind="primary" icon="shield" onClick={change} disabled={busy || !f.current || !f.next || !f.confirm}>
+              {busy ? 'Changing…' : 'Change password'}
+            </Btn>
+          </div>
+        </div>
+      </section>
+    );
+  };
+
   // A view key unlocks /viewer.html — the same depth as the admin dashboard
   // (sessions, participants, parent contacts, coaches, stories, photos) with
   // no write access at all: no create/edit/delete endpoint accepts a view
@@ -122,6 +169,7 @@
       org_name: data.settings.org_name || 'Together Sports',
       contact_email: data.settings.contact_email || '',
       monthly_goal: data.settings.monthly_goal || '20',
+      dollars_raised: data.settings.dollars_raised || '',
     });
     const [busy, setBusy] = useState(false);
 
@@ -203,6 +251,10 @@
               <Field label="Monthly session goal" hint="Drives the progress bar in the sidebar.">
                 <Input type="number" min="1" value={f.monthly_goal} onChange={(e) => setF({ ...f, monthly_goal: e.target.value })} />
               </Field>
+              <Field label="Total dollars raised" hint="Shown as the “dollars raised” metric on the shared Impact Viewer. Numbers only.">
+                <Input type="number" min="0" step="1" value={f.dollars_raised} placeholder="e.g. 4500"
+                       onChange={(e) => setF({ ...f, dollars_raised: e.target.value })} />
+              </Field>
               <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                 <Btn kind="primary" icon="check" onClick={save} disabled={busy}>{busy ? 'Saving…' : 'Save settings'}</Btn>
               </div>
@@ -232,6 +284,8 @@
 
           <ViewKeysCard toast={toast} />
 
+          <PasswordCard toast={toast} />
+
           <section className="ts-card ts-setcard">
             <div className="ts-setcard-head">
               <Ic name="external" size={18} />
@@ -256,9 +310,12 @@
             </div>
             <div className="ts-notifrow" style={{ borderBottom: 0, marginTop: 6 }}>
               <div>
-                <div className="ts-notif-title">Admin password</div>
+                <div className="ts-notif-title">Locked out?</div>
                 <div className="ts-notif-desc">
-                  Set via the <span className="ts-mono">ADMIN_PASSWORD</span> environment variable on the server — change it there, then sign in again.
+                  The admin password is managed in the card above. If it's ever lost, delete the
+                  <span className="ts-mono"> admin_password</span> row from the settings table in
+                  <span className="ts-mono"> data/together.db</span> — access falls back to the
+                  <span className="ts-mono"> ADMIN_PASSWORD</span> environment variable.
                 </div>
               </div>
               <Ic name="shield" size={18} style={{ color: 'var(--accent)' }} />

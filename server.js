@@ -154,6 +154,19 @@ db.exec(`
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     last_used_at TEXT
   );
+  CREATE TABLE IF NOT EXISTS partners (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    org_type TEXT NOT NULL DEFAULT 'Community',
+    status TEXT NOT NULL DEFAULT 'Active',
+    contact_name TEXT,
+    email TEXT,
+    phone TEXT,
+    chapter_id INTEGER REFERENCES chapters(id),
+    since TEXT,
+    notes TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
 `);
 
 // Migrate existing DBs — each guarded individually so an old copy of
@@ -217,17 +230,23 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(UPLOADS_DIR));
 
+// The admin password can be changed from Settings (stored in the settings
+// table); the ADMIN_PASSWORD env var (or the default) is the fallback for
+// fresh databases and the recovery path — clear the settings row to reset.
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'together-sports';
+const adminPass = () => get("SELECT value FROM settings WHERE key='admin_password'")?.value || ADMIN_PASSWORD;
+const isAdminToken = (t) => !!t && t === adminPass();
+
 function requireAdmin(req, res, next) {
   const t = req.headers['x-admin-token'] || req.query.token;
-  if (t === ADMIN_PASSWORD) return next();
+  if (isAdminToken(t)) return next();
   res.status(401).json({ error: 'Unauthorized' });
 }
 
 // Coach auth via access code header; admin token also passes (req.isAdmin).
 function requireCoach(req, res, next) {
   const t = req.headers['x-admin-token'] || req.query.token;
-  if (t === ADMIN_PASSWORD) { req.coach = null; req.isAdmin = true; return next(); }
+  if (isAdminToken(t)) { req.coach = null; req.isAdmin = true; return next(); }
   const code = req.headers['x-coach-code'];
   if (!code) return res.status(401).json({ error: 'Unauthorized' });
   const coach = get(
@@ -246,7 +265,7 @@ function requireCoach(req, res, next) {
 // a view key, so a viewer can never create, edit, or delete anything.
 function requireViewer(req, res, next) {
   const t = req.headers['x-admin-token'] || req.query.token;
-  if (t === ADMIN_PASSWORD) { req.isAdmin = true; return next(); }
+  if (isAdminToken(t)) { req.isAdmin = true; return next(); }
   const key = req.headers['x-view-key'] || req.query.view_key;
   if (!key) return res.status(401).json({ error: 'Unauthorized' });
   const vk = get('SELECT * FROM view_keys WHERE key_code=? AND active=1', [String(key).trim()]);
@@ -267,9 +286,18 @@ function genViewKey() {
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 app.post('/api/auth', (req, res) => {
-  req.body.password === ADMIN_PASSWORD
+  isAdminToken(req.body.password)
     ? res.json({ ok: true })
     : res.status(401).json({ error: 'Wrong password' });
+});
+
+app.post('/api/change-password', requireAdmin, (req, res) => {
+  const { current, next } = req.body || {};
+  if (!isAdminToken(current)) return res.status(401).json({ error: 'Current password is wrong' });
+  const pw = String(next || '');
+  if (pw.length < 8) return res.status(400).json({ error: 'New password must be at least 8 characters' });
+  run('INSERT OR REPLACE INTO settings VALUES (?,?)', ['admin_password', pw]);
+  res.json({ ok: true });
 });
 
 app.post('/api/coach-auth', (req, res) => {
@@ -301,7 +329,7 @@ app.post('/api/sports', requireAdmin, (req, res) => {
 
 // ── Coaches ───────────────────────────────────────────────────────────────────
 app.get('/api/coaches', (req, res) => {
-  const isAdmin = (req.headers['x-admin-token'] || req.query.token) === ADMIN_PASSWORD;
+  const isAdmin = isAdminToken(req.headers['x-admin-token'] || req.query.token);
   res.json(db.prepare(`
     SELECT c.id, c.name, c.email, c.phone, c.chapter_id, c.sport_id, c.bio, c.active,
            ${isAdmin ? 'c.access_code,' : ''}
@@ -335,7 +363,7 @@ app.delete('/api/coaches/:id', requireAdmin, (req, res) => {
 
 // ── Sessions ──────────────────────────────────────────────────────────────────
 app.get('/api/sessions', (req, res) => {
-  const isAdmin = (req.headers['x-admin-token'] || req.query.token) === ADMIN_PASSWORD;
+  const isAdmin = isAdminToken(req.headers['x-admin-token'] || req.query.token);
   // Coaches can only fetch their own sessions; admin can fetch all
   if (!isAdmin && !req.query.coach_id) return res.status(401).json({ error: 'Unauthorized' });
   let sql = `
@@ -368,7 +396,7 @@ app.post('/api/sessions', (req, res) => {
 
 app.put('/api/sessions/:id', (req, res) => {
   const { coach_id, chapter_id, sport_id, session_date, duration_minutes, participants, location, notes } = req.body;
-  const isAdmin = (req.headers['x-admin-token'] || req.query.token) === ADMIN_PASSWORD;
+  const isAdmin = isAdminToken(req.headers['x-admin-token'] || req.query.token);
   const existing = get('SELECT coach_id FROM sessions WHERE id=?', [req.params.id]);
   if (!existing) return res.status(404).json({ error: 'Not found' });
   if (!isAdmin && String(existing.coach_id) !== String(coach_id)) return res.status(403).json({ error: 'Forbidden' });
@@ -380,7 +408,7 @@ app.put('/api/sessions/:id', (req, res) => {
 });
 
 app.delete('/api/sessions/:id', (req, res) => {
-  const isAdmin = (req.headers['x-admin-token'] || req.query.token) === ADMIN_PASSWORD;
+  const isAdmin = isAdminToken(req.headers['x-admin-token'] || req.query.token);
   const { coach_id } = req.body || {};
   const existing = get('SELECT coach_id FROM sessions WHERE id=?', [req.params.id]);
   if (!existing) return res.status(404).json({ error: 'Not found' });
@@ -517,7 +545,7 @@ app.get('/api/photos', requireAdmin, (req, res) => {
 app.post('/api/photos', upload.single('photo'), (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file' });
   const { caption, chapter_id, sport_id, session_id } = req.body;
-  const isAdmin = (req.headers['x-admin-token'] || req.query.token) === ADMIN_PASSWORD;
+  const isAdmin = isAdminToken(req.headers['x-admin-token'] || req.query.token);
   const r = run(
     'INSERT INTO photos (filename,caption,chapter_id,sport_id,session_id,approved) VALUES (?,?,?,?,?,?)',
     [req.file.filename, caption||null, chapter_id||null, sport_id||null, session_id||null, isAdmin ? 1 : 0]
@@ -542,7 +570,7 @@ app.delete('/api/photos/:id', requireAdmin, (req, res) => {
 
 // ── Volunteer Logs ────────────────────────────────────────────────────────────
 app.get('/api/volunteer-logs', (req, res) => {
-  const isAdmin = (req.headers['x-admin-token'] || req.query.token) === ADMIN_PASSWORD;
+  const isAdmin = isAdminToken(req.headers['x-admin-token'] || req.query.token);
   let sql = `
     SELECT v.*, c.name AS coach, ch.name AS chapter
     FROM volunteer_logs v
@@ -569,7 +597,7 @@ app.post('/api/volunteer-logs', (req, res) => {
 
 app.put('/api/volunteer-logs/:id', (req, res) => {
   const { coach_id, log_date, activity_type, description, people_helped, hours, chapter_id } = req.body;
-  const isAdmin = (req.headers['x-admin-token'] || req.query.token) === ADMIN_PASSWORD;
+  const isAdmin = isAdminToken(req.headers['x-admin-token'] || req.query.token);
   const existing = get('SELECT coach_id FROM volunteer_logs WHERE id=?', [req.params.id]);
   if (!existing) return res.status(404).json({ error: 'Not found' });
   if (!isAdmin && String(existing.coach_id) !== String(coach_id)) return res.status(403).json({ error: 'Forbidden' });
@@ -581,7 +609,7 @@ app.put('/api/volunteer-logs/:id', (req, res) => {
 });
 
 app.delete('/api/volunteer-logs/:id', (req, res) => {
-  const isAdmin = (req.headers['x-admin-token'] || req.query.token) === ADMIN_PASSWORD;
+  const isAdmin = isAdminToken(req.headers['x-admin-token'] || req.query.token);
   const { coach_id } = req.body || {};
   const existing = get('SELECT coach_id FROM volunteer_logs WHERE id=?', [req.params.id]);
   if (!existing) return res.status(404).json({ error: 'Not found' });
@@ -612,11 +640,14 @@ app.get('/api/stats', requireAdmin, (req, res) => {
 
 // ── Settings ──────────────────────────────────────────────────────────────────
 app.get('/api/settings', requireAdmin, (req, res) => {
-  res.json(Object.fromEntries(all('SELECT key,value FROM settings').map(r => [r.key, r.value])));
+  res.json(Object.fromEntries(
+    all('SELECT key,value FROM settings').filter(r => r.key !== 'admin_password').map(r => [r.key, r.value])
+  ));
 });
 app.post('/api/settings', requireAdmin, (req, res) => {
   for (const [k, v] of Object.entries(req.body)) {
-    if (k !== 'seeded') run('INSERT OR REPLACE INTO settings VALUES (?,?)', [k, v]);
+    // seeded is internal; admin_password only changes via /api/change-password.
+    if (k !== 'seeded' && k !== 'admin_password') run('INSERT OR REPLACE INTO settings VALUES (?,?)', [k, v]);
   }
   res.json({ ok: true });
 });
@@ -637,6 +668,38 @@ app.post('/api/view-keys', requireAdmin, (req, res) => {
 });
 app.delete('/api/view-keys/:id', requireAdmin, (req, res) => {
   run('DELETE FROM view_keys WHERE id=?', [req.params.id]);
+  res.json({ ok: true });
+});
+
+// ── Partners ──────────────────────────────────────────────────────────────────
+app.get('/api/partners', requireAdmin, (req, res) => {
+  res.json(all(`
+    SELECT p.*, ch.name AS chapter
+    FROM partners p
+    LEFT JOIN chapters ch ON p.chapter_id=ch.id
+    ORDER BY (p.status='Active') DESC, p.name COLLATE NOCASE
+  `));
+});
+app.post('/api/partners', requireAdmin, (req, res) => {
+  const { name, org_type, status, contact_name, email, phone, chapter_id, since, notes } = req.body;
+  if (!name || !name.trim()) return res.status(400).json({ error: 'Name required' });
+  const r = run(
+    'INSERT INTO partners (name,org_type,status,contact_name,email,phone,chapter_id,since,notes) VALUES (?,?,?,?,?,?,?,?,?)',
+    [name.trim(), org_type||'Community', status||'Active', contact_name||null, email||null, phone||null, chapter_id||null, since||null, notes||null]
+  );
+  res.json({ id: r.lastInsertRowid });
+});
+app.put('/api/partners/:id', requireAdmin, (req, res) => {
+  const { name, org_type, status, contact_name, email, phone, chapter_id, since, notes } = req.body;
+  if (!name || !name.trim()) return res.status(400).json({ error: 'Name required' });
+  run(
+    'UPDATE partners SET name=?,org_type=?,status=?,contact_name=?,email=?,phone=?,chapter_id=?,since=?,notes=? WHERE id=?',
+    [name.trim(), org_type||'Community', status||'Active', contact_name||null, email||null, phone||null, chapter_id||null, since||null, notes||null, req.params.id]
+  );
+  res.json({ ok: true });
+});
+app.delete('/api/partners/:id', requireAdmin, (req, res) => {
+  run('DELETE FROM partners WHERE id=?', [req.params.id]);
   res.json({ ok: true });
 });
 
@@ -692,18 +755,32 @@ app.get('/api/viewer/bundle', requireViewer, (req, res) => {
     WHERE c.name != 'Coach TBD'
     ORDER BY c.name
   `);
+  // Partners are shown to viewers without internal contact details or notes.
+  const partners = all(`
+    SELECT p.id, p.name, p.org_type, p.status, p.since, ch.name AS chapter
+    FROM partners p
+    LEFT JOIN chapters ch ON p.chapter_id=ch.id
+    ORDER BY (p.status='Active') DESC, p.name COLLATE NOCASE
+  `);
+  const dollarsRaised = Number(String(
+    get("SELECT value FROM settings WHERE key='dollars_raised'")?.value || '0'
+  ).replace(/[^0-9.]/g, '')) || 0;
   const stats = {
     total_sessions:      get('SELECT COUNT(*) n FROM sessions').n,
     total_participants:  get('SELECT COALESCE(SUM(participants),0) n FROM sessions').n,
     active_coaches:      get("SELECT COUNT(*) n FROM coaches WHERE active=1 AND name!='Coach TBD'").n,
     total_hours:         get('SELECT COALESCE(SUM(hours),0) n FROM volunteer_logs').n,
+    dollars_raised:      dollarsRaised,
+    chapters:            get('SELECT COUNT(DISTINCT chapter_id) n FROM sessions WHERE chapter_id IS NOT NULL').n,
+    partnerships:        get("SELECT COUNT(*) n FROM partners WHERE status='Active'").n,
+    public_stories:      get('SELECT COUNT(*) n FROM testimonials WHERE public=1').n,
     by_chapter: all(`SELECT ch.name, COUNT(*) sessions, COALESCE(SUM(s.participants),0) participants
                      FROM sessions s JOIN chapters ch ON s.chapter_id=ch.id GROUP BY ch.id ORDER BY sessions DESC`),
     by_sport:   all(`SELECT sp.name, COUNT(*) sessions FROM sessions s JOIN sports sp ON s.sport_id=sp.id GROUP BY sp.id ORDER BY sessions DESC`),
   };
   res.json({
     org_label: req.isAdmin ? 'Admin preview' : req.viewKey.label,
-    stats, sessions, participants, volunteerLogs, testimonials, photos, coaches,
+    stats, sessions, participants, volunteerLogs, testimonials, photos, coaches, partners,
   });
 });
 

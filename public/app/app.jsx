@@ -8,7 +8,7 @@
 
   const EMPTY = {
     chapters: [], sports: [], coaches: [], sessions: [], volunteerLogs: [],
-    testimonials: [], photos: [], participants: [], stats: null, settings: {},
+    testimonials: [], photos: [], participants: [], partners: [], stats: null, settings: {},
   };
 
   const Dashboard = ({ onLogout }) => {
@@ -26,13 +26,14 @@
 
     const reload = useCallback(async () => {
       try {
-        const [chapters, sports, coaches, sessions, volunteerLogs, testimonials, photos, participants, stats, settings] =
+        const [chapters, sports, coaches, sessions, volunteerLogs, testimonials, photos, participants, partners, stats, settings] =
           await Promise.all([
             TS.api('/api/chapters'), TS.api('/api/sports'), TS.api('/api/coaches'),
             TS.api('/api/sessions'), TS.api('/api/volunteer-logs'), TS.api('/api/testimonials'),
-            TS.api('/api/photos'), TS.api('/api/participants'), TS.api('/api/stats'), TS.api('/api/settings'),
+            TS.api('/api/photos'), TS.api('/api/participants'), TS.api('/api/partners'),
+            TS.api('/api/stats'), TS.api('/api/settings'),
           ]);
-        setData({ chapters, sports, coaches, sessions, volunteerLogs, testimonials, photos, participants, stats, settings });
+        setData({ chapters, sports, coaches, sessions, volunteerLogs, testimonials, photos, participants, partners, stats, settings });
         setLoaded(true);
       } catch (e) {
         toast(`Couldn’t load data: ${e.message}`, { error: true });
