@@ -5,6 +5,7 @@ const multer  = require('multer');
 const path    = require('path');
 const fs      = require('fs');
 const Database = require('better-sqlite3');
+const Anthropic = require('@anthropic-ai/sdk');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -107,10 +108,56 @@ db.exec(`
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL
   );
+  CREATE TABLE IF NOT EXISTS outreach_contacts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    chapter_id INTEGER REFERENCES chapters(id),
+    created_by INTEGER REFERENCES coaches(id),
+    name TEXT NOT NULL,
+    organization TEXT,
+    role TEXT,
+    track TEXT NOT NULL DEFAULT 'Partner',
+    email TEXT,
+    phone TEXT,
+    stage TEXT NOT NULL DEFAULT 'New',
+    notes TEXT,
+    next_action TEXT,
+    last_touch TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE TABLE IF NOT EXISTS outreach_touches (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    contact_id INTEGER NOT NULL REFERENCES outreach_contacts(id),
+    coach_id INTEGER REFERENCES coaches(id),
+    touch_date TEXT NOT NULL,
+    type TEXT NOT NULL,
+    summary TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE TABLE IF NOT EXISTS outreach_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    chapter_id INTEGER REFERENCES chapters(id),
+    created_by INTEGER REFERENCES coaches(id),
+    title TEXT NOT NULL,
+    event_date TEXT,
+    location TEXT,
+    status TEXT NOT NULL DEFAULT 'Idea',
+    goal TEXT,
+    notes TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
 `);
 
-// Migrate existing DBs
-try { run('ALTER TABLE participants ADD COLUMN volunteer_log_id INTEGER REFERENCES volunteer_logs(id)'); } catch {}
+// Migrate existing DBs — each guarded individually so an old copy of
+// data/together.db (gitignored, so it survives checkouts/pulls untouched)
+// picks up columns added after it was first created.
+const migrations = [
+  'ALTER TABLE participants ADD COLUMN volunteer_log_id INTEGER REFERENCES volunteer_logs(id)',
+  'ALTER TABLE coaches ADD COLUMN access_code TEXT',
+  'ALTER TABLE testimonials ADD COLUMN approved INTEGER NOT NULL DEFAULT 0',
+  'ALTER TABLE testimonials ADD COLUMN public INTEGER NOT NULL DEFAULT 0',
+  'ALTER TABLE photos ADD COLUMN approved INTEGER NOT NULL DEFAULT 1',
+];
+for (const sql of migrations) { try { run(sql); } catch {} }
 
 const seeded = get("SELECT value FROM settings WHERE key='seeded'");
 if (!seeded) {
@@ -166,6 +213,22 @@ function requireAdmin(req, res, next) {
   const t = req.headers['x-admin-token'] || req.query.token;
   if (t === ADMIN_PASSWORD) return next();
   res.status(401).json({ error: 'Unauthorized' });
+}
+
+// Coach auth via access code header; admin token also passes (req.isAdmin).
+function requireCoach(req, res, next) {
+  const t = req.headers['x-admin-token'] || req.query.token;
+  if (t === ADMIN_PASSWORD) { req.coach = null; req.isAdmin = true; return next(); }
+  const code = req.headers['x-coach-code'];
+  if (!code) return res.status(401).json({ error: 'Unauthorized' });
+  const coach = get(
+    "SELECT id,name,chapter_id,sport_id FROM coaches WHERE access_code=? AND active=1 AND name!='Coach TBD'",
+    [String(code).trim()]
+  );
+  if (!coach) return res.status(401).json({ error: 'Invalid access code' });
+  req.coach = coach;
+  req.isAdmin = false;
+  next();
 }
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
@@ -522,6 +585,264 @@ app.post('/api/settings', requireAdmin, (req, res) => {
     if (k !== 'seeded') run('INSERT OR REPLACE INTO settings VALUES (?,?)', [k, v]);
   }
   res.json({ ok: true });
+});
+
+// ── Outreach (per-chapter, coach-facing) ──────────────────────────────────────
+// Rows are scoped to the coach's chapter so co-coaches can collaborate; a coach
+// with no chapter sees only rows they created. Admin sees everything.
+
+function outreachScope(req, alias) {
+  if (req.isAdmin) {
+    if (req.query.chapter_id) return { sql: ` AND ${alias}.chapter_id=?`, args: [req.query.chapter_id] };
+    return { sql: '', args: [] };
+  }
+  if (req.coach.chapter_id != null) {
+    return { sql: ` AND (${alias}.chapter_id=? OR ${alias}.created_by=?)`, args: [req.coach.chapter_id, req.coach.id] };
+  }
+  return { sql: ` AND ${alias}.created_by=?`, args: [req.coach.id] };
+}
+
+function outreachRow(req, table, id) {
+  const scope = outreachScope(req, 't');
+  return get(`SELECT t.* FROM ${table} t WHERE t.id=?${scope.sql}`, [id, ...scope.args]);
+}
+
+app.get('/api/outreach/contacts', requireCoach, (req, res) => {
+  const scope = outreachScope(req, 'o');
+  res.json(all(`
+    SELECT o.*, ch.name AS chapter, c.name AS created_by_name
+    FROM outreach_contacts o
+    LEFT JOIN chapters ch ON o.chapter_id=ch.id
+    LEFT JOIN coaches c ON o.created_by=c.id
+    WHERE 1=1${scope.sql}
+    ORDER BY o.created_at DESC
+  `, scope.args));
+});
+
+app.post('/api/outreach/contacts', requireCoach, (req, res) => {
+  const { name, organization, role, track, email, phone, stage, notes, next_action } = req.body;
+  if (!name) return res.status(400).json({ error: 'name required' });
+  const chapter_id = req.isAdmin ? (req.body.chapter_id || null) : req.coach.chapter_id;
+  const r = run(
+    'INSERT INTO outreach_contacts (chapter_id,created_by,name,organization,role,track,email,phone,stage,notes,next_action) VALUES (?,?,?,?,?,?,?,?,?,?,?)',
+    [chapter_id, req.coach?.id || null, name, organization || null, role || null, track || 'Partner',
+     email || null, phone || null, stage || 'New', notes || null, next_action || null]
+  );
+  res.json({ id: r.lastInsertRowid });
+});
+
+app.put('/api/outreach/contacts/:id', requireCoach, (req, res) => {
+  const existing = outreachRow(req, 'outreach_contacts', req.params.id);
+  if (!existing) return res.status(404).json({ error: 'Not found' });
+  const f = { ...existing, ...req.body };
+  run(
+    'UPDATE outreach_contacts SET name=?,organization=?,role=?,track=?,email=?,phone=?,stage=?,notes=?,next_action=?,last_touch=? WHERE id=?',
+    [f.name, f.organization || null, f.role || null, f.track || 'Partner', f.email || null, f.phone || null,
+     f.stage || 'New', f.notes || null, f.next_action || null, f.last_touch || null, req.params.id]
+  );
+  res.json({ ok: true });
+});
+
+app.delete('/api/outreach/contacts/:id', requireCoach, (req, res) => {
+  const existing = outreachRow(req, 'outreach_contacts', req.params.id);
+  if (!existing) return res.status(404).json({ error: 'Not found' });
+  run('DELETE FROM outreach_touches WHERE contact_id=?', [req.params.id]);
+  run('DELETE FROM outreach_contacts WHERE id=?', [req.params.id]);
+  res.json({ ok: true });
+});
+
+app.get('/api/outreach/touches', requireCoach, (req, res) => {
+  if (!req.query.contact_id) return res.status(400).json({ error: 'contact_id required' });
+  const contact = outreachRow(req, 'outreach_contacts', req.query.contact_id);
+  if (!contact) return res.status(404).json({ error: 'Not found' });
+  res.json(all(`
+    SELECT t.*, c.name AS coach FROM outreach_touches t
+    LEFT JOIN coaches c ON t.coach_id=c.id
+    WHERE t.contact_id=? ORDER BY t.touch_date DESC, t.id DESC
+  `, [req.query.contact_id]));
+});
+
+app.post('/api/outreach/touches', requireCoach, (req, res) => {
+  const { contact_id, touch_date, type, summary, stage, next_action } = req.body;
+  if (!contact_id || !touch_date || !type) return res.status(400).json({ error: 'contact_id, touch_date and type required' });
+  const contact = outreachRow(req, 'outreach_contacts', contact_id);
+  if (!contact) return res.status(404).json({ error: 'Not found' });
+  const r = run(
+    'INSERT INTO outreach_touches (contact_id,coach_id,touch_date,type,summary) VALUES (?,?,?,?,?)',
+    [contact_id, req.coach?.id || null, touch_date, type, summary || null]
+  );
+  run('UPDATE outreach_contacts SET last_touch=?, stage=?, next_action=? WHERE id=?',
+    [touch_date, stage || contact.stage, next_action !== undefined ? next_action : contact.next_action, contact_id]);
+  res.json({ id: r.lastInsertRowid });
+});
+
+app.get('/api/outreach/events', requireCoach, (req, res) => {
+  const scope = outreachScope(req, 'o');
+  res.json(all(`
+    SELECT o.*, ch.name AS chapter, c.name AS created_by_name
+    FROM outreach_events o
+    LEFT JOIN chapters ch ON o.chapter_id=ch.id
+    LEFT JOIN coaches c ON o.created_by=c.id
+    WHERE 1=1${scope.sql}
+    ORDER BY CASE WHEN o.event_date IS NULL THEN 1 ELSE 0 END, o.event_date ASC, o.id DESC
+  `, scope.args));
+});
+
+app.post('/api/outreach/events', requireCoach, (req, res) => {
+  const { title, event_date, location, status, goal, notes } = req.body;
+  if (!title) return res.status(400).json({ error: 'title required' });
+  const chapter_id = req.isAdmin ? (req.body.chapter_id || null) : req.coach.chapter_id;
+  const r = run(
+    'INSERT INTO outreach_events (chapter_id,created_by,title,event_date,location,status,goal,notes) VALUES (?,?,?,?,?,?,?,?)',
+    [chapter_id, req.coach?.id || null, title, event_date || null, location || null, status || 'Idea', goal || null, notes || null]
+  );
+  res.json({ id: r.lastInsertRowid });
+});
+
+app.put('/api/outreach/events/:id', requireCoach, (req, res) => {
+  const existing = outreachRow(req, 'outreach_events', req.params.id);
+  if (!existing) return res.status(404).json({ error: 'Not found' });
+  const f = { ...existing, ...req.body };
+  run('UPDATE outreach_events SET title=?,event_date=?,location=?,status=?,goal=?,notes=? WHERE id=?',
+    [f.title, f.event_date || null, f.location || null, f.status || 'Idea', f.goal || null, f.notes || null, req.params.id]);
+  res.json({ ok: true });
+});
+
+app.delete('/api/outreach/events/:id', requireCoach, (req, res) => {
+  const existing = outreachRow(req, 'outreach_events', req.params.id);
+  if (!existing) return res.status(404).json({ error: 'Not found' });
+  run('DELETE FROM outreach_events WHERE id=?', [req.params.id]);
+  res.json({ ok: true });
+});
+
+// ── AI assist (drafting only) ─────────────────────────────────────────────────
+// Hard rule, enforced by architecture: this server can DRAFT outreach but has
+// no ability to send anything — no mail credentials, no send endpoint exist.
+// The coach copies the draft into their own email/text app.
+
+const anthropic = process.env.ANTHROPIC_API_KEY ? new Anthropic() : null;
+const ASSIST_MODEL = process.env.ANTHROPIC_MODEL || 'claude-opus-4-8';
+
+// Simple per-user hourly cap so a stuck client can't burn the API budget.
+const assistUsage = new Map();
+function assistAllowed(key) {
+  const now = Date.now();
+  const u = assistUsage.get(key);
+  if (!u || now > u.resetAt) { assistUsage.set(key, { count: 1, resetAt: now + 3600_000 }); return true; }
+  if (u.count >= 25) return false;
+  u.count++;
+  return true;
+}
+
+function chapterContext(chapterId) {
+  if (!chapterId) return 'No chapter is assigned yet.';
+  const ch = get('SELECT name FROM chapters WHERE id=?', [chapterId]);
+  if (!ch) return 'No chapter is assigned yet.';
+  const s = get(`SELECT COUNT(*) n, COALESCE(SUM(participants),0) kids FROM sessions WHERE chapter_id=?`, [chapterId]);
+  const sports = all(`SELECT DISTINCT sp.name FROM sessions s JOIN sports sp ON s.sport_id=sp.id WHERE s.chapter_id=?`, [chapterId]).map(r => r.name);
+  const coaches = get(`SELECT COUNT(*) n FROM coaches WHERE chapter_id=? AND active=1 AND name!='Coach TBD'`, [chapterId]).n;
+  const hours = get(`SELECT COALESCE(SUM(hours),0) h FROM volunteer_logs WHERE chapter_id=?`, [chapterId]).h;
+  return `Chapter: ${ch.name}. Sessions run so far: ${s.n} (reaching ${s.kids} kids). ` +
+         `Sports played: ${sports.join(', ') || 'not recorded yet'}. Active coaches: ${coaches}. Volunteer hours logged: ${hours}.`;
+}
+
+app.post('/api/assist', requireCoach, async (req, res) => {
+  if (!anthropic) {
+    return res.status(503).json({ error: 'AI assist isn’t configured yet — set ANTHROPIC_API_KEY on the server to turn it on.' });
+  }
+  const userKey = req.isAdmin ? 'admin' : `coach:${req.coach.id}`;
+  if (!assistAllowed(userKey)) {
+    return res.status(429).json({ error: 'You’ve hit the hourly limit for AI drafts — try again in a bit.' });
+  }
+
+  const { kind, contact_id, event_id, instructions } = req.body || {};
+  const orgName = get("SELECT value FROM settings WHERE key='org_name'")?.value || 'Together Sports';
+  const contactEmail = get("SELECT value FROM settings WHERE key='contact_email'")?.value || '';
+  const coachName = req.coach?.name || 'the program admin';
+  const chapterId = req.isAdmin ? null : req.coach.chapter_id;
+
+  const system = [
+    `You are the outreach assistant for ${orgName}, a volunteer-run youth sports nonprofit where coaches run free sports sessions for kids in their local chapters.`,
+    `You are helping ${coachName} with chapter outreach: partners, venues, donors, volunteers, and families.`,
+    `Context about this chapter: ${chapterContext(chapterId)}`,
+    contactEmail ? `Org contact email: ${contactEmail}.` : '',
+    '',
+    'HARD RULES:',
+    '1. You produce DRAFTS only. The coach sends everything themselves — never imply a message has been or will be sent automatically.',
+    '2. Never invent statistics, names, commitments, or facts. Only use the numbers and details given above or in the request. Where a needed detail is unknown, put a [bracketed placeholder].',
+    '3. Voice: warm, genuine, concise, community-minded. No corporate jargon, no hype, no pressure tactics. Emails under 150 words unless asked otherwise.',
+    '4. This is grassroots volunteer outreach to real neighbors — write like a person, not a marketing team.',
+  ].filter(Boolean).join('\n');
+
+  let prompt;
+  try {
+    if (kind === 'draft-intro' || kind === 'draft-followup') {
+      const c = outreachRow(req, 'outreach_contacts', contact_id);
+      if (!c) return res.status(404).json({ error: 'Contact not found' });
+      const who = `${c.name}${c.role ? `, ${c.role}` : ''}${c.organization ? ` at ${c.organization}` : ''} (track: ${c.track}${c.email ? `, email: ${c.email}` : ''})`;
+      const notes = c.notes ? `Notes about them: ${c.notes}` : '';
+      if (kind === 'draft-intro') {
+        prompt = `Draft a first outreach message from ${coachName} to ${who}. ${notes}\n` +
+          `Goal: open a conversation about how they could get involved with the chapter (as a ${c.track.toLowerCase()}). ` +
+          `Include a specific, low-commitment ask (a 15-minute chat, or coming to watch a session). Provide a subject line, then the message.` +
+          (instructions ? `\nAdditional instructions from the coach: ${instructions}` : '');
+      } else {
+        const touches = all('SELECT touch_date,type,summary FROM outreach_touches WHERE contact_id=? ORDER BY touch_date DESC LIMIT 6', [c.id]);
+        const history = touches.length
+          ? `Contact history (newest first):\n${touches.map(t => `- ${t.touch_date} ${t.type}: ${t.summary || 'no summary'}`).join('\n')}`
+          : 'No previous touches are logged.';
+        prompt = `Draft a follow-up message from ${coachName} to ${who}. Their pipeline stage is "${c.stage}". ${notes}\n${history}\n` +
+          `Goal: move the conversation forward naturally without being pushy. Reference the history where it helps. Provide a subject line, then the message.` +
+          (instructions ? `\nAdditional instructions from the coach: ${instructions}` : '');
+      }
+    } else if (kind === 'plan-event') {
+      const e = outreachRow(req, 'outreach_events', event_id);
+      if (!e) return res.status(404).json({ error: 'Event not found' });
+      prompt = `Help ${coachName} plan this chapter event:\n` +
+        `Title: ${e.title}\nDate: ${e.event_date || 'not set'}\nLocation: ${e.location || 'not set'}\nStatus: ${e.status}\n` +
+        `Goal: ${e.goal || 'not written down yet'}\nNotes so far: ${e.notes || 'none'}\n\n` +
+        `Produce a practical plan: (1) a short checklist working back from the event date, (2) who to reach out to (types of partners/volunteers, not invented names), ` +
+        `(3) a day-of run sheet, (4) one draft promo blurb families would actually read. Keep it grounded in what one volunteer coach can realistically do.` +
+        (instructions ? `\nAdditional instructions from the coach: ${instructions}` : '');
+    } else if (kind === 'week-plan') {
+      const scope = outreachScope(req, 'o');
+      const contacts = all(`SELECT o.name, o.organization, o.track, o.stage, o.next_action, o.last_touch FROM outreach_contacts o WHERE 1=1${scope.sql} ORDER BY o.next_action IS NULL, o.next_action LIMIT 30`, scope.args);
+      const events = all(`SELECT o.title, o.event_date, o.status, o.goal FROM outreach_events o WHERE o.status != 'Done'${scope.sql} LIMIT 15`, scope.args);
+      prompt = `Today is ${new Date().toISOString().slice(0, 10)}. Here is ${coachName}'s current outreach pipeline:\n\n` +
+        `CONTACTS:\n${contacts.length ? contacts.map(c => `- ${c.name}${c.organization ? ` (${c.organization})` : ''} · ${c.track} · stage: ${c.stage} · next action due: ${c.next_action || 'none set'} · last touch: ${c.last_touch || 'never'}`).join('\n') : '(none yet)'}\n\n` +
+        `UPCOMING EVENTS:\n${events.length ? events.map(e => `- ${e.title} · ${e.event_date || 'no date'} · ${e.status}${e.goal ? ` · goal: ${e.goal}` : ''}`).join('\n') : '(none yet)'}\n\n` +
+        `Suggest the 3-5 highest-impact outreach actions for this week, in priority order, each with a one-line reason and a concrete first step. ` +
+        `If the pipeline is empty, suggest realistic ways a volunteer coach can find their first partners and families locally.` +
+        (instructions ? `\nAdditional instructions from the coach: ${instructions}` : '');
+    } else {
+      return res.status(400).json({ error: 'Unknown assist kind' });
+    }
+
+    const msg = await anthropic.messages.create({
+      model: ASSIST_MODEL,
+      max_tokens: 1500,
+      thinking: { type: 'adaptive' },
+      output_config: { effort: kind === 'draft-intro' || kind === 'draft-followup' ? 'low' : 'medium' },
+      system,
+      messages: [{ role: 'user', content: prompt }],
+    });
+
+    if (msg.stop_reason === 'refusal') {
+      return res.status(502).json({ error: 'The assistant declined this request — try rephrasing it.' });
+    }
+    const text = msg.content.filter((b) => b.type === 'text').map((b) => b.text).join('\n').trim();
+    if (!text) return res.status(502).json({ error: 'The assistant returned an empty draft — try again.' });
+    res.json({ text, model: msg.model });
+  } catch (err) {
+    if (err instanceof Anthropic.AuthenticationError) {
+      return res.status(503).json({ error: 'The AI key on the server is invalid — check ANTHROPIC_API_KEY.' });
+    }
+    if (err instanceof Anthropic.RateLimitError) {
+      return res.status(429).json({ error: 'The AI service is busy — try again in a minute.' });
+    }
+    console.error('assist error:', err.message);
+    res.status(502).json({ error: 'AI assist hit a snag — try again in a moment.' });
+  }
 });
 
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));

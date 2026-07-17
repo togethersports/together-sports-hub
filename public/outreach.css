@@ -1,0 +1,89 @@
+/* Together Sports · Admin — companion stylesheet.
+   The core design system lives inline in admin.html (uploaded shell, kept
+   verbatim). Everything the sports-hub admin adds on top lives here. */
+
+/* ── Login screen ─────────────────────────────────────── */
+.ts-login { position: fixed; inset: 0; display: grid; grid-template-columns: 1.1fr 1fr; background: var(--bg); z-index: 300; }
+.ts-login-hero { background: var(--hero); color: #fff; display: flex; flex-direction: column; justify-content: space-between; padding: 46px 52px; }
+.ts-login-brand { display: flex; align-items: center; gap: 14px; }
+.ts-login-brand img { width: 46px; height: 46px; object-fit: contain; background: #fff; border-radius: 13px; padding: 6px; }
+.ts-login-brandname { font-family: var(--display); font-weight: 700; font-size: 17px; color: #fff; }
+.ts-login-brandsub { font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: rgba(255,255,255,.55); font-weight: 600; margin-top: 3px; }
+.ts-login-copy h1 { font-family: var(--display); font-weight: 800; font-size: 44px; letter-spacing: -1.2px; line-height: 1.02; margin: 0 0 14px; }
+.ts-login-copy p { color: rgba(255,255,255,.72); font-size: 14.5px; line-height: 1.6; max-width: 44ch; margin: 0; }
+.ts-login-stats { display: flex; gap: 30px; }
+.ts-login-stat b { display: block; font-family: var(--display); font-weight: 800; font-size: 26px; letter-spacing: -.6px; }
+.ts-login-stat span { font-size: 11.5px; color: rgba(255,255,255,.6); font-weight: 500; }
+.ts-login-panel { display: flex; align-items: center; justify-content: center; padding: 40px; }
+.ts-login-card { width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 18px; }
+.ts-login-card h2 { font-family: var(--display); font-weight: 800; font-size: 26px; letter-spacing: -.6px; margin: 0; color: var(--ink); }
+.ts-login-card .ts-lede { font-size: 13.5px; }
+.ts-login-links { display: flex; gap: 16px; font-size: 12.5px; color: var(--muted); }
+.ts-login-links a { color: var(--muted); text-decoration: none; display: inline-flex; align-items: center; gap: 5px; font-weight: 500; }
+.ts-login-links a:hover { color: var(--accent); }
+@media (max-width: 900px) { .ts-login { grid-template-columns: 1fr; } .ts-login-hero { display: none; } }
+
+/* ── Extra table grids ────────────────────────────────── */
+.ts-table--vol { min-width: 860px; }
+.ts-tr--vol { grid-template-columns: 88px 1.15fr 1.1fr 1.5fr 66px 58px 96px; }
+.ts-table--parts { min-width: 820px; }
+.ts-tr--parts { grid-template-columns: 1.2fr 1fr 1.2fr 1.2fr 1fr 0.8fr; }
+.ts-td-sub { font-size: 11px; color: var(--muted); }
+
+/* ── Nav badge ────────────────────────────────────────── */
+.ts-navbadge { margin-left: auto; font-family: var(--display); font-weight: 700; font-size: 11px; min-width: 20px; height: 20px; display: inline-grid; place-items: center; padding: 0 6px; border-radius: 99px; background: var(--peach); color: var(--ink); }
+
+/* ── Approvals ────────────────────────────────────────── */
+.ts-approvals { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 18px; align-items: start; }
+.ts-testcard { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 14px; }
+.ts-testcard.is-pending { border-color: color-mix(in oklab, var(--peach) 55%, var(--border)); }
+.ts-testcard-top { display: flex; align-items: center; gap: 10px; }
+.ts-testcard-quote { font-size: 14px; line-height: 1.6; color: var(--text); font-style: italic; margin: 0; }
+.ts-testcard-quote::before { content: "\201C"; color: var(--peach); font-family: var(--display); font-weight: 800; margin-right: 2px; }
+.ts-testcard-quote::after { content: "\201D"; color: var(--peach); font-family: var(--display); font-weight: 800; margin-left: 2px; }
+.ts-testcard-meta { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--muted); }
+.ts-testcard-meta b { color: var(--text); font-weight: 600; }
+.ts-testcard-photo { border-radius: 12px; overflow: hidden; border: 1px solid var(--border); max-height: 170px; }
+.ts-testcard-photo img { width: 100%; height: 170px; object-fit: cover; display: block; }
+.ts-testcard-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.ts-testcard-foot { display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--border); padding-top: 14px; flex-wrap: wrap; }
+.ts-testcard-foot .ui-btn { flex: 0 0 auto; }
+.ts-testcard-foot .ui-iconbtn { margin-left: auto; }
+
+/* ── Misc utilities ───────────────────────────────────── */
+.ts-mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; letter-spacing: .04em; }
+.ts-code { display: inline-flex; align-items: center; gap: 7px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 9px; padding: 5px 10px; }
+.ts-code button { display: inline-grid; place-items: center; background: none; border: 0; color: var(--muted); cursor: pointer; padding: 0; }
+.ts-code button:hover { color: var(--accent); }
+.ts-pending-dot { display: inline-block; width: 8px; height: 8px; border-radius: 99px; background: var(--peach); margin-right: 7px; }
+.ts-spin { width: 15px; height: 15px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 99px; display: inline-block; animation: tsspin .7s linear infinite; flex: 0 0 auto; }
+@keyframes tsspin { to { transform: rotate(360deg); } }
+.ts-loading { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 13px; padding: 26px 0; }
+.ts-gphoto-pending { position: absolute; top: 9px; right: 9px; }
+
+/* settings extras */
+.ts-datarow:last-child { border-bottom: 0; }
+.ts-datarow-main { flex: 1; min-width: 0; }
+.ts-quicklinks { display: flex; flex-direction: column; }
+.ts-quicklinks a { display: flex; align-items: center; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--border); color: var(--text); text-decoration: none; font-size: 13.5px; font-weight: 500; }
+.ts-quicklinks a:last-child { border-bottom: 0; }
+.ts-quicklinks a:hover { color: var(--accent); }
+.ts-quicklinks .ts-ic { color: var(--accent); }
+.ts-quicklinks span { margin-left: auto; font-size: 11.5px; color: var(--muted); }
+
+/* drawer participant list */
+.ts-dwr-parts { border-top: 1px solid var(--border); padding-top: 16px; }
+.ts-dwr-part { display: flex; align-items: center; gap: 10px; padding: 8px 0; font-size: 13px; }
+.ts-dwr-part b { font-weight: 600; }
+.ts-dwr-part span { color: var(--muted); font-size: 12px; }
+
+/* ── Narrow screens: collapse sidebar to icons ────────── */
+@media (max-width: 860px) {
+  .app { grid-template-columns: 72px 1fr; }
+  .ts-sb { padding: 20px 12px 14px; }
+  .ts-brand div, .ts-navlabel, .ts-sbfoot, .ts-quickadd span, .ts-quickadd .ui-kbd, .ts-navitem > span, .ts-navbadge { display: none; }
+  .ts-quickadd, .ts-navitem { justify-content: center; padding: 12px; }
+  .ts-top { padding: 12px 18px; }
+  .ts-content-inner { padding: 22px 18px 60px; }
+  .ts-stats { grid-template-columns: 1fr; }
+}

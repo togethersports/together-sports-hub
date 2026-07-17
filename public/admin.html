@@ -1,1472 +1,495 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Together Sports · Admin</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700;800;900&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="icon" href="assets/ts-mark.png" />
+<link rel="stylesheet" href="vendor/fonts.css" />
+<link rel="stylesheet" href="outreach.css" />
 <style>
-:root{
-  --display:"League Spartan",system-ui,sans-serif;
-  --body:"Montserrat",system-ui,sans-serif;
-  --bg:#F5F4EC;--surface:#FFFFFF;--surface-2:#ECEFE1;
-  --border:#E2E5D4;--text:#1f223f;--muted:#7d816f;
-  --accent:#285400;--accent-soft:#E7F1D7;--accent-ink:#FFFFFF;--lime:#87cb4a;
-  --danger:#b3261e;--danger-soft:#f7e4e2;
-  --radius:12px;
-  --shadow-sm:0 1px 2px rgba(31,34,63,.04),0 1px 3px rgba(31,34,63,.05);
-  --shadow:0 4px 16px rgba(31,34,63,.07);
-  --shadow-lg:0 18px 50px rgba(31,34,63,.18);
-}
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%}
-body{font-family:var(--body);color:var(--text);background:var(--bg);-webkit-font-smoothing:antialiased}
-button{font-family:inherit;cursor:pointer}
-a{color:inherit;text-decoration:none}
-input,select,textarea{font-family:inherit}
+  :root {
+    --display: "League Spartan", system-ui, sans-serif;
+    --body: "Montserrat", system-ui, sans-serif;
+    --bg: #F6F5EC; --surface: #FFFFFF; --surface-2: #EFEDDF;
+    --border: #E7E5D4; --text: #20233C; --muted: #7B7E6C;
+    --ink: #0A0D28;
+    --accent: #285400; --accent-deep: #1B3A00; --accent-soft: #E9F1D9; --accent-ink: #FFFFFF;
+    --peach: #F6A15C; --peach-soft: #FCEBDA;
+    --lime: #87CB4A; --lime-soft: #EBF6DF;
+    --danger: #B3261E; --danger-soft: #F7E4E2;
+    --sb-text: #EDEEF6; --sb-muted: #9096BB; --sb-line: rgba(255,255,255,.09); --sb-fill: rgba(255,255,255,.07);
+    --radius: 20px; --radius-sm: 13px;
+    --shadow-sm: 0 1px 2px rgba(10,13,40,.04);
+    --shadow: 0 10px 30px rgba(10,13,40,.08);
+    --shadow-lg: 0 28px 70px rgba(10,13,40,.2);
+    --hero: linear-gradient(150deg, #282C50 0%, #0A0D28 92%);
+    --sb-bg: linear-gradient(180deg, #12163C 0%, #0A0D28 100%);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body { font-family: var(--body); color: var(--text); background: var(--bg); -webkit-font-smoothing: antialiased; }
+  button { font-family: inherit; }
+  a { color: var(--accent); }
+  a:hover { color: var(--accent-deep); }
+  button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid var(--peach); outline-offset: 2px; }
+  .ts-ic { flex: 0 0 auto; }
 
-/* Layout */
-.app{height:100vh;display:grid;grid-template-columns:248px 1fr;overflow:hidden}
-.ts-main{display:flex;flex-direction:column;min-width:0;height:100vh}
-.ts-content{flex:1;overflow-y:auto;background:var(--bg)}
-.ts-content-inner{padding:26px 32px 64px;max-width:1340px;margin:0 auto;animation:viewfade .26s ease}
-@keyframes viewfade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-.view{display:flex;flex-direction:column;gap:22px}
+  /* ── App layout ───────────────────────────────────── */
+  .app { height: 100vh; display: grid; grid-template-columns: 264px 1fr; overflow: hidden; }
+  .ts-main { display: flex; flex-direction: column; min-width: 0; height: 100vh; }
+  .ts-content { flex: 1; overflow-y: auto; background: var(--bg); }
+  .ts-content-inner { padding: 30px 40px 72px; max-width: 1360px; margin: 0 auto; animation: viewfade .3s cubic-bezier(.22,.61,.36,1) both; }
+  @keyframes viewfade { from { transform: translateY(8px); opacity: .01; } to { transform: none; opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { .ts-content-inner { animation: none; } }
+  .view { display: flex; flex-direction: column; gap: 22px; }
 
-/* Login overlay */
-.login-wrap{position:fixed;inset:0;background:rgba(20,24,18,.45);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:999}
-.login-card{background:var(--surface);border-radius:20px;padding:40px 44px;box-shadow:var(--shadow-lg);width:380px;text-align:center}
-.login-logo{width:64px;height:64px;border-radius:18px;background:var(--accent);color:#fff;display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:26px;margin:0 auto 20px}
-.login-card h2{font-family:var(--display);font-weight:700;font-size:26px;letter-spacing:-.5px;margin-bottom:6px}
-.login-card p{color:var(--muted);font-size:13.5px;margin-bottom:28px}
-.login-card input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:11px;font-size:14px;outline:none;margin-bottom:12px;transition:border-color .14s,box-shadow .14s}
-.login-card input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
-.login-card button{width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:11px;font-size:14px;font-weight:700;transition:background .14s}
-.login-card button:hover{background:color-mix(in oklab,var(--accent) 90%,#000)}
-.login-err{color:var(--danger);font-size:12.5px;margin-top:8px}
+  /* ── Sidebar (ink) ────────────────────────────────── */
+  .ts-sb { display: flex; flex-direction: column; background: var(--sb-bg); color: var(--sb-text); padding: 24px 16px 18px; }
+  .ts-brand { display: flex; align-items: center; gap: 12px; padding: 2px 6px 22px; }
+  .ts-logo-img { width: 42px; height: 42px; object-fit: contain; flex: 0 0 auto; background: #fff; border-radius: 12px; padding: 5px; }
+  .ts-logo-img--lg { width: 88px; height: 88px; object-fit: contain; flex: 0 0 auto; background: #fff; border: 1px solid var(--border); border-radius: 18px; padding: 12px; }
+  .ts-brandname { font-family: var(--display); font-weight: 700; font-size: 15px; letter-spacing: -.2px; line-height: 1.1; white-space: nowrap; color: #fff; }
+  .ts-brandsub { font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--sb-muted); font-weight: 600; margin-top: 3px; }
+  .ts-quickadd { display: flex; align-items: center; gap: 9px; width: 100%; background: var(--peach); color: var(--ink); border: 0; border-radius: 13px; padding: 13px 15px; font-family: var(--body); font-weight: 700; font-size: 13.5px; cursor: pointer; box-shadow: 0 8px 22px rgba(246,161,92,.22); transition: transform .12s, box-shadow .12s, background .14s; margin-bottom: 8px; }
+  .ts-quickadd:hover { transform: translateY(-1px); background: #F8AC6F; }
+  .ts-quickadd.is-active { background: #F8AC6F; }
+  .ts-quickadd .ui-kbd { margin-left: auto; background: rgba(10,13,40,.12); border-color: transparent; color: var(--ink); }
+  .ts-navlabel { font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--sb-muted); font-weight: 700; padding: 14px 8px 7px; }
+  .ts-nav { display: flex; flex-direction: column; gap: 3px; }
+  .ts-navitem { position: relative; display: flex; align-items: center; gap: 13px; padding: 11px 13px; border-radius: 12px; color: var(--sb-muted); background: none; border: 0; cursor: pointer; font-family: var(--body); font-weight: 500; font-size: 13.5px; text-align: left; transition: background .14s, color .14s; }
+  .ts-navitem:hover { background: var(--sb-fill); color: #fff; }
+  .ts-navitem.is-active { background: var(--sb-fill); color: #fff; font-weight: 600; }
+  .ts-navitem.is-active::before { content: ""; position: absolute; left: -16px; top: 50%; transform: translateY(-50%); width: 4px; height: 20px; border-radius: 0 4px 4px 0; background: var(--peach); }
+  .ts-navitem.is-active .ts-ic { color: var(--peach); }
+  .ts-sbfoot { margin-top: auto; padding-top: 18px; }
+  .ts-sbcard { border-radius: 16px; padding: 16px; background: var(--sb-fill); border: 1px solid var(--sb-line); }
+  .ts-sbcard-k { font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; font-weight: 600; color: var(--sb-muted); }
+  .ts-sbcard-v { font-family: var(--display); font-weight: 700; font-size: 18px; margin: 7px 0 12px; letter-spacing: -.3px; color: #fff; }
+  .ts-sbcard-bar { height: 6px; border-radius: 99px; background: rgba(255,255,255,.14); overflow: hidden; }
+  .ts-sbcard-bar span { display: block; height: 100%; border-radius: 99px; background: var(--lime); }
+  .ts-sbcard-sub { font-size: 11.5px; margin-top: 9px; color: var(--sb-muted); font-weight: 500; }
 
-/* Sidebar */
-.ts-sb{display:flex;flex-direction:column;background:var(--surface);border-right:1px solid var(--border);padding:22px 16px 18px;overflow-y:auto}
-.ts-brand{display:flex;align-items:center;gap:11px;padding:4px 6px 22px}
-.ts-logo{width:38px;height:38px;border-radius:11px;flex:0 0 auto;background:var(--accent);color:#fff;display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:16px}
-.ts-brandname{font-family:var(--display);font-weight:700;font-size:15px;letter-spacing:-.2px;line-height:1.1}
-.ts-brandsub{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-top:2px}
-.ts-nav{display:flex;flex-direction:column;gap:3px}
-.ts-navitem{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;color:var(--muted);background:none;border:0;font-weight:500;font-size:13.5px;text-align:left;transition:background .14s,color .14s;width:100%}
-.ts-navitem:hover{background:color-mix(in oklab,var(--text) 5%,transparent);color:var(--text)}
-.ts-navitem.active{background:var(--accent-soft);color:var(--accent);font-weight:600}
-.ts-nav-badge{background:var(--danger);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;margin-left:auto}
-.ts-sbfoot{margin-top:auto;padding-top:16px;display:flex;flex-direction:column;gap:8px}
-.ts-sbcard{border-radius:14px;padding:15px 15px 14px;background:var(--accent-soft);color:var(--accent)}
-.ts-sbcard-k{font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;opacity:.85}
-.ts-sbcard-v{font-family:var(--display);font-weight:700;font-size:18px;margin:6px 0 10px;letter-spacing:-.2px}
-.ts-sbcard-bar{height:6px;border-radius:99px;background:color-mix(in oklab,currentColor 18%,transparent);overflow:hidden}
-.ts-sbcard-bar span{display:block;height:100%;border-radius:99px;background:currentColor;transition:width .4s}
-.ts-logout{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:10px;background:none;border:1.5px solid var(--border);color:var(--muted);font-size:13px;font-weight:600;width:100%;transition:all .14s}
-.ts-logout:hover{border-color:var(--danger);color:var(--danger)}
+  /* ── Topbar ───────────────────────────────────────── */
+  .ts-top { display: flex; align-items: center; gap: 14px; padding: 15px 40px; border-bottom: 1px solid var(--border); background: color-mix(in oklab, var(--surface) 72%, var(--bg)); flex: 0 0 auto; backdrop-filter: blur(8px); z-index: 5; }
+  .ts-searchbtn { display: flex; align-items: center; gap: 10px; flex: 1 1 auto; max-width: 440px; background: var(--surface); border: 1px solid var(--border); border-radius: 99px; padding: 10px 10px 10px 17px; color: var(--muted); font-family: var(--body); font-size: 13px; font-weight: 500; cursor: pointer; transition: border-color .14s, box-shadow .14s; }
+  .ts-searchbtn:hover { border-color: color-mix(in oklab, var(--accent) 32%, var(--border)); box-shadow: var(--shadow-sm); }
+  .ts-searchbtn .ui-kbd { margin-left: auto; }
+  .ts-topright { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+  .ts-topdiv { width: 1px; height: 26px; background: var(--border); }
+  .ts-chapsel, .ts-bellwrap { position: relative; }
+  .ts-chip { display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 99px; padding: 9px 14px; font-family: var(--body); font-size: 13px; font-weight: 600; color: var(--text); cursor: pointer; }
+  .ts-chip .ts-ic { color: var(--accent); }
+  .ts-menu { position: absolute; top: calc(100% + 8px); right: 0; width: 224px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow-lg); padding: 7px; z-index: 20; max-height: 340px; overflow-y: auto; }
+  .ts-menu--feed { width: 324px; padding: 10px; }
+  .ts-menu-item { display: flex; align-items: center; gap: 9px; width: 100%; text-align: left; background: none; border: 0; padding: 10px 11px; border-radius: 10px; font-family: var(--body); font-size: 13px; color: var(--text); cursor: pointer; }
+  .ts-menu-item:hover { background: var(--surface-2); }
+  .ts-menu-item.is-active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+  .ts-menu-flag { font-size: 14px; }
+  .ts-feedhead { font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; font-weight: 700; color: var(--muted); padding: 4px 8px 8px; }
+  .ts-feedrow { display: flex; gap: 11px; align-items: flex-start; padding: 10px 8px; border-radius: 12px; }
+  .ts-feedrow:hover { background: var(--surface-2); }
+  .ts-feed-ic { width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); flex: 0 0 auto; }
+  .ts-feed-text { font-size: 12.5px; line-height: 1.45; }
+  .ts-feed-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .ts-iconbtn { width: 40px; height: 40px; border-radius: 99px; display: grid; place-items: center; background: var(--surface); border: 1px solid var(--border); color: var(--text); cursor: pointer; position: relative; }
+  .ts-iconbtn::after { content: ""; position: absolute; top: 10px; right: 11px; width: 6px; height: 6px; border-radius: 99px; background: var(--peach); border: 2px solid var(--surface); }
+  .ts-avatar { width: 40px; height: 40px; border-radius: 99px; display: grid; place-items: center; background: var(--ink); color: var(--peach); font-family: var(--display); font-weight: 700; font-size: 13px; flex: 0 0 auto; }
+  .ts-userchip { display: flex; align-items: center; gap: 10px; }
+  .ts-usermeta { display: flex; flex-direction: column; line-height: 1.25; }
+  .ts-username { font-size: 13px; font-weight: 600; }
+  .ts-userrole { font-size: 11px; color: var(--muted); }
 
-/* Topbar */
-.ts-top{display:flex;align-items:center;gap:16px;padding:13px 32px;border-bottom:1px solid var(--border);background:color-mix(in oklab,var(--surface) 75%,var(--bg));flex:0 0 auto;z-index:5}
-.ts-top-title{font-family:var(--display);font-weight:700;font-size:17px;letter-spacing:-.3px}
-.ts-topright{display:flex;align-items:center;gap:12px;margin-left:auto}
-.ts-chip{display:flex;align-items:center;gap:7px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 12px;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;border:none}
-.ts-avatar{width:36px;height:36px;border-radius:99px;display:grid;place-items:center;background:var(--accent);color:#fff;font-family:var(--display);font-weight:700;font-size:13px;flex:0 0 auto}
-.ts-username{font-size:13px;font-weight:600}
-.ts-userrole{font-size:11px;color:var(--muted)}
+  /* ── kbd ──────────────────────────────────────────── */
+  .ui-kbd { font-family: var(--body); font-size: 10.5px; font-weight: 700; color: var(--muted); background: var(--surface-2); border: 1px solid var(--border); border-radius: 7px; padding: 3px 7px; line-height: 1; white-space: nowrap; }
 
-/* Page header */
-.ts-pagehead{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap}
-.ts-eyebrow{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--accent);letter-spacing:.02em;text-transform:uppercase}
-.ts-h1{font-family:var(--display);font-weight:700;font-size:31px;letter-spacing:-.6px;margin:9px 0 6px;line-height:1.02}
-.ts-lede{color:var(--muted);font-size:14px;max-width:60ch}
-.ts-pagehead-actions{display:flex;gap:10px;flex:0 0 auto}
+  /* ── Page header ──────────────────────────────────── */
+  .ts-pagehead { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; }
+  .ts-eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: 11.5px; font-weight: 600; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; }
+  .ts-eyebrow .ts-ic { color: var(--accent); }
+  .ts-h1 { font-family: var(--display); font-weight: 800; font-size: 32px; letter-spacing: -.8px; margin: 11px 0 7px; line-height: 1.02; color: var(--ink); }
+  .ts-lede { color: var(--muted); font-size: 14px; max-width: 60ch; margin: 0; line-height: 1.5; }
+  .ts-pagehead-actions { display: flex; gap: 10px; flex: 0 0 auto; }
 
-/* Buttons */
-.ui-btn{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:13.5px;padding:10px 17px;border-radius:11px;border:1px solid transparent;white-space:nowrap;transition:transform .12s,box-shadow .12s,background .14s;cursor:pointer}
-.ui-btn:hover{transform:translateY(-1px)}
-.ui-btn:active{transform:none}
-.ui-btn--primary{background:var(--accent);color:#fff;box-shadow:0 6px 16px color-mix(in oklab,var(--accent) 28%,transparent)}
-.ui-btn--primary:hover{background:color-mix(in oklab,var(--accent) 90%,#000)}
-.ui-btn--ghost{background:var(--surface);border-color:var(--border);color:var(--text)}
-.ui-btn--ghost:hover{border-color:color-mix(in oklab,var(--accent) 40%,var(--border))}
-.ui-btn--danger{background:var(--danger);color:#fff;border-color:var(--danger)}
-.ui-btn--sm{padding:7px 13px;font-size:12.5px;border-radius:9px}
-.ui-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+  /* ── Buttons ──────────────────────────────────────── */
+  .ui-btn { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-family: var(--body); font-weight: 600; font-size: 13.5px; padding: 12px 20px; border-radius: 99px; border: 1px solid transparent; white-space: nowrap; transition: transform .12s, box-shadow .12s, background .14s, border-color .14s; }
+  .ui-btn:hover { transform: translateY(-1px); }
+  .ui-btn:active { transform: none; }
+  .ui-btn--primary { background: var(--accent); color: var(--accent-ink); box-shadow: 0 6px 18px rgba(40,84,0,.22); }
+  .ui-btn--primary:hover { background: var(--accent-deep); }
+  .ui-btn--ghost { background: var(--surface); border-color: var(--border); color: var(--text); }
+  .ui-btn--ghost:hover { border-color: color-mix(in oklab, var(--accent) 36%, var(--border)); }
+  .ui-btn--danger { background: var(--danger); color: #fff; }
+  .ui-btn--sm { padding: 9px 15px; font-size: 12.5px; }
+  .ui-btn--full { width: 100%; justify-content: center; }
+  .ui-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+  .ui-iconbtn { width: 36px; height: 36px; border-radius: 99px; display: grid; place-items: center; background: var(--surface); border: 1px solid var(--border); color: var(--muted); cursor: pointer; transition: color .14s, border-color .14s, background .14s; }
+  .ui-iconbtn:hover { color: var(--accent); border-color: color-mix(in oklab, var(--accent) 36%, var(--border)); }
+  .ui-iconbtn.is-danger:hover { color: var(--danger); border-color: color-mix(in oklab, var(--danger) 40%, var(--border)); background: var(--danger-soft); }
 
-/* Stats */
-.ts-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
-.ts-stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 18px 16px;display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow-sm)}
-.ts-stat-label{font-size:12.5px;font-weight:600;color:var(--muted)}
-.ts-stat-value{font-family:var(--display);font-weight:700;font-size:38px;letter-spacing:-1px;line-height:.95}
-.ts-stat-delta{display:inline-flex;align-items:center;gap:3px;font-size:11.5px;font-weight:700;color:var(--accent);background:var(--accent-soft);padding:3px 8px;border-radius:99px}
-.ts-stat-delta.warn{color:#92400e;background:#fef3c7}
-.ts-stat-sub{font-size:11.5px;color:var(--muted);font-weight:500}
+  /* ── Stats ────────────────────────────────────────── */
+  .ts-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+  .ts-stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px 22px 20px; display: flex; flex-direction: column; gap: 12px; box-shadow: var(--shadow-sm); }
+  .ts-stat-label { font-size: 13px; font-weight: 600; color: var(--muted); }
+  .ts-stat-value { font-family: var(--display); font-weight: 800; font-size: 44px; letter-spacing: -1.4px; line-height: .95; color: var(--ink); }
+  .ts-stat-foot { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+  .ts-stat-delta { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 700; color: var(--accent); background: var(--lime-soft); padding: 4px 9px; border-radius: 99px; }
+  .ts-stat-sub { font-size: 11.5px; color: var(--muted); font-weight: 500; }
+  .ts-stat--hero { background: var(--hero); border-color: transparent; color: #fff; box-shadow: var(--shadow); }
+  .ts-stat--hero .ts-stat-label { color: rgba(255,255,255,.78); }
+  .ts-stat--hero .ts-stat-value { color: #fff; }
+  .ts-stat--hero .ts-stat-delta { color: var(--ink); background: var(--peach); }
+  .ts-stat--hero .ts-stat-sub { color: rgba(255,255,255,.7); }
 
-/* Cards */
-.ts-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm)}
-.ts-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:18px 20px 14px}
-.ts-card-title{font-family:var(--display);font-weight:700;font-size:17px;letter-spacing:-.3px}
-.ts-card-sub{font-size:12px;color:var(--muted);margin-top:3px}
-.ts-link{display:inline-flex;align-items:center;gap:4px;color:var(--accent);font-weight:600;font-size:12.5px;background:none;border:0;cursor:pointer;transition:gap .14s}
-.ts-link:hover{gap:8px}
-.ts-grid{display:grid;grid-template-columns:1.55fr 1fr;gap:16px;align-items:start}
-.ts-side{display:flex;flex-direction:column;gap:16px}
+  /* ── Cards & grid ─────────────────────────────────── */
+  .ts-grid { display: grid; grid-template-columns: 1.55fr 1fr; gap: 18px; align-items: start; }
+  .ts-col { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+  .ts-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); }
+  .ts-sessions, .ts-photos, .ts-chapters, .ts-chart, .ts-attn { padding: 22px 24px; }
+  .ts-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding-bottom: 14px; }
+  .ts-card-title { font-family: var(--display); font-weight: 700; font-size: 17px; letter-spacing: -.3px; margin: 0; white-space: nowrap; }
+  .ts-card-sub { font-size: 12px; color: var(--muted); margin: 4px 0 0; }
+  .ts-link { display: inline-flex; align-items: center; gap: 4px; color: var(--accent); font-weight: 600; font-size: 12.5px; text-decoration: none; white-space: nowrap; background: none; border: 0; cursor: pointer; transition: gap .14s; }
+  .ts-link:hover { gap: 7px; }
+  .ts-side { display: flex; flex-direction: column; gap: 18px; }
+  .ts-countchip { font-family: var(--display); font-weight: 700; font-size: 12px; background: var(--peach-soft); color: #8A4A12; padding: 4px 10px; border-radius: 99px; }
 
-/* Tables */
-.ts-tablecard{overflow-x:auto}
-.ts-table{width:100%;border-collapse:collapse;font-size:13px}
-.ts-table th{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700;padding:10px 16px;text-align:left;border-bottom:1px solid var(--border)}
-.ts-table td{padding:12px 16px;border-bottom:1px solid var(--border);vertical-align:middle}
-.ts-table tr:last-child td{border-bottom:none}
-.ts-table tr:hover td{background:color-mix(in oklab,var(--accent-soft) 30%,transparent)}
-.ts-table-empty{padding:32px;text-align:center;color:var(--muted);font-size:13px}
+  /* ── Weekly chart ─────────────────────────────────── */
+  .ts-bars { display: flex; gap: 14px; align-items: stretch; height: 178px; margin-top: 12px; }
+  .ts-barcol { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 7px; min-width: 0; }
+  .ts-barwrap { flex: 1; width: 100%; display: flex; align-items: flex-end; justify-content: center; }
+  .ts-bar { width: 100%; max-width: 56px; border-radius: 9px 9px 5px 5px; background: #DCE7C6; transition: height .35s cubic-bezier(.22,.61,.36,1), background .2s; }
+  .ts-bar.is-cur { background: var(--accent); }
+  .ts-barcol:hover .ts-bar { background: color-mix(in oklab, var(--accent) 30%, #DCE7C6); }
+  .ts-barcol:hover .ts-bar.is-cur { background: var(--accent-deep); }
+  .ts-barval { font-family: var(--display); font-weight: 700; font-size: 13px; color: var(--text); }
+  .ts-barlab { font-size: 10.5px; color: var(--muted); font-weight: 600; white-space: nowrap; }
 
-/* Tags / badges */
-.ui-tag{display:inline-flex;align-items:center;font-size:11.5px;font-weight:600;padding:3px 10px;border-radius:99px;white-space:nowrap}
-.ui-tag--green{background:var(--accent-soft);color:var(--accent)}
-.ui-tag--gray{background:var(--surface-2);color:var(--muted)}
-.ui-tag--amber{background:#fef3c7;color:#92400e}
-.ui-tag--red{background:var(--danger-soft);color:var(--danger)}
-.ui-tag--blue{background:#dbeafe;color:#1d4ed8}
+  /* ── Needs attention ──────────────────────────────── */
+  .ts-attn-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid var(--border); }
+  .ts-attn-ic { width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; background: var(--peach-soft); color: #B36A24; flex: 0 0 auto; }
+  .ts-attn-main { flex: 1; min-width: 0; }
+  .ts-attn-name { font-weight: 600; font-size: 13.5px; }
+  .ts-attn-sub { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
+  .ts-allclear { display: flex; align-items: center; gap: 10px; padding: 14px 0 6px; color: var(--muted); font-size: 13px; }
+  .ts-allclear .ts-ic { color: var(--accent); }
 
-/* Bar rows (chapter stats) */
-.ts-chlist{display:flex;flex-direction:column;gap:11px;padding:0 20px 18px}
-.ts-chrow{display:grid;grid-template-columns:120px 1fr 36px;align-items:center;gap:11px}
-.ts-chname{font-size:12.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ts-chtrack{height:8px;border-radius:99px;background:var(--surface-2);overflow:hidden}
-.ts-chfill{height:100%;border-radius:99px;background:var(--accent);transition:width .4s}
-.ts-chn{font-family:var(--display);font-weight:700;font-size:13px;text-align:right}
+  /* ── Tables ───────────────────────────────────────── */
+  .ts-tablecard { padding: 8px 24px 12px; overflow-x: auto; }
+  .ts-table--full { min-width: 780px; }
+  .ts-table--manage { min-width: 920px; }
+  .ts-table { display: flex; flex-direction: column; }
+  .ts-tr { display: grid; align-items: center; gap: 10px; padding: 13px 8px; border-top: 1px solid var(--border); border-radius: 12px; transition: background .12s; }
+  .ts-table--ov .ts-tr { grid-template-columns: 74px 1.3fr 1fr 1.4fr 56px; }
+  .ts-table--ov .ts-tr:not(.ts-tr--head):hover { background: var(--surface-2); }
+  .ts-tr--full { grid-template-columns: 88px 1.15fr 1fr 1.35fr 1.15fr 52px 52px 44px; }
+  .ts-tr--manage { grid-template-columns: 1.6fr 1fr 1.35fr 76px 130px 100px 96px; }
+  .ts-tr--head { border-top: 0; padding: 10px 8px; }
+  .ts-tr--head:hover { background: none; }
+  .ts-tr--click { cursor: pointer; }
+  .ts-tr--click:hover { background: var(--surface-2); }
+  .ts-tr--head span, .ts-sorthead { font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+  .ts-sorthead { display: inline-flex; align-items: center; gap: 5px; background: none; border: 0; cursor: pointer; padding: 0; font-family: var(--body); }
+  .ts-sorthead.is-num { justify-content: flex-end; }
+  .ts-sorthead:hover { color: var(--accent); }
+  .ts-sortcaret { opacity: .4; font-size: 11px; }
+  .ts-sortcaret.is-on { opacity: 1; color: var(--accent); }
+  .ts-tr span { font-size: 13px; }
+  .ts-td-date { font-weight: 600; font-size: 13px; display: flex; flex-direction: column; }
+  .ts-td-year { font-size: 10.5px; color: var(--muted); font-weight: 500; }
+  .ts-pin { display: inline-flex; vertical-align: -2px; margin-right: 5px; color: var(--accent); }
+  .ts-td-loc { color: var(--muted); font-size: 12.5px; }
+  .ts-coach { display: flex; align-items: center; gap: 9px; font-weight: 500; min-width: 0; }
+  .ts-tr--full .ts-coach span, .ts-tr--full .ts-td-loc { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ts-coach-meta { display: flex; flex-direction: column; min-width: 0; }
+  .ts-coach-name { font-weight: 600; font-size: 13px; }
+  .ts-coach-mail { font-size: 11px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ts-num { text-align: right; justify-self: end; }
+  .ts-kids { font-family: var(--display); font-weight: 700; font-size: 16px; }
+  .ts-cell-sports { display: flex; gap: 5px; flex-wrap: wrap; }
+  .ts-rowactions { display: flex; gap: 6px; justify-content: flex-end; }
+  .ts-rowghost { opacity: 0; transition: opacity .14s; }
+  .ts-tr:hover .ts-rowghost, .ts-rowghost:focus-visible { opacity: 1; }
+  .ts-table-empty { padding: 30px 0; border-top: 1px solid var(--border); }
+  .ts-weekrow { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 20px 8px 8px; }
+  .ts-week-label { font-family: var(--display); font-weight: 700; font-size: 13px; letter-spacing: .02em; color: var(--ink); text-transform: uppercase; }
+  .ts-week-meta { font-size: 11.5px; color: var(--muted); }
+  .ts-week-meta strong { color: var(--text); font-family: var(--display); }
 
-/* Filter bar */
-.ts-filterbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
-.ts-filterbar select,.ts-filterbar input[type=date]{padding:8px 11px;border:1.5px solid var(--border);border-radius:9px;font-size:13px;background:var(--surface);outline:none;color:var(--text)}
-.ts-filterbar select:focus,.ts-filterbar input:focus{border-color:var(--accent)}
-.ts-filterbar .ui-btn{padding:8px 16px;font-size:13px}
+  /* photos / chapters mini */
+  .ts-photogrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .ts-chlist { display: flex; flex-direction: column; gap: 13px; }
+  .ts-chrow { display: grid; grid-template-columns: 120px 1fr 26px; align-items: center; gap: 11px; }
+  .ts-chname { font-size: 12.5px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ts-chtrack { height: 8px; border-radius: 99px; background: var(--surface-2); overflow: hidden; }
+  .ts-chfill { height: 100%; border-radius: 99px; transition: width .4s ease; }
+  .ts-chn { font-family: var(--display); font-weight: 700; font-size: 13px; text-align: right; }
 
-/* Coach roster */
-.ts-roster{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px}
-.ts-coachcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow-sm);cursor:pointer;transition:transform .14s,box-shadow .14s,border-color .14s;display:flex;flex-direction:column;gap:14px}
-.ts-coachcard:hover{transform:translateY(-2px);box-shadow:var(--shadow);border-color:color-mix(in oklab,var(--accent) 30%,var(--border))}
-.ts-coachcard-top{display:flex;align-items:center;gap:12px}
-.ts-coachcard-name{font-family:var(--display);font-weight:700;font-size:16px}
-.ts-coachcard-chap{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted);margin-top:2px}
-.ts-coachcard-foot{display:flex;align-items:center;justify-content:space-between;font-size:12.5px;color:var(--muted);border-top:1px solid var(--border);padding-top:12px}
-.ts-coachcard-foot strong{color:var(--text);font-family:var(--display);font-size:15px}
+  /* ── UI primitives ────────────────────────────────── */
+  .ui-avatar { border-radius: 99px; display: inline-grid; place-items: center; font-family: var(--display); font-weight: 700; flex: 0 0 auto; }
+  .ui-tag { display: inline-flex; align-items: center; font-size: 12px; font-weight: 600; padding: 4px 11px; border-radius: 99px; white-space: nowrap; }
+  .ui-tag--sm { font-size: 11px; padding: 3px 9px; }
+  .ui-status { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--muted); }
+  .ui-status-dot { width: 8px; height: 8px; border-radius: 99px; }
+  .ui-photo { position: relative; border-radius: 14px; overflow: hidden; border: 1px solid var(--border); background: var(--surface-2); }
+  .ui-photo img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+  .ui-photo svg { display: block; width: 100%; height: 100%; }
+  .ui-photo-tag { position: absolute; left: 9px; bottom: 8px; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 10px; letter-spacing: .03em; color: var(--muted); background: color-mix(in oklab, var(--surface) 82%, transparent); padding: 2px 7px; border-radius: 6px; }
 
-/* Avatar */
-.ui-avatar{border-radius:99px;display:inline-grid;place-items:center;font-family:var(--display);font-weight:700;flex:0 0 auto;font-size:14px;color:#fff;background:var(--accent)}
+  /* fields */
+  .ui-field { display: flex; flex-direction: column; gap: 6px; }
+  .ui-label { font-size: 12.5px; font-weight: 600; color: var(--text); }
+  .ui-req { color: var(--accent); margin-left: 3px; }
+  .ui-hint { font-size: 11.5px; color: var(--muted); }
+  .ui-error { font-size: 11.5px; color: var(--danger); font-weight: 600; }
+  .ui-input { font-family: var(--body); font-size: 13.5px; color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 11px 13px; outline: none; transition: border-color .14s, box-shadow .14s; width: 100%; }
+  .ui-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .ui-input.is-invalid { border-color: var(--danger); box-shadow: 0 0 0 3px var(--danger-soft); }
+  .ui-textarea { resize: vertical; line-height: 1.5; }
+  .ui-select { position: relative; display: flex; }
+  .ui-select select { appearance: none; width: 100%; font-family: var(--body); font-size: 13.5px; color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 11px 36px 11px 13px; outline: none; cursor: pointer; transition: border-color .14s, box-shadow .14s; }
+  .ui-select select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .ui-select.is-invalid select { border-color: var(--danger); box-shadow: 0 0 0 3px var(--danger-soft); }
+  .ui-select .ts-ic { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
 
-/* Modal */
-.ui-modal-backdrop{position:fixed;inset:0;background:rgba(20,24,18,.42);backdrop-filter:blur(3px);display:flex;align-items:flex-start;justify-content:center;padding:6vh 20px;z-index:100;animation:bdfade .18s ease}
-@keyframes bdfade{from{opacity:0}to{opacity:1}}
-.ui-modal{background:var(--surface);border-radius:18px;box-shadow:var(--shadow-lg);width:100%;max-width:520px;max-height:88vh;display:flex;flex-direction:column;animation:popfade .2s ease}
-.ui-modal--wide{max-width:680px}
-@keyframes popfade{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}
-.ui-modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:20px 22px 14px;border-bottom:1px solid var(--border)}
-.ui-modal-title{font-family:var(--display);font-weight:700;font-size:19px;letter-spacing:-.3px}
-.ui-modal-sub{font-size:12.5px;color:var(--muted);margin-top:4px}
-.ui-modal-body{padding:20px 22px;overflow-y:auto}
-.ui-modal-foot{display:flex;justify-content:flex-end;gap:10px;padding:14px 22px 18px;border-top:1px solid var(--border)}
-.ui-close{background:none;border:none;color:var(--muted);font-size:22px;line-height:1;padding:2px;cursor:pointer}
-.ui-close:hover{color:var(--text)}
+  /* stepper */
+  .ui-stepper { display: flex; align-items: stretch; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: var(--surface); }
+  .ui-stepper.is-invalid { border-color: var(--danger); box-shadow: 0 0 0 3px var(--danger-soft); }
+  .ui-stepper button { width: 44px; border: 0; background: var(--surface-2); color: var(--muted); font-size: 18px; font-weight: 600; cursor: pointer; display: grid; place-items: center; transition: background .14s, color .14s; }
+  .ui-stepper button:hover { color: var(--accent); background: var(--accent-soft); }
+  .ui-stepper input { flex: 1; min-width: 0; border: 0; outline: 0; text-align: center; font-family: var(--display); font-weight: 700; font-size: 17px; color: var(--ink); background: transparent; padding: 10px 4px; }
 
-/* Forms */
-.ts-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.ts-form-full{grid-column:1/-1}
-.ui-field{display:flex;flex-direction:column;gap:6px}
-.ui-label{font-size:12.5px;font-weight:600;color:var(--text)}
-.ui-input{font-size:13.5px;color:var(--text);background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;outline:none;transition:border-color .14s,box-shadow .14s;width:100%}
-.ui-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
-.ui-select-wrap{position:relative}
-.ui-select-wrap select{appearance:none;width:100%;font-size:13.5px;color:var(--text);background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:10px 34px 10px 12px;outline:none;cursor:pointer;transition:border-color .14s,box-shadow .14s}
-.ui-select-wrap select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
-.ui-select-arrow{position:absolute;right:11px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;font-size:10px}
-.ui-hint{font-size:11.5px;color:var(--muted);margin-top:2px}
+  /* segmented */
+  .ui-seg { display: inline-flex; background: var(--surface-2); border-radius: 99px; padding: 3px; gap: 2px; }
+  .ui-seg-btn { background: none; border: 0; padding: 8px 15px; border-radius: 99px; font-family: var(--body); font-size: 12.5px; font-weight: 600; color: var(--muted); cursor: pointer; transition: background .14s, color .14s; }
+  .ui-seg-btn.is-active { background: var(--surface); color: var(--accent); box-shadow: var(--shadow-sm); }
 
-/* Toast */
-.ui-toasts{position:fixed;bottom:24px;right:24px;display:flex;flex-direction:column;gap:10px;z-index:200}
-.ui-toast{display:flex;align-items:center;gap:10px;background:var(--text);color:#fff;padding:12px 16px;border-radius:12px;box-shadow:var(--shadow-lg);font-size:13.5px;font-weight:500;animation:toastin .25s ease}
-.ui-toast-ok::before{content:"✓";color:var(--lime);font-weight:800}
-.ui-toast-err::before{content:"✕";color:#ff9b8a;font-weight:800}
-@keyframes toastin{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+  /* toggle */
+  .ui-toggle { width: 42px; height: 24px; border-radius: 99px; border: 0; background: #D5D6C4; cursor: pointer; position: relative; transition: background .18s; flex: 0 0 auto; }
+  .ui-toggle span { position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 99px; background: #fff; box-shadow: var(--shadow-sm); transition: transform .18s; }
+  .ui-toggle.is-on { background: var(--accent); }
+  .ui-toggle.is-on span { transform: translateX(18px); }
 
-/* Gallery */
-.ts-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
-.ts-gphoto{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;cursor:pointer;box-shadow:var(--shadow-sm);transition:transform .14s,box-shadow .14s;display:flex;flex-direction:column}
-.ts-gphoto:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
-.ts-gphoto img{width:100%;height:160px;object-fit:cover;display:block}
-.ts-gphoto-meta{padding:11px 14px 13px;display:flex;flex-direction:column;gap:6px;flex:1}
-.ts-gphoto-cap{font-weight:600;font-size:13px}
-.ts-gphoto-sub{font-size:11.5px;color:var(--muted)}
-.ts-gphoto-actions{display:flex;gap:6px;margin-top:auto;padding-top:8px}
-.lightbox-wrap{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:300;display:flex;align-items:center;justify-content:center}
-.lightbox-wrap img{max-width:90vw;max-height:85vh;border-radius:10px}
-.lightbox-close{position:absolute;top:18px;right:22px;color:#fff;background:none;border:none;font-size:2rem;cursor:pointer}
+  /* modal */
+  .ui-modal-backdrop { position: fixed; inset: 0; background: rgba(10,13,40,.44); backdrop-filter: blur(4px); display: flex; align-items: flex-start; justify-content: center; padding: 6vh 20px; z-index: 100; animation: bd .18s ease; }
+  @keyframes bd { from { opacity: 0; } to { opacity: 1; } }
+  .ui-modal { background: var(--surface); border-radius: 22px; box-shadow: var(--shadow-lg); width: 100%; max-width: 480px; max-height: 88vh; display: flex; flex-direction: column; animation: pop .2s ease; }
+  .ui-modal--wide { max-width: 640px; }
+  @keyframes pop { from { opacity: 0; transform: translateY(12px) scale(.98); } to { opacity: 1; transform: none; } }
+  .ui-modal-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 22px 24px 16px; border-bottom: 1px solid var(--border); }
+  .ui-modal-title { font-family: var(--display); font-weight: 700; font-size: 19px; letter-spacing: -.3px; margin: 0; }
+  .ui-modal-sub { font-size: 12.5px; color: var(--muted); margin: 4px 0 0; }
+  .ui-modal-body { padding: 22px 24px; overflow-y: auto; }
+  .ui-modal-foot { display: flex; justify-content: flex-end; gap: 10px; padding: 16px 24px 20px; border-top: 1px solid var(--border); }
 
-/* Testimonials */
-.ts-testimonials{display:flex;flex-direction:column;gap:14px}
-.ts-tcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow-sm);display:grid;grid-template-columns:1fr auto;gap:14px;align-items:start}
-.ts-tquote{font-size:14px;line-height:1.6;color:var(--text);font-style:italic;margin-bottom:10px}
-.ts-tquote::before{content:'"';font-family:var(--display);font-size:1.4em;color:var(--accent);line-height:0;vertical-align:-.3em;margin-right:2px}
-.ts-tmeta{font-size:12.5px;color:var(--muted);display:flex;flex-direction:column;gap:4px}
-.ts-tactions{display:flex;flex-direction:column;gap:8px;align-items:flex-end;flex:0 0 auto}
-.ts-toggle-row{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600}
-.ts-toggle{width:40px;height:22px;border-radius:99px;border:none;background:#d5d8c6;position:relative;cursor:pointer;transition:background .18s;flex:0 0 auto}
-.ts-toggle span{position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:99px;background:#fff;box-shadow:var(--shadow-sm);transition:transform .18s}
-.ts-toggle.on{background:var(--accent)}
-.ts-toggle.on span{transform:translateX(18px)}
+  /* drawer */
+  .ui-drawer-backdrop { position: fixed; inset: 0; background: rgba(10,13,40,.32); backdrop-filter: blur(2px); z-index: 90; animation: bd .16s ease; }
+  .ui-drawer { position: fixed; top: 12px; right: 12px; bottom: 12px; width: min(430px, calc(100vw - 24px)); background: var(--surface); border-radius: 22px; box-shadow: var(--shadow-lg); display: flex; flex-direction: column; z-index: 95; animation: slidein .22s cubic-bezier(.22,.61,.36,1); }
+  @keyframes slidein { from { opacity: 0; transform: translateX(26px); } to { opacity: 1; transform: none; } }
+  .ui-drawer-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 22px 24px 16px; border-bottom: 1px solid var(--border); }
+  .ui-drawer-body { padding: 22px 24px; overflow-y: auto; flex: 1; }
+  .ui-drawer-foot { display: flex; justify-content: flex-end; gap: 10px; padding: 16px 24px 20px; border-top: 1px solid var(--border); }
 
-/* Upload drop */
-.ts-uploaddrop{border:2px dashed var(--border);border-radius:14px;min-height:140px;display:grid;place-items:center;cursor:pointer;overflow:hidden;transition:border-color .14s,background .14s;background:var(--surface-2);text-align:center;padding:20px}
-.ts-uploaddrop:hover{border-color:var(--accent);background:var(--accent-soft)}
-.ts-uploaddrop img{width:100%;height:180px;object-fit:cover}
+  /* drawer content */
+  .ts-dwr { display: flex; flex-direction: column; gap: 20px; }
+  .ts-dwr-hero { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; background: var(--hero); color: #fff; border-radius: 16px; padding: 20px; }
+  .ts-dwr-kids { font-family: var(--display); font-weight: 800; font-size: 46px; line-height: .95; letter-spacing: -1.6px; }
+  .ts-dwr-kids span { display: block; font-family: var(--body); font-size: 11.5px; font-weight: 600; letter-spacing: .02em; color: rgba(255,255,255,.72); margin-top: 6px; }
+  .ts-dwr-rows { display: flex; flex-direction: column; gap: 11px; }
+  .ts-dwr-row { display: flex; align-items: center; gap: 10px; font-size: 13.5px; }
+  .ts-dwr-row .ts-ic { color: var(--accent); }
+  .ts-dwr-coach { display: flex; align-items: center; gap: 13px; border-top: 1px solid var(--border); padding-top: 18px; }
+  .ts-dwr-coachmeta { display: flex; flex-direction: column; gap: 2px; font-size: 12.5px; min-width: 0; }
+  .ts-dwr-coachname { font-family: var(--display); font-weight: 700; font-size: 15px; }
+  .ts-dwr-coachmeta a { color: var(--accent); text-decoration: none; }
+  .ts-dwr-coachmeta span { color: var(--muted); }
+  .ts-dwr-notes { font-size: 13px; color: var(--muted); font-style: italic; line-height: 1.55; background: var(--surface-2); border-radius: 12px; padding: 14px 16px; }
 
-/* Settings */
-.ts-settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.ts-setcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;box-shadow:var(--shadow-sm)}
-.ts-setcard h3{font-family:var(--display);font-weight:700;font-size:16px;letter-spacing:-.2px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+  /* ── Command palette ──────────────────────────────── */
+  .ts-pal-backdrop { position: fixed; inset: 0; background: rgba(10,13,40,.4); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: flex-start; padding: 13vh 20px 20px; z-index: 120; animation: bd .14s ease; }
+  .ts-pal { width: 600px; max-width: 100%; background: var(--surface); border-radius: 20px; box-shadow: var(--shadow-lg); overflow: hidden; animation: pop .18s ease; display: flex; flex-direction: column; }
+  .ts-pal-inputrow { display: flex; align-items: center; gap: 11px; padding: 16px 18px; border-bottom: 1px solid var(--border); color: var(--muted); }
+  .ts-pal-inputrow input { flex: 1; border: 0; outline: 0; font-family: var(--body); font-size: 15px; color: var(--text); background: transparent; }
+  .ts-pal-list { max-height: 372px; overflow-y: auto; padding: 8px; }
+  .ts-pal-group { font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; font-weight: 700; color: var(--muted); padding: 10px 12px 5px; }
+  .ts-pal-item { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: none; border: 0; padding: 11px 12px; border-radius: 12px; cursor: pointer; font-family: var(--body); color: var(--text); }
+  .ts-pal-item .ts-ic { color: var(--muted); }
+  .ts-pal-item.is-sel { background: var(--accent-soft); }
+  .ts-pal-item.is-sel .ts-ic { color: var(--accent); }
+  .ts-pal-label { font-size: 13.5px; font-weight: 600; }
+  .ts-pal-sub { font-size: 11.5px; color: var(--muted); margin-left: auto; }
+  .ts-pal-empty { padding: 26px; text-align: center; color: var(--muted); font-size: 13px; }
+  .ts-pal-foot { display: flex; gap: 14px; padding: 11px 18px; border-top: 1px solid var(--border); background: var(--surface-2); font-size: 11px; color: var(--muted); font-weight: 500; }
+  .ts-pal-foot b { font-weight: 700; color: var(--text); }
 
-/* Participants */
-.ts-ptable{width:100%;font-size:13px;border-collapse:collapse}
-.ts-ptable th{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;padding:8px 12px;text-align:left;border-bottom:1px solid var(--border)}
-.ts-ptable td{padding:9px 12px;border-bottom:1px solid var(--border)}
+  /* toast */
+  .ui-toasts { position: fixed; bottom: 24px; right: 24px; display: flex; flex-direction: column; gap: 10px; z-index: 200; }
+  .ui-toast { display: flex; align-items: center; gap: 10px; background: var(--ink); color: #fff; padding: 13px 17px; border-radius: 14px; box-shadow: var(--shadow-lg); font-size: 13.5px; font-weight: 500; animation: toastin .25s ease; }
+  .ui-toast .ts-ic { color: var(--lime); }
+  .ui-toast--error .ts-ic { color: #FF9B8A; }
+  .ui-toast-act { margin-left: 6px; background: rgba(255,255,255,.16); border: 0; color: #fff; font-family: var(--body); font-weight: 700; font-size: 12px; padding: 7px 13px; border-radius: 99px; cursor: pointer; transition: background .14s; }
+  .ui-toast-act:hover { background: rgba(255,255,255,.26); }
+  @keyframes toastin { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: none; } }
 
-@media(max-width:1080px){
-  .ts-stats{grid-template-columns:1fr 1fr}
-  .ts-grid{grid-template-columns:1fr}
-  .ts-settings-grid{grid-template-columns:1fr}
-}
-@media(max-width:768px){
-  .app{grid-template-columns:1fr}
-  .ts-sb{display:none}
-}
+  /* empty state */
+  .ui-empty { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 30px; text-align: center; }
+  .ui-empty-ic { width: 52px; height: 52px; border-radius: 16px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); margin-bottom: 4px; }
+  .ui-empty-title { font-family: var(--display); font-weight: 700; font-size: 16px; }
+  .ui-empty-body { font-size: 13px; color: var(--muted); max-width: 36ch; }
+
+  /* ── Filter bar ───────────────────────────────────── */
+  .ts-filterbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .ts-filterbar-search { display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 99px; padding: 10px 15px; color: var(--muted); min-width: 240px; flex: 1 1 240px; max-width: 340px; }
+  .ts-filterbar-search input { border: 0; outline: 0; background: transparent; flex: 1; font-family: var(--body); font-size: 13px; color: var(--text); }
+  .ts-filter-field { min-width: 160px; }
+  .ts-clear { display: inline-flex; align-items: center; gap: 5px; background: none; border: 0; color: var(--muted); font-family: var(--body); font-size: 12.5px; font-weight: 600; cursor: pointer; padding: 6px; }
+  .ts-clear:hover { color: var(--danger); }
+  .ts-filter-meta { margin-left: auto; font-size: 12.5px; color: var(--muted); }
+  .ts-filter-meta strong { color: var(--text); font-family: var(--display); }
+
+  /* ── Roster ───────────────────────────────────────── */
+  .ts-roster { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px; }
+  .ts-coachcard { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow-sm); cursor: pointer; transition: transform .14s, box-shadow .14s, border-color .14s; display: flex; flex-direction: column; gap: 15px; }
+  .ts-coachcard:hover { transform: translateY(-2px); box-shadow: var(--shadow); border-color: color-mix(in oklab, var(--accent) 26%, var(--border)); }
+  .ts-coachcard-top { display: flex; align-items: center; gap: 12px; }
+  .ts-coachcard-id { flex: 1; min-width: 0; }
+  .ts-coachcard-name { font-family: var(--display); font-weight: 700; font-size: 16px; }
+  .ts-coachcard-chap { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .ts-coachcard-chap .ts-ic { color: var(--accent); }
+  .ts-coachcard-sports { display: flex; gap: 6px; flex-wrap: wrap; }
+  .ts-coachcard-foot { display: flex; align-items: center; justify-content: space-between; font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--border); padding-top: 13px; }
+  .ts-coachcard-foot strong { color: var(--text); font-family: var(--display); font-size: 15px; }
+  .ts-coachcard-since { font-size: 11.5px; }
+
+  /* profile modal */
+  .ts-profile { display: flex; flex-direction: column; gap: 18px; }
+  .ts-profile-head { display: flex; align-items: center; gap: 16px; }
+  .ts-profile-sports { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+  .ts-profile-rows { display: flex; flex-direction: column; gap: 10px; }
+  .ts-profile-row { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text); }
+  .ts-profile-row .ts-ic { color: var(--accent); }
+  .ts-profile-row a { color: var(--text); text-decoration: none; }
+  .ts-profile-row a:hover { color: var(--accent); }
+  .ts-profile-label, .ts-preview-label { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; font-weight: 700; color: var(--muted); margin-bottom: 10px; }
+  .ts-profile-sessions { border-top: 1px solid var(--border); padding-top: 16px; }
+  .ts-profile-srow { display: grid; grid-template-columns: 56px auto 1fr auto; align-items: center; gap: 10px; padding: 8px 0; font-size: 13px; }
+  .ts-profile-loc { color: var(--muted); font-size: 12px; }
+  .ts-muted-line { color: var(--muted); font-size: 13px; }
+
+  /* ── Add session form ─────────────────────────────── */
+  .ts-addlayout { display: grid; grid-template-columns: 1fr 330px; gap: 18px; align-items: start; }
+  .ts-form { padding: 24px 26px; }
+  .ts-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .ts-form-full { grid-column: 1 / -1; }
+  .ts-form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border); }
+  .ts-coachform .ts-form-actions { border-top: 0; padding-top: 0; margin-top: 18px; }
+  .ts-statustoggle { display: flex; align-items: center; gap: 10px; font-size: 13.5px; font-weight: 600; height: 40px; }
+
+  /* preview card */
+  .ts-preview { padding: 24px; position: sticky; top: 0; background: var(--hero); color: #fff; border-color: transparent; box-shadow: var(--shadow); }
+  .ts-preview-sport { display: flex; align-items: center; gap: 8px; font-family: var(--display); font-weight: 700; font-size: 18px; color: #fff; }
+  .ts-preview-sport .ts-ic { color: var(--peach); }
+  .ts-preview-kids { font-family: var(--display); font-weight: 800; font-size: 54px; line-height: 1; letter-spacing: -2px; color: #fff; margin: 16px 0 4px; }
+  .ts-preview-kids span { display: block; font-size: 12px; font-weight: 600; letter-spacing: 0; color: rgba(255,255,255,.72); font-family: var(--body); }
+  .ts-preview-rows { display: flex; flex-direction: column; gap: 10px; margin: 18px 0; padding: 16px 0; border-top: 1px solid rgba(255,255,255,.2); border-bottom: 1px solid rgba(255,255,255,.2); }
+  .ts-preview-row { display: flex; align-items: center; gap: 9px; font-size: 12.5px; color: rgba(255,255,255,.9); }
+  .ts-preview-row .ts-ic { color: rgba(255,255,255,.85); }
+  .ts-preview-note { font-size: 12px; color: rgba(255,255,255,.7); line-height: 1.5; font-style: italic; }
+  .ts-preview .ts-preview-label { color: rgba(255,255,255,.65); }
+
+  /* sport picker */
+  .ts-sportpick { display: flex; flex-wrap: wrap; gap: 8px; }
+  .ts-sportchip { display: inline-flex; align-items: center; gap: 5px; padding: 8px 13px; border-radius: 99px; border: 1px solid var(--border); background: var(--surface); font-family: var(--body); font-size: 12.5px; font-weight: 600; color: var(--muted); cursor: pointer; transition: all .14s; }
+  .ts-sportchip:hover { border-color: var(--accent); color: var(--text); }
+  .ts-confirm-body { font-size: 13.5px; line-height: 1.6; color: var(--text); margin: 0; }
+
+  /* ── Gallery ──────────────────────────────────────── */
+  .ts-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 18px; }
+  .ts-gphoto { text-align: left; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; cursor: pointer; padding: 0; box-shadow: var(--shadow-sm); transition: transform .14s, box-shadow .14s; }
+  .ts-gphoto:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+  .ts-gphoto:hover .ui-photo img { transform: scale(1.04); }
+  .ts-gphoto .ui-photo { border: 0; border-radius: 0; }
+  .ts-gphoto-meta { padding: 14px 16px 16px; }
+  .ts-gphoto-cap { font-weight: 600; font-size: 13.5px; }
+  .ts-gphoto-sub { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+  .ts-gphoto-chap { font-size: 11.5px; color: var(--muted); }
+  .ts-lightbox { display: flex; flex-direction: column; gap: 14px; }
+  .ts-lightbox-meta { display: flex; align-items: center; gap: 10px; }
+
+  /* upload */
+  .ts-upload { display: flex; flex-direction: column; gap: 18px; }
+  .ts-uploaddrop { border: 2px dashed var(--border); border-radius: 16px; min-height: 180px; display: grid; place-items: center; cursor: pointer; overflow: hidden; transition: border-color .14s, background .14s; background: var(--surface-2); }
+  .ts-uploaddrop:hover { border-color: var(--accent); background: var(--accent-soft); }
+  .ts-uploaddrop img { width: 100%; height: 220px; object-fit: cover; }
+  .ts-uploaddrop-empty { display: flex; flex-direction: column; align-items: center; gap: 6px; color: var(--muted); }
+  .ts-uploaddrop-title { font-family: var(--display); font-weight: 700; font-size: 15px; color: var(--text); }
+  .ts-uploaddrop-sub { font-size: 12px; }
+
+  /* ── Settings ─────────────────────────────────────── */
+  .ts-settings { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
+  .ts-setcard { padding: 22px 24px; }
+  .ts-setcard:first-child, .ts-settings > section:nth-child(3) { grid-column: 1 / -1; }
+  .ts-setcard-head { display: flex; align-items: center; gap: 12px; padding-bottom: 16px; margin-bottom: 16px; border-bottom: 1px solid var(--border); }
+  .ts-setcard-head .ts-ic { color: var(--accent); width: 20px; }
+  .ts-brandrow { display: flex; gap: 24px; align-items: flex-start; }
+  .ts-logoslot { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .ts-slot-cap { font-family: ui-monospace, Menlo, monospace; font-size: 10px; color: var(--muted); }
+  .ts-swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; flex: 1; }
+  .ts-swatch { display: flex; flex-direction: column; gap: 6px; }
+  .ts-swatch-chip { height: 38px; border-radius: 11px; border: 1px solid rgba(0,0,0,.06); }
+  .ts-swatch-name { font-size: 12px; font-weight: 600; }
+  .ts-swatch-hex { font-family: ui-monospace, Menlo, monospace; font-size: 10.5px; color: var(--muted); }
+  .ts-teamlist { display: flex; flex-direction: column; }
+  .ts-teamrow { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .ts-team-id { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .ts-team-name { font-weight: 600; font-size: 13.5px; }
+  .ts-team-mail { font-size: 11.5px; color: var(--muted); }
+  .ts-team-role { font-size: 12px; color: var(--accent); font-weight: 600; background: var(--accent-soft); padding: 4px 11px; border-radius: 99px; }
+  .ts-addrow { display: flex; align-items: center; gap: 7px; background: none; border: 0; color: var(--accent); font-family: var(--body); font-weight: 600; font-size: 13px; cursor: pointer; padding: 14px 0 0; }
+  .ts-notiflist { display: flex; flex-direction: column; }
+  .ts-notifrow, .ts-datarow { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--border); }
+  .ts-notifrow:last-child { border-bottom: 0; }
+  .ts-notif-title { font-weight: 600; font-size: 13.5px; }
+  .ts-notif-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  @media (max-width: 1080px) {
+    .ts-stats { grid-template-columns: 1fr 1fr; }
+    .ts-grid, .ts-addlayout, .ts-settings { grid-template-columns: 1fr; }
+    .ts-setcard:first-child, .ts-settings > section:nth-child(3) { grid-column: auto; }
+    .ts-usermeta { display: none; }
+  }
 </style>
 </head>
 <body>
-<div id="root"></div>
-<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin></script>
-<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin></script>
-<script type="text/babel">
-const { useState, useEffect, useCallback, useRef } = React;
-
-// ── Utilities ─────────────────────────────────────────────────────────────────
-const TOKEN = () => localStorage.getItem('ts_tok') || '';
-const api = (url, opts = {}) => {
-  opts.headers = { ...(opts.headers || {}), 'x-admin-token': TOKEN() };
-  return fetch(url, opts).then(r => r.json());
-};
-const fmt = d => d ? new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—';
-const initials = n => n ? n.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() : '?';
-const av = (name, size=36) => (
-  <div className="ui-avatar" style={{width:size,height:size,fontSize:size*0.38}}>
-    {initials(name)}
+<div id="root">
+  <div style="position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:#F6F5EC;font-family:'League Spartan',system-ui,sans-serif;">
+    <img src="assets/ts-mark.png" alt="Together Sports" style="width:62px;height:62px;object-fit:contain;" />
+    <div style="display:flex;align-items:center;gap:9px;color:#7B7E6C;font-family:'Montserrat',system-ui,sans-serif;font-size:13px;font-weight:500;">
+      <span style="width:14px;height:14px;border:2px solid #D9D7C6;border-top-color:#285400;border-radius:99px;display:inline-block;animation:tsspin .7s linear infinite;"></span>
+      Loading dashboard…
+    </div>
   </div>
-);
-
-// ── Toast ─────────────────────────────────────────────────────────────────────
-let _addToast = null;
-function ToastProvider({ children }) {
-  const [toasts, setToasts] = useState([]);
-  _addToast = (msg, type='ok') => {
-    const id = Date.now();
-    setToasts(t => [...t, { id, msg, type }]);
-    setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 3500);
-  };
-  return (
-    <>
-      {children}
-      <div className="ui-toasts">
-        {toasts.map(t => (
-          <div key={t.id} className={`ui-toast ui-toast-${t.type}`}>{t.msg}</div>
-        ))}
-      </div>
-    </>
-  );
-}
-const toast = (msg, type) => _addToast?.(msg, type);
-
-// ── Modal ─────────────────────────────────────────────────────────────────────
-function Modal({ title, sub, wide, onClose, footer, children }) {
-  useEffect(() => {
-    const h = e => e.key === 'Escape' && onClose();
-    window.addEventListener('keydown', h);
-    return () => window.removeEventListener('keydown', h);
-  }, [onClose]);
-  return (
-    <div className="ui-modal-backdrop" onClick={e => e.target===e.currentTarget && onClose()}>
-      <div className={`ui-modal${wide?' ui-modal--wide':''}`}>
-        <div className="ui-modal-head">
-          <div>
-            <div className="ui-modal-title">{title}</div>
-            {sub && <div className="ui-modal-sub">{sub}</div>}
-          </div>
-          <button className="ui-close" onClick={onClose}>✕</button>
-        </div>
-        <div className="ui-modal-body">{children}</div>
-        {footer && <div className="ui-modal-foot">{footer}</div>}
-      </div>
-    </div>
-  );
-}
-
-// ── Field ─────────────────────────────────────────────────────────────────────
-function Field({ label, hint, children }) {
-  return (
-    <div className="ui-field">
-      {label && <label className="ui-label">{label}</label>}
-      {children}
-      {hint && <div className="ui-hint">{hint}</div>}
-    </div>
-  );
-}
-function Select({ value, onChange, options, placeholder }) {
-  return (
-    <div className="ui-select-wrap">
-      <select className="ui-input" value={value} onChange={e=>onChange(e.target.value)}>
-        {placeholder && <option value="">{placeholder}</option>}
-        {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-      </select>
-      <span className="ui-select-arrow">▼</span>
-    </div>
-  );
-}
-
-// ── Sidebar nav items ─────────────────────────────────────────────────────────
-const NAV = [
-  { id:'overview',     label:'Overview',         icon:'📊' },
-  { id:'sessions',     label:'Sessions Log',     icon:'📋' },
-  { id:'volunteer',    label:'Volunteer Logs',   icon:'🤝' },
-  { id:'roster',       label:'Coach Roster',      icon:'👥' },
-  { id:'add-session',  label:'Add Session',       icon:'➕' },
-  { id:'coaches',      label:'Manage Coaches',    icon:'🛠' },
-  { id:'testimonials', label:'Testimonials',      icon:'💬', badge:'pending_testimonials' },
-  { id:'gallery',      label:'Photo Gallery',     icon:'🖼', badge:'pending_photos' },
-  { id:'settings',     label:'Settings',          icon:'⚙️' },
-];
-
-// ── Overview ──────────────────────────────────────────────────────────────────
-function Overview({ chapters, sports }) {
-  const [stats, setStats] = useState(null);
-  useEffect(() => { api('/api/stats').then(setStats); }, []);
-  if (!stats) return <div style={{color:'var(--muted)',padding:'40px'}}>Loading…</div>;
-
-  const maxSess = Math.max(...(stats.by_chapter.map(c=>c.sessions)||[1]));
-
-  return (
-    <div className="view">
-      <div>
-        <div className="ts-eyebrow">📊 Dashboard</div>
-        <h1 className="ts-h1">Together Sports Overview</h1>
-        <p className="ts-lede">All activity across chapters, coaches, and sessions.</p>
-      </div>
-      <div className="ts-stats">
-        <div className="ts-stat">
-          <div className="ts-stat-label">Total Sessions</div>
-          <div className="ts-stat-value">{stats.total_sessions}</div>
-          <div><span className="ts-stat-delta">All time</span></div>
-        </div>
-        <div className="ts-stat">
-          <div className="ts-stat-label">Total Participants</div>
-          <div className="ts-stat-value">{stats.total_participants}</div>
-          <div><span className="ts-stat-sub">kids reached</span></div>
-        </div>
-        <div className="ts-stat">
-          <div className="ts-stat-label">Active Coaches</div>
-          <div className="ts-stat-value">{stats.active_coaches}</div>
-          <div><span className="ts-stat-sub">across all chapters</span></div>
-        </div>
-        <div className="ts-stat">
-          <div className="ts-stat-label">Pending Review</div>
-          <div className="ts-stat-value" style={{color:stats.pending_testimonials+stats.pending_photos>0?'var(--danger)':'inherit'}}>
-            {stats.pending_testimonials + stats.pending_photos}
-          </div>
-          <div><span className={`ts-stat-delta${stats.pending_testimonials+stats.pending_photos>0?' warn':''}`}>
-            {stats.pending_testimonials} testimonials · {stats.pending_photos} photos
-          </span></div>
-        </div>
-      </div>
-
-      <div className="ts-grid">
-        <div className="ts-card">
-          <div className="ts-card-head">
-            <div>
-              <div className="ts-card-title">Recent Sessions</div>
-              <div className="ts-card-sub">Latest activity logged by coaches</div>
-            </div>
-          </div>
-          <div className="ts-tablecard" style={{padding:'0 0 8px'}}>
-            {stats.recent.length === 0 ? (
-              <div className="ts-table-empty">No sessions yet — coaches can log via the submit form.</div>
-            ) : (
-              <table className="ts-table">
-                <thead><tr>
-                  <th>Date</th><th>Coach</th><th>Chapter</th><th>Sport</th><th style={{textAlign:'right'}}>Kids</th>
-                </tr></thead>
-                <tbody>
-                  {stats.recent.map((r,i) => (
-                    <tr key={i}>
-                      <td><strong>{fmt(r.session_date)}</strong></td>
-                      <td>{r.coach||'—'}</td>
-                      <td>{r.chapter||'—'}</td>
-                      <td>{r.sport ? <span className="ui-tag ui-tag--green">{r.sport}</span> : '—'}</td>
-                      <td style={{textAlign:'right'}}><strong style={{fontFamily:'var(--display)'}}>{r.participants||'—'}</strong></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-        </div>
-
-        <div className="ts-side">
-          <div className="ts-card">
-            <div className="ts-card-head">
-              <div className="ts-card-title">By Chapter</div>
-            </div>
-            <div className="ts-chlist">
-              {stats.by_chapter.length === 0
-                ? <div style={{color:'var(--muted)',fontSize:'13px'}}>No sessions yet</div>
-                : stats.by_chapter.map(c => (
-                  <div className="ts-chrow" key={c.name}>
-                    <div className="ts-chname">{c.name}</div>
-                    <div className="ts-chtrack">
-                      <div className="ts-chfill" style={{width:`${(c.sessions/maxSess*100).toFixed(0)}%`}}/>
-                    </div>
-                    <div className="ts-chn">{c.sessions}</div>
-                  </div>
-                ))
-              }
-            </div>
-          </div>
-          <div className="ts-card">
-            <div className="ts-card-head">
-              <div className="ts-card-title">By Sport</div>
-            </div>
-            <div className="ts-chlist">
-              {stats.by_sport.length === 0
-                ? <div style={{color:'var(--muted)',fontSize:'13px'}}>No sessions yet</div>
-                : stats.by_sport.map(s => (
-                  <div key={s.name} style={{display:'flex',justifyContent:'space-between',fontSize:'13px',padding:'4px 0'}}>
-                    <span>{s.name}</span><strong style={{fontFamily:'var(--display)'}}>{s.sessions}</strong>
-                  </div>
-                ))
-              }
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── Sessions Log ──────────────────────────────────────────────────────────────
-function Sessions({ chapters, sports, coaches }) {
-  const [rows, setRows] = useState([]);
-  const [filters, setFilters] = useState({ chapter_id:'', sport_id:'', coach_id:'', date_from:'', date_to:'' });
-  const [detail, setDetail] = useState(null);
-  const [participants, setParticipants] = useState([]);
-  const [editing, setEditing] = useState(null);
-  const [ef, setEf] = useState({});
-  const [saving, setSaving] = useState(false);
-
-  const load = useCallback(() => {
-    const p = new URLSearchParams(Object.fromEntries(Object.entries(filters).filter(([,v])=>v)));
-    api(`/api/sessions?${p}`).then(setRows);
-  }, [filters]);
-
-  useEffect(() => { load(); }, [load]);
-
-  const del = async id => {
-    if (!confirm('Delete this session?')) return;
-    await api(`/api/sessions/${id}`, { method:'DELETE' });
-    toast('Session deleted'); load();
-  };
-
-  const openEdit = r => {
-    setEditing(r);
-    setEf({ session_date:r.session_date, chapter_id:String(r.chapter_id||''), sport_id:String(r.sport_id||''), duration_minutes:r.duration_minutes||'', participants:r.participants||'', location:r.location||'', notes:r.notes||'' });
-  };
-
-  const saveEdit = async () => {
-    setSaving(true);
-    const r = await api(`/api/sessions/${editing.id}`, { method:'PUT', headers:{'content-type':'application/json'}, body:JSON.stringify({...ef, coach_id:editing.coach_id}) });
-    setSaving(false);
-    if (r.ok) { toast('Session updated!'); setEditing(null); load(); }
-    else toast(r.error||'Error','err');
-  };
-
-  const openDetail = async row => {
-    setDetail(row);
-    const p = await api(`/api/participants?session_id=${row.id}`);
-    setParticipants(p);
-  };
-
-  const exportCSV = () => {
-    const cols = ['id','session_date','coach','chapter','sport','duration_minutes','participants','location','notes','submitted_by'];
-    const csv = [cols.join(','), ...rows.map(r => cols.map(c => JSON.stringify(r[c]??'')).join(','))].join('\n');
-    const a = document.createElement('a');
-    a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
-    a.download = 'sessions.csv'; a.click();
-  };
-
-  const sf = (k,v) => setFilters(f => ({...f,[k]:v}));
-
-  return (
-    <div className="view">
-      <div className="ts-pagehead">
-        <div>
-          <div className="ts-eyebrow">📋 Log</div>
-          <h1 className="ts-h1">Sessions</h1>
-          <p className="ts-lede">{rows.length} session{rows.length!==1?'s':''} found</p>
-        </div>
-        <div className="ts-pagehead-actions">
-          <button className="ui-btn ui-btn--ghost ui-btn--sm" onClick={exportCSV}>⬇ Export CSV</button>
-        </div>
-      </div>
-      <div className="ts-filterbar">
-        <Select value={filters.chapter_id} onChange={v=>sf('chapter_id',v)} placeholder="All Chapters"
-          options={chapters.map(c=>({value:String(c.id),label:c.name}))}/>
-        <Select value={filters.sport_id} onChange={v=>sf('sport_id',v)} placeholder="All Sports"
-          options={sports.map(s=>({value:String(s.id),label:s.name}))}/>
-        <Select value={filters.coach_id} onChange={v=>sf('coach_id',v)} placeholder="All Coaches"
-          options={coaches.map(c=>({value:String(c.id),label:c.name}))}/>
-        <input className="ui-input" style={{width:'140px'}} type="date" value={filters.date_from} onChange={e=>sf('date_from',e.target.value)}/>
-        <input className="ui-input" style={{width:'140px'}} type="date" value={filters.date_to} onChange={e=>sf('date_to',e.target.value)}/>
-        <button className="ui-btn ui-btn--ghost ui-btn--sm" onClick={()=>setFilters({chapter_id:'',sport_id:'',coach_id:'',date_from:'',date_to:''})}>Clear</button>
-      </div>
-      <div className="ts-card ts-tablecard">
-        {rows.length === 0
-          ? <div className="ts-table-empty">No sessions match these filters.</div>
-          : <table className="ts-table">
-              <thead><tr>
-                <th>Date</th><th>Coach</th><th>Chapter</th><th>Sport</th>
-                <th>Duration</th><th>Participants</th><th>Location</th><th>Notes</th><th></th>
-              </tr></thead>
-              <tbody>
-                {rows.map(r => (
-                  <tr key={r.id}>
-                    <td><strong>{fmt(r.session_date)}</strong></td>
-                    <td>{r.coach||'—'}</td>
-                    <td>{r.chapter||'—'}</td>
-                    <td>{r.sport ? <span className="ui-tag ui-tag--green">{r.sport}</span> : '—'}</td>
-                    <td>{r.duration_minutes ? `${r.duration_minutes}m` : '—'}</td>
-                    <td style={{textAlign:'right'}}><strong style={{fontFamily:'var(--display)'}}>{r.participants||'—'}</strong></td>
-                    <td style={{color:'var(--muted)',fontSize:'12.5px'}}>{r.location||'—'}</td>
-                    <td style={{maxWidth:'160px',fontSize:'12.5px',color:'var(--muted)'}}>{r.notes||''}</td>
-                    <td>
-                      <div style={{display:'flex',gap:'6px'}}>
-                        <button className="ui-btn ui-btn--ghost ui-btn--sm" onClick={()=>openDetail(r)}>View</button>
-                        <button className="ui-btn ui-btn--ghost ui-btn--sm" onClick={()=>openEdit(r)}>Edit</button>
-                        <button className="ui-btn ui-btn--danger ui-btn--sm" onClick={()=>del(r.id)}>✕</button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-        }
-      </div>
-
-      {editing && (
-        <Modal title={`Edit Session — ${fmt(editing.session_date)}`} sub={editing.coach||''}
-          onClose={()=>setEditing(null)}
-          footer={<>
-            <button className="ui-btn ui-btn--ghost" onClick={()=>setEditing(null)}>Cancel</button>
-            <button className="ui-btn ui-btn--primary" onClick={saveEdit} disabled={saving}>{saving?'Saving…':'Save'}</button>
-          </>}
-        >
-          <div className="ts-form-grid">
-            <Field label="Date"><input className="ui-input" type="date" value={ef.session_date} onChange={e=>setEf(x=>({...x,session_date:e.target.value}))}/></Field>
-            <Field label="Participants"><input className="ui-input" type="number" min="0" value={ef.participants} onChange={e=>setEf(x=>({...x,participants:e.target.value}))}/></Field>
-            <Field label="Chapter"><Select value={ef.chapter_id} onChange={v=>setEf(x=>({...x,chapter_id:v}))} placeholder="— None —" options={chapters.map(c=>({value:String(c.id),label:c.name}))}/></Field>
-            <Field label="Sport"><Select value={ef.sport_id} onChange={v=>setEf(x=>({...x,sport_id:v}))} placeholder="— None —" options={sports.map(s=>({value:String(s.id),label:s.name}))}/></Field>
-            <Field label="Location"><input className="ui-input" value={ef.location} onChange={e=>setEf(x=>({...x,location:e.target.value}))}/></Field>
-            <Field label="Duration (min)"><input className="ui-input" type="number" min="0" value={ef.duration_minutes} onChange={e=>setEf(x=>({...x,duration_minutes:e.target.value}))}/></Field>
-            <div className="ts-form-full"><Field label="Notes"><textarea className="ui-input" rows={3} value={ef.notes} onChange={e=>setEf(x=>({...x,notes:e.target.value}))} style={{resize:'vertical'}}/></Field></div>
-          </div>
-        </Modal>
-      )}
-
-      {detail && (
-        <Modal title={`Session — ${fmt(detail.session_date)}`} sub={`${detail.coach||'Unknown coach'} · ${detail.chapter||''} · ${detail.sport||''}`}
-          wide onClose={()=>setDetail(null)}>
-          <div style={{display:'flex',flexDirection:'column',gap:'14px'}}>
-            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'12px',fontSize:'13.5px'}}>
-              <div><span style={{color:'var(--muted)',fontSize:'11.5px',fontWeight:600,textTransform:'uppercase',letterSpacing:'.08em'}}>Location</span><br/>{detail.location||'—'}</div>
-              <div><span style={{color:'var(--muted)',fontSize:'11.5px',fontWeight:600,textTransform:'uppercase',letterSpacing:'.08em'}}>Duration</span><br/>{detail.duration_minutes ? `${detail.duration_minutes} min` : '—'}</div>
-              <div><span style={{color:'var(--muted)',fontSize:'11.5px',fontWeight:600,textTransform:'uppercase',letterSpacing:'.08em'}}>Participants</span><br/><strong style={{fontFamily:'var(--display)',fontSize:'20px'}}>{detail.participants||'—'}</strong></div>
-              <div><span style={{color:'var(--muted)',fontSize:'11.5px',fontWeight:600,textTransform:'uppercase',letterSpacing:'.08em'}}>Submitted by</span><br/>{detail.submitted_by||'—'}</div>
-            </div>
-            {detail.notes && <div style={{background:'var(--surface-2)',borderRadius:'10px',padding:'12px 14px',fontSize:'13.5px',lineHeight:1.6}}>{detail.notes}</div>}
-            <div>
-              <div style={{fontSize:'11.5px',fontWeight:700,textTransform:'uppercase',letterSpacing:'.08em',color:'var(--muted)',marginBottom:'10px'}}>
-                Participant Contacts ({participants.length})
-              </div>
-              {participants.length === 0
-                ? <div style={{color:'var(--muted)',fontSize:'13px'}}>No participant contact info submitted for this session.</div>
-                : <table className="ts-ptable">
-                    <thead><tr><th>Child</th><th>Parent/Guardian</th><th>Contact</th></tr></thead>
-                    <tbody>
-                      {participants.map(p => (
-                        <tr key={p.id}><td>{p.name}</td><td>{p.parent_name||'—'}</td><td>{p.parent_contact||'—'}</td></tr>
-                      ))}
-                    </tbody>
-                  </table>
-              }
-            </div>
-          </div>
-        </Modal>
-      )}
-    </div>
-  );
-}
-
-// ── Volunteer Logs ────────────────────────────────────────────────────────────
-const ACTIVITY_TYPES = ['Coaching Session','Community Outreach','Event / Tournament','Mentoring','Fundraising','Admin / Planning','Other'];
-
-function VolunteerLogs({ chapters, coaches }) {
-  const [rows, setRows] = useState([]);
-  const [filterCoach, setFilterCoach] = useState('');
-  const [editing, setEditing] = useState(null);
-  const [ef, setEf] = useState({});
-  const [saving, setSaving] = useState(false);
-  const [detail, setDetail] = useState(null);
-  const [detailParticipants, setDetailParticipants] = useState([]);
-
-  const load = useCallback(() => {
-    const p = filterCoach ? `?coach_id=${filterCoach}` : '';
-    api(`/api/volunteer-logs${p}`).then(setRows);
-  }, [filterCoach]);
-
-  useEffect(() => { load(); }, [load]);
-
-  const del = async id => {
-    if (!confirm('Delete this log?')) return;
-    await api(`/api/volunteer-logs/${id}`, { method:'DELETE' });
-    toast('Log deleted'); load();
-  };
-
-  const openEdit = r => {
-    setEditing(r);
-    setEf({ log_date:r.log_date, activity_type:r.activity_type, people_helped:r.people_helped||0, hours:r.hours||0, chapter_id:String(r.chapter_id||''), description:r.description||'' });
-  };
-
-  const openDetail = async r => {
-    setDetail(r);
-    const p = await api(`/api/participants?volunteer_log_id=${r.id}`);
-    setDetailParticipants(p);
-  };
-
-  const saveEdit = async () => {
-    setSaving(true);
-    const r = await api(`/api/volunteer-logs/${editing.id}`, { method:'PUT', headers:{'content-type':'application/json'}, body:JSON.stringify({...ef, coach_id: editing.coach_id}) });
-    setSaving(false);
-    if (r.ok) { toast('Log updated!'); setEditing(null); load(); }
-    else toast(r.error||'Error','err');
-  };
-
-  const totals = rows.reduce((acc, r) => ({
-    people: acc.people + (r.people_helped||0),
-    hours: acc.hours + (r.hours||0),
-  }), { people:0, hours:0 });
-
-  return (
-    <div className="view">
-      <div className="ts-pagehead">
-        <div>
-          <div className="ts-eyebrow">🤝 Volunteer</div>
-          <h1 className="ts-h1">Volunteer Logs</h1>
-          <p className="ts-lede">{rows.length} log{rows.length!==1?'s':''} · {totals.people} people helped · {totals.hours} hrs</p>
-        </div>
-      </div>
-      <div className="ts-filterbar">
-        <Select value={filterCoach} onChange={setFilterCoach} placeholder="All Coaches"
-          options={coaches.map(c=>({value:String(c.id),label:c.name}))}/>
-        <button className="ui-btn ui-btn--ghost ui-btn--sm" onClick={()=>setFilterCoach('')}>Clear</button>
-      </div>
-      <div className="ts-card ts-tablecard">
-        {rows.length === 0
-          ? <div className="ts-table-empty">No volunteer logs yet.</div>
-          : <table className="ts-table">
-              <thead><tr>
-                <th>Date</th><th>Coach</th><th>Activity</th><th>People Helped</th><th>Hours</th><th>Chapter</th><th>Description</th><th></th>
-              </tr></thead>
-              <tbody>
-                {rows.map(r => (
-                  <tr key={r.id}>
-                    <td><strong>{fmt(r.log_date)}</strong></td>
-                    <td>{r.coach||'—'}</td>
-                    <td><span className="ui-tag ui-tag--blue">{r.activity_type}</span></td>
-                    <td style={{textAlign:'right'}}><strong style={{fontFamily:'var(--display)'}}>{r.people_helped||'—'}</strong></td>
-                    <td>{r.hours||'—'}</td>
-                    <td>{r.chapter||'—'}</td>
-                    <td style={{maxWidth:'180px',fontSize:'12.5px',color:'var(--muted)'}}>{r.description||''}</td>
-                    <td>
-                      <div style={{display:'flex',gap:'6px'}}>
-                        <button className="ui-btn ui-btn--ghost ui-btn--sm" onClick={()=>openDetail(r)}>View</button>
-                        <button className="ui-btn ui-btn--ghost ui-btn--sm" onClick={()=>openEdit(r)}>Edit</button>
-                        <button className="ui-btn ui-btn--danger ui-btn--sm" onClick={()=>del(r.id)}>✕</button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-        }
-      </div>
-
-      {detail && (
-        <Modal title={`${detail.activity_type} — ${fmt(detail.log_date)}`} sub={detail.coach||''}
-          wide onClose={()=>setDetail(null)}>
-          <div style={{display:'flex',flexDirection:'column',gap:'14px'}}>
-            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'12px',fontSize:'13.5px'}}>
-              <div><span style={{color:'var(--muted)',fontSize:'11.5px',fontWeight:600,textTransform:'uppercase',letterSpacing:'.08em'}}>People Helped</span><br/><strong style={{fontFamily:'var(--display)',fontSize:'20px'}}>{detail.people_helped||'—'}</strong></div>
-              <div><span style={{color:'var(--muted)',fontSize:'11.5px',fontWeight:600,textTransform:'uppercase',letterSpacing:'.08em'}}>Hours</span><br/><strong style={{fontFamily:'var(--display)',fontSize:'20px'}}>{detail.hours||'—'}</strong></div>
-              <div><span style={{color:'var(--muted)',fontSize:'11.5px',fontWeight:600,textTransform:'uppercase',letterSpacing:'.08em'}}>Chapter</span><br/>{detail.chapter||'—'}</div>
-            </div>
-            {detail.description && <div style={{background:'var(--surface-2)',borderRadius:'10px',padding:'12px 14px',fontSize:'13.5px',lineHeight:1.6}}>{detail.description}</div>}
-            <div>
-              <div style={{fontSize:'11.5px',fontWeight:700,textTransform:'uppercase',letterSpacing:'.08em',color:'var(--muted)',marginBottom:'10px'}}>
-                Participant Contacts ({detailParticipants.length})
-              </div>
-              {detailParticipants.length === 0
-                ? <div style={{color:'var(--muted)',fontSize:'13px'}}>No participant contact info logged for this activity.</div>
-                : <table className="ts-ptable">
-                    <thead><tr><th>Name</th><th>Parent/Guardian</th><th>Contact</th></tr></thead>
-                    <tbody>
-                      {detailParticipants.map(p => (
-                        <tr key={p.id}><td>{p.name}</td><td>{p.parent_name||'—'}</td><td>{p.parent_contact||'—'}</td></tr>
-                      ))}
-                    </tbody>
-                  </table>
-              }
-            </div>
-          </div>
-        </Modal>
-      )}
-
-      {editing && (
-        <Modal title={`Edit Log — ${editing.coach||''}`} onClose={()=>setEditing(null)}
-          footer={<>
-            <button className="ui-btn ui-btn--ghost" onClick={()=>setEditing(null)}>Cancel</button>
-            <button className="ui-btn ui-btn--primary" onClick={saveEdit} disabled={saving}>{saving?'Saving…':'Save'}</button>
-          </>}
-        >
-          <div className="ts-form-grid">
-            <Field label="Date"><input className="ui-input" type="date" value={ef.log_date} onChange={e=>setEf(x=>({...x,log_date:e.target.value}))}/></Field>
-            <Field label="Activity Type">
-              <div className="ui-select-wrap">
-                <select className="ui-input" value={ef.activity_type} onChange={e=>setEf(x=>({...x,activity_type:e.target.value}))}>
-                  {ACTIVITY_TYPES.map(t=><option key={t}>{t}</option>)}
-                </select>
-                <span className="ui-select-arrow">▼</span>
-              </div>
-            </Field>
-            <Field label="People Helped"><input className="ui-input" type="number" min="0" value={ef.people_helped} onChange={e=>setEf(x=>({...x,people_helped:e.target.value}))}/></Field>
-            <Field label="Hours"><input className="ui-input" type="number" min="0" step="0.5" value={ef.hours} onChange={e=>setEf(x=>({...x,hours:e.target.value}))}/></Field>
-            <Field label="Chapter"><Select value={ef.chapter_id} onChange={v=>setEf(x=>({...x,chapter_id:v}))} placeholder="— None —" options={chapters.map(c=>({value:String(c.id),label:c.name}))}/></Field>
-            <div className="ts-form-full"><Field label="Description"><textarea className="ui-input" rows={3} value={ef.description} onChange={e=>setEf(x=>({...x,description:e.target.value}))} style={{resize:'vertical'}}/></Field></div>
-          </div>
-        </Modal>
-      )}
-    </div>
-  );
-}
-
-// ── Coach Roster ──────────────────────────────────────────────────────────────
-function Roster({ chapters, sports }) {
-  const [coaches, setCoaches] = useState([]);
-  const [filter, setFilter] = useState({ chapter:'', sport:'' });
-  const [selected, setSelected] = useState(null);
-  const [coachSessions, setCoachSessions] = useState([]);
-
-  useEffect(() => { api('/api/coaches').then(setCoaches); }, []);
-
-  const filtered = coaches.filter(c =>
-    (!filter.chapter || String(c.chapter_id)===filter.chapter) &&
-    (!filter.sport   || String(c.sport_id)===filter.sport)
-  );
-
-  const openCoach = async c => {
-    setSelected(c);
-    const s = await api(`/api/sessions?coach_id=${c.id}`);
-    setCoachSessions(s);
-  };
-
-  return (
-    <div className="view">
-      <div className="ts-pagehead">
-        <div>
-          <div className="ts-eyebrow">👥 Roster</div>
-          <h1 className="ts-h1">Coach Roster</h1>
-          <p className="ts-lede">{filtered.length} coaches</p>
-        </div>
-      </div>
-      <div className="ts-filterbar">
-        <Select value={filter.chapter} onChange={v=>setFilter(f=>({...f,chapter:v}))} placeholder="All Chapters"
-          options={chapters.map(c=>({value:String(c.id),label:c.name}))}/>
-        <Select value={filter.sport} onChange={v=>setFilter(f=>({...f,sport:v}))} placeholder="All Sports"
-          options={sports.map(s=>({value:String(s.id),label:s.name}))}/>
-      </div>
-      <div className="ts-roster">
-        {filtered.map(c => (
-          <div key={c.id} className="ts-coachcard" onClick={()=>openCoach(c)}>
-            <div className="ts-coachcard-top">
-              {av(c.name, 44)}
-              <div>
-                <div className="ts-coachcard-name">{c.name}</div>
-                <div className="ts-coachcard-chap">📍 {c.chapter||'No chapter'}</div>
-              </div>
-              <span className={`ui-tag ${c.active?'ui-tag--green':'ui-tag--gray'}`} style={{marginLeft:'auto'}}>
-                {c.active?'Active':'Inactive'}
-              </span>
-            </div>
-            <div style={{display:'flex',gap:'6px',flexWrap:'wrap'}}>
-              {c.sport && <span className="ui-tag ui-tag--blue">{c.sport}</span>}
-            </div>
-            <div className="ts-coachcard-foot">
-              <span>{c.email||'No email'}</span>
-              <span>{c.phone||''}</span>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {selected && (
-        <Modal title={selected.name} sub={`${selected.chapter||'No chapter'} · ${selected.sport||'No sport'}`}
-          wide onClose={()=>setSelected(null)}>
-          <div style={{display:'flex',flexDirection:'column',gap:'18px'}}>
-            <div style={{display:'flex',alignItems:'center',gap:'16px'}}>
-              {av(selected.name, 60)}
-              <div style={{display:'flex',flexDirection:'column',gap:'5px',fontSize:'13.5px'}}>
-                {selected.email && <span>✉️ {selected.email}</span>}
-                {selected.phone && <span>📱 {selected.phone}</span>}
-                {selected.bio && <span style={{color:'var(--muted)'}}>{selected.bio}</span>}
-              </div>
-            </div>
-            <div>
-              <div style={{fontSize:'11.5px',fontWeight:700,textTransform:'uppercase',letterSpacing:'.08em',color:'var(--muted)',marginBottom:'10px'}}>
-                Sessions ({coachSessions.length})
-              </div>
-              {coachSessions.length === 0
-                ? <div style={{color:'var(--muted)',fontSize:'13px'}}>No sessions logged yet.</div>
-                : <table className="ts-table" style={{fontSize:'12.5px'}}>
-                    <thead><tr><th>Date</th><th>Chapter</th><th>Sport</th><th>Participants</th><th>Location</th></tr></thead>
-                    <tbody>
-                      {coachSessions.slice(0,10).map(s => (
-                        <tr key={s.id}>
-                          <td>{fmt(s.session_date)}</td>
-                          <td>{s.chapter||'—'}</td>
-                          <td>{s.sport||'—'}</td>
-                          <td><strong style={{fontFamily:'var(--display)'}}>{s.participants||'—'}</strong></td>
-                          <td style={{color:'var(--muted)'}}>{s.location||'—'}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-              }
-            </div>
-          </div>
-        </Modal>
-      )}
-    </div>
-  );
-}
-
-// ── Add Session ───────────────────────────────────────────────────────────────
-function AddSession({ chapters, sports, coaches, onSaved }) {
-  const [f, setF] = useState({ coach_id:'', chapter_id:'', sport_id:'', session_date:'', duration_minutes:'', participants:'', location:'', notes:'', submitted_by:'' });
-  const sf = (k,v) => setF(x=>({...x,[k]:v}));
-  const [saving, setSaving] = useState(false);
-
-  const submit = async () => {
-    if (!f.session_date) return toast('Date is required','err');
-    setSaving(true);
-    const r = await api('/api/sessions', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify(f) });
-    setSaving(false);
-    if (r.id) { toast('Session saved!'); setF({coach_id:'',chapter_id:'',sport_id:'',session_date:'',duration_minutes:'',participants:'',location:'',notes:'',submitted_by:''}); onSaved?.(); }
-    else toast(r.error||'Error','err');
-  };
-
-  const coach = coaches.find(c=>String(c.id)===f.coach_id);
-
-  return (
-    <div className="view">
-      <div>
-        <div className="ts-eyebrow">➕ Log</div>
-        <h1 className="ts-h1">Add Session</h1>
-        <p className="ts-lede">Log a coaching session on behalf of a coach, or coaches can use the submit form.</p>
-      </div>
-      <div style={{display:'grid',gridTemplateColumns:'1fr 300px',gap:'16px',alignItems:'start'}}>
-        <div className="ts-card" style={{padding:'22px 24px'}}>
-          <div className="ts-form-grid">
-            <Field label="Session Date *">
-              <input className="ui-input" type="date" value={f.session_date} onChange={e=>sf('session_date',e.target.value)}/>
-            </Field>
-            <Field label="Coach">
-              <Select value={f.coach_id} onChange={v=>sf('coach_id',v)} placeholder="— Select Coach —"
-                options={coaches.map(c=>({value:String(c.id),label:c.name}))}/>
-            </Field>
-            <Field label="Chapter">
-              <Select value={f.chapter_id} onChange={v=>sf('chapter_id',v)} placeholder="— Select Chapter —"
-                options={chapters.map(c=>({value:String(c.id),label:c.name}))}/>
-            </Field>
-            <Field label="Sport">
-              <Select value={f.sport_id} onChange={v=>sf('sport_id',v)} placeholder="— Select Sport —"
-                options={sports.map(s=>({value:String(s.id),label:s.name}))}/>
-            </Field>
-            <Field label="Duration (minutes)">
-              <input className="ui-input" type="number" min="0" value={f.duration_minutes} onChange={e=>sf('duration_minutes',e.target.value)} placeholder="60"/>
-            </Field>
-            <Field label="Number of Participants">
-              <input className="ui-input" type="number" min="0" value={f.participants} onChange={e=>sf('participants',e.target.value)}/>
-            </Field>
-            <Field label="Location" hint="Park name, address, gym, etc.">
-              <input className="ui-input" type="text" value={f.location} onChange={e=>sf('location',e.target.value)} className="ts-form-full ui-input"/>
-            </Field>
-            <Field label="Notes">
-              <textarea className="ui-input ts-form-full" rows={3} value={f.notes} onChange={e=>sf('notes',e.target.value)} style={{resize:'vertical'}}/>
-            </Field>
-            <Field label="Submitted By">
-              <input className="ui-input" type="text" value={f.submitted_by} onChange={e=>sf('submitted_by',e.target.value)}/>
-            </Field>
-          </div>
-          <div style={{display:'flex',justifyContent:'flex-end',marginTop:'20px',paddingTop:'16px',borderTop:'1px solid var(--border)'}}>
-            <button className="ui-btn ui-btn--primary" onClick={submit} disabled={saving}>
-              {saving ? 'Saving…' : 'Save Session'}
-            </button>
-          </div>
-        </div>
-
-        <div className="ts-card" style={{padding:'20px',background:'linear-gradient(160deg,var(--accent-soft),var(--surface))'}}>
-          <div style={{fontSize:'11.5px',fontWeight:700,textTransform:'uppercase',letterSpacing:'.08em',color:'var(--muted)',marginBottom:'12px'}}>Preview</div>
-          {coach && <div style={{display:'flex',alignItems:'center',gap:'10px',marginBottom:'14px'}}>{av(coach.name,38)}<strong style={{fontFamily:'var(--display)'}}>{coach.name}</strong></div>}
-          <div style={{fontFamily:'var(--display)',fontWeight:800,fontSize:'52px',lineHeight:1,letterSpacing:'-2px',color:'var(--accent)',marginBottom:'4px'}}>
-            {f.participants||'—'}
-          </div>
-          <div style={{fontSize:'12px',color:'var(--muted)',marginBottom:'16px'}}>participants</div>
-          {f.session_date && <div style={{fontSize:'13px',marginBottom:'6px'}}>📅 {fmt(f.session_date)}</div>}
-          {f.location && <div style={{fontSize:'13px',marginBottom:'6px'}}>📍 {f.location}</div>}
-          {f.duration_minutes && <div style={{fontSize:'13px'}}>⏱ {f.duration_minutes} minutes</div>}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── Manage Coaches ────────────────────────────────────────────────────────────
-function ManageCoaches({ chapters, sports, onRefresh }) {
-  const [coaches, setCoaches] = useState([]);
-  const [modal, setModal] = useState(null); // null | 'add' | coach obj
-  const [f, setF] = useState({ name:'', email:'', phone:'', chapter_id:'', sport_id:'', bio:'', active:'1', access_code:'' });
-  const [saving, setSaving] = useState(false);
-  const sf = (k,v) => setF(x=>({...x,[k]:v}));
-
-  const load = () => api('/api/coaches').then(setCoaches);
-  useEffect(() => { load(); }, []);
-
-  const openAdd = () => { setF({ name:'',email:'',phone:'',chapter_id:'',sport_id:'',bio:'',active:'1',access_code:'' }); setModal('add'); };
-  const openEdit = c => { setF({ name:c.name,email:c.email||'',phone:c.phone||'',chapter_id:String(c.chapter_id||''),sport_id:String(c.sport_id||''),bio:c.bio||'',active:String(c.active),access_code:c.access_code||'' }); setModal(c); };
-
-  const save = async () => {
-    if (!f.name) return toast('Name is required','err');
-    setSaving(true);
-    const isEdit = typeof modal === 'object' && modal !== null && modal !== 'add';
-    const r = isEdit
-      ? await api(`/api/coaches/${modal.id}`, { method:'PUT', headers:{'content-type':'application/json'}, body:JSON.stringify(f) })
-      : await api('/api/coaches', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify(f) });
-    setSaving(false);
-    if (r.ok || r.id) { toast('Coach saved!'); setModal(null); load(); onRefresh?.(); }
-    else toast(r.error||'Error','err');
-  };
-
-  const del = async id => {
-    if (!confirm('Delete this coach?')) return;
-    await api(`/api/coaches/${id}`, { method:'DELETE' });
-    toast('Coach deleted'); load(); onRefresh?.();
-  };
-
-  return (
-    <div className="view">
-      <div className="ts-pagehead">
-        <div>
-          <div className="ts-eyebrow">🛠 Coaches</div>
-          <h1 className="ts-h1">Manage Coaches</h1>
-          <p className="ts-lede">Add, edit, or remove coaches from the roster.</p>
-        </div>
-        <div className="ts-pagehead-actions">
-          <button className="ui-btn ui-btn--primary" onClick={openAdd}>+ Add Coach</button>
-        </div>
-      </div>
-      <div className="ts-card ts-tablecard">
-        <table className="ts-table">
-          <thead><tr><th>Coach</th><th>Chapter</th><th>Sport</th><th>Email</th><th>Access Code</th><th>Status</th><th></th></tr></thead>
-          <tbody>
-            {coaches.map(c => (
-              <tr key={c.id}>
-                <td><div style={{display:'flex',alignItems:'center',gap:'10px'}}>{av(c.name,32)}<strong>{c.name}</strong></div></td>
-                <td>{c.chapter||'—'}</td>
-                <td>{c.sport ? <span className="ui-tag ui-tag--blue">{c.sport}</span> : '—'}</td>
-                <td style={{fontSize:'12.5px',color:'var(--muted)'}}>{c.email||'—'}</td>
-                <td><code style={{fontSize:'12px',background:'var(--surface-2)',padding:'2px 8px',borderRadius:'6px'}}>{c.access_code||<span style={{color:'var(--muted)'}}>not set</span>}</code></td>
-                <td><span className={`ui-tag ${c.active?'ui-tag--green':'ui-tag--gray'}`}>{c.active?'Active':'Inactive'}</span></td>
-                <td>
-                  <div style={{display:'flex',gap:'6px'}}>
-                    <button className="ui-btn ui-btn--ghost ui-btn--sm" onClick={()=>openEdit(c)}>Edit</button>
-                    <button className="ui-btn ui-btn--danger ui-btn--sm" onClick={()=>del(c.id)}>✕</button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {modal && (
-        <Modal
-          title={modal==='add' ? 'Add New Coach' : `Edit ${modal.name}`}
-          onClose={()=>setModal(null)}
-          footer={<>
-            <button className="ui-btn ui-btn--ghost" onClick={()=>setModal(null)}>Cancel</button>
-            <button className="ui-btn ui-btn--primary" onClick={save} disabled={saving}>{saving?'Saving…':'Save'}</button>
-          </>}
-        >
-          <div className="ts-form-grid">
-            <div className="ts-form-full"><Field label="Name *"><input className="ui-input" value={f.name} onChange={e=>sf('name',e.target.value)}/></Field></div>
-            <Field label="Email"><input className="ui-input" type="email" value={f.email} onChange={e=>sf('email',e.target.value)}/></Field>
-            <Field label="Phone"><input className="ui-input" value={f.phone} onChange={e=>sf('phone',e.target.value)}/></Field>
-            <Field label="Chapter"><Select value={f.chapter_id} onChange={v=>sf('chapter_id',v)} placeholder="— None —" options={chapters.map(c=>({value:String(c.id),label:c.name}))}/></Field>
-            <Field label="Sport"><Select value={f.sport_id} onChange={v=>sf('sport_id',v)} placeholder="— None —" options={sports.map(s=>({value:String(s.id),label:s.name}))}/></Field>
-            <div className="ts-form-full"><Field label="Bio / Notes"><textarea className="ui-input" rows={3} value={f.bio} onChange={e=>sf('bio',e.target.value)} style={{resize:'vertical'}}/></Field></div>
-            <Field label="Status"><Select value={f.active} onChange={v=>sf('active',v)} options={[{value:'1',label:'Active'},{value:'0',label:'Inactive'}]}/></Field>
-            <Field label="Coach Access Code" hint="Share this with the coach so they can log into the coach portal.">
-              <div style={{display:'flex',gap:'8px',alignItems:'center'}}>
-                <input className="ui-input" value={f.access_code} placeholder="e.g. nyc-harry-42" onChange={e=>sf('access_code',e.target.value)}/>
-                <button type="button" className="ui-btn ui-btn--ghost ui-btn--sm" style={{whiteSpace:'nowrap'}}
-                  onClick={()=>sf('access_code', Math.random().toString(36).slice(2,8).toUpperCase())}>
-                  Generate
-                </button>
-              </div>
-            </Field>
-          </div>
-        </Modal>
-      )}
-    </div>
-  );
-}
-
-// ── Testimonials ──────────────────────────────────────────────────────────────
-function Testimonials({ chapters, sports }) {
-  const [rows, setRows] = useState([]);
-  const [lightbox, setLightbox] = useState(null);
-  const load = () => api('/api/testimonials').then(setRows);
-  useEffect(() => { load(); }, []);
-
-  const update = async (id, approved, pub) => {
-    await api(`/api/testimonials/${id}`, { method:'PUT', headers:{'content-type':'application/json'}, body:JSON.stringify({ approved, public:pub }) });
-    toast(pub ? 'Published to impact tracker ✓' : approved ? 'Approved' : 'Marked as pending');
-    load();
-  };
-
-  const del = async id => {
-    if (!confirm('Delete this testimonial?')) return;
-    await api(`/api/testimonials/${id}`, { method:'DELETE' });
-    toast('Deleted'); load();
-  };
-
-  const pending = rows.filter(r=>!r.approved);
-  const approved = rows.filter(r=>r.approved && !r.public);
-  const published = rows.filter(r=>r.public);
-
-  const TCard = ({ r }) => (
-    <div className="ts-tcard">
-      <div>
-        <div className="ts-tquote">{r.quote}</div>
-        <div className="ts-tmeta">
-          <span>Coach: <strong>{r.coach_name}</strong></span>
-          {r.child_name && <span>Child: {r.child_name}</span>}
-          {r.parent_name && <span>Parent: {r.parent_name}</span>}
-          {r.parent_contact && <span>Contact: <strong>{r.parent_contact}</strong></span>}
-          <span style={{marginTop:'4px'}}>{r.chapter||''} {r.chapter&&r.sport?'·':''} {r.sport||''}</span>
-          <span style={{color:'var(--muted)',fontSize:'11.5px'}}>{fmt(r.created_at)}</span>
-        </div>
-        {r.photo_filename && (
-          <img src={`/uploads/${r.photo_filename}`} alt=""
-            onClick={()=>setLightbox(r.photo_filename)}
-            style={{width:'80px',height:'60px',objectFit:'cover',borderRadius:'8px',marginTop:'10px',cursor:'pointer',border:'1px solid var(--border)'}}/>
-        )}
-      </div>
-      <div className="ts-tactions">
-        <span className={`ui-tag ${r.public?'ui-tag--green':r.approved?'ui-tag--blue':'ui-tag--amber'}`}>
-          {r.public ? '🌐 Public' : r.approved ? '✓ Approved' : '⏳ Pending'}
-        </span>
-        {!r.approved && <button className="ui-btn ui-btn--ghost ui-btn--sm" onClick={()=>update(r.id,1,0)}>Approve</button>}
-        {r.approved && !r.public && <button className="ui-btn ui-btn--primary ui-btn--sm" onClick={()=>update(r.id,1,1)}>Publish ↑</button>}
-        {r.public && <button className="ui-btn ui-btn--ghost ui-btn--sm" onClick={()=>update(r.id,1,0)}>Unpublish</button>}
-        <button className="ui-btn ui-btn--danger ui-btn--sm" onClick={()=>del(r.id)}>Delete</button>
-      </div>
-    </div>
-  );
-
-  return (
-    <div className="view">
-      <div>
-        <div className="ts-eyebrow">💬 Testimonials</div>
-        <h1 className="ts-h1">Testimonials</h1>
-        <p className="ts-lede">Review and publish to the impact tracker. Coaches and parents submit via the coach portal.</p>
-      </div>
-
-      {pending.length > 0 && (
-        <div>
-          <h3 style={{fontFamily:'var(--display)',fontSize:'15px',marginBottom:'12px',color:'var(--danger)'}}>⏳ Pending Review ({pending.length})</h3>
-          <div className="ts-testimonials">{pending.map(r=><TCard key={r.id} r={r}/>)}</div>
-        </div>
-      )}
-      {approved.length > 0 && (
-        <div>
-          <h3 style={{fontFamily:'var(--display)',fontSize:'15px',marginBottom:'12px'}}>✓ Approved — Not Yet Public ({approved.length})</h3>
-          <div className="ts-testimonials">{approved.map(r=><TCard key={r.id} r={r}/>)}</div>
-        </div>
-      )}
-      {published.length > 0 && (
-        <div>
-          <h3 style={{fontFamily:'var(--display)',fontSize:'15px',marginBottom:'12px',color:'var(--accent)'}}>🌐 Published on Impact Tracker ({published.length})</h3>
-          <div className="ts-testimonials">{published.map(r=><TCard key={r.id} r={r}/>)}</div>
-        </div>
-      )}
-      {rows.length === 0 && (
-        <div className="ts-card" style={{padding:'40px',textAlign:'center',color:'var(--muted)'}}>
-          No testimonials yet. Coaches can submit via the coach portal.
-        </div>
-      )}
-
-      {lightbox && (
-        <div className="lightbox-wrap" onClick={()=>setLightbox(null)}>
-          <button className="lightbox-close" onClick={()=>setLightbox(null)}>✕</button>
-          <img src={`/uploads/${lightbox}`} alt=""/>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ── Photo Gallery ─────────────────────────────────────────────────────────────
-function Gallery({ chapters, sports }) {
-  const [photos, setPhotos] = useState([]);
-  const [lightbox, setLightbox] = useState(null);
-  const [modal, setModal] = useState(false);
-  const [f, setF] = useState({ caption:'', chapter_id:'', sport_id:'' });
-  const [file, setFile] = useState(null);
-  const [preview, setPreview] = useState(null);
-  const [uploading, setUploading] = useState(false);
-  const fileRef = useRef();
-
-  const load = () => api('/api/photos').then(setPhotos);
-  useEffect(() => { load(); }, []);
-
-  const pickFile = e => {
-    const f = e.target.files[0];
-    if (!f) return;
-    setFile(f);
-    setPreview(URL.createObjectURL(f));
-  };
-
-  const upload = async () => {
-    if (!file) return toast('Select a photo first','err');
-    setUploading(true);
-    const fd = new FormData();
-    fd.append('photo', file);
-    fd.append('caption', f.caption);
-    fd.append('chapter_id', f.chapter_id);
-    fd.append('sport_id', f.sport_id);
-    const r = await fetch('/api/photos', { method:'POST', headers:{'x-admin-token':TOKEN()}, body:fd }).then(x=>x.json());
-    setUploading(false);
-    if (r.id) { toast('Photo uploaded!'); setModal(false); setFile(null); setPreview(null); setF({caption:'',chapter_id:'',sport_id:''}); load(); }
-    else toast(r.error||'Upload failed','err');
-  };
-
-  const del = async id => {
-    if (!confirm('Delete this photo?')) return;
-    await api(`/api/photos/${id}`, { method:'DELETE' });
-    toast('Deleted'); load();
-  };
-
-  const approve = async (id, approved) => {
-    await api(`/api/photos/${id}`, { method:'PUT', headers:{'content-type':'application/json'}, body:JSON.stringify({ approved }) });
-    toast(approved ? 'Photo approved' : 'Photo hidden'); load();
-  };
-
-  const pending = photos.filter(p=>!p.approved);
-  const approved = photos.filter(p=>p.approved);
-
-  return (
-    <div className="view">
-      <div className="ts-pagehead">
-        <div>
-          <div className="ts-eyebrow">🖼 Gallery</div>
-          <h1 className="ts-h1">Photo Gallery</h1>
-          <p className="ts-lede">{photos.length} photos total · {pending.length} pending approval</p>
-        </div>
-        <button className="ui-btn ui-btn--primary" onClick={()=>setModal(true)}>+ Upload Photo</button>
-      </div>
-
-      {pending.length > 0 && (
-        <div>
-          <h3 style={{fontFamily:'var(--display)',fontSize:'15px',marginBottom:'12px',color:'var(--danger)'}}>⏳ Pending Approval ({pending.length})</h3>
-          <div className="ts-gallery">
-            {pending.map(p => (
-              <div key={p.id} className="ts-gphoto">
-                <img src={`/uploads/${p.filename}`} alt={p.caption||''} onClick={()=>setLightbox(p.filename)}/>
-                <div className="ts-gphoto-meta">
-                  <div className="ts-gphoto-cap">{p.caption||'No caption'}</div>
-                  <div className="ts-gphoto-sub">{p.chapter||''} {p.sport||''}</div>
-                  <div className="ts-gphoto-actions">
-                    <button className="ui-btn ui-btn--primary ui-btn--sm" onClick={()=>approve(p.id,1)}>Approve</button>
-                    <button className="ui-btn ui-btn--danger ui-btn--sm" onClick={()=>del(p.id)}>Delete</button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div>
-        {approved.length > 0 && pending.length > 0 && <h3 style={{fontFamily:'var(--display)',fontSize:'15px',marginBottom:'12px'}}>Approved Photos</h3>}
-        <div className="ts-gallery">
-          {approved.map(p => (
-            <div key={p.id} className="ts-gphoto">
-              <img src={`/uploads/${p.filename}`} alt={p.caption||''} onClick={()=>setLightbox(p.filename)}/>
-              <div className="ts-gphoto-meta">
-                <div className="ts-gphoto-cap">{p.caption||'No caption'}</div>
-                <div className="ts-gphoto-sub">{p.chapter||''} {p.sport||''}</div>
-                <div className="ts-gphoto-actions">
-                  <button className="ui-btn ui-btn--ghost ui-btn--sm" onClick={()=>approve(p.id,0)}>Hide</button>
-                  <button className="ui-btn ui-btn--danger ui-btn--sm" onClick={()=>del(p.id)}>Delete</button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-        {photos.length === 0 && <div className="ts-card" style={{padding:'40px',textAlign:'center',color:'var(--muted)'}}>No photos yet.</div>}
-      </div>
-
-      {lightbox && (
-        <div className="lightbox-wrap" onClick={()=>setLightbox(null)}>
-          <button className="lightbox-close">✕</button>
-          <img src={`/uploads/${lightbox}`} alt=""/>
-        </div>
-      )}
-
-      {modal && (
-        <Modal title="Upload Photo" onClose={()=>{setModal(false);setPreview(null);setFile(null)}}
-          footer={<>
-            <button className="ui-btn ui-btn--ghost" onClick={()=>setModal(false)}>Cancel</button>
-            <button className="ui-btn ui-btn--primary" onClick={upload} disabled={uploading}>{uploading?'Uploading…':'Upload'}</button>
-          </>}
-        >
-          <div style={{display:'flex',flexDirection:'column',gap:'14px'}}>
-            <div className="ts-uploaddrop" onClick={()=>fileRef.current?.click()}>
-              {preview ? <img src={preview} alt=""/> : (
-                <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:'6px',color:'var(--muted)'}}>
-                  <span style={{fontSize:'2rem'}}>📷</span>
-                  <strong style={{fontFamily:'var(--display)',fontSize:'15px',color:'var(--text)'}}>Click to select photo</strong>
-                  <span style={{fontSize:'12px'}}>JPEG, PNG, GIF, WebP · max 10 MB</span>
-                </div>
-              )}
-            </div>
-            <input ref={fileRef} type="file" accept="image/*" style={{display:'none'}} onChange={pickFile}/>
-            <Field label="Caption"><input className="ui-input" value={f.caption} onChange={e=>setF(x=>({...x,caption:e.target.value}))}/></Field>
-            <Field label="Chapter"><Select value={f.chapter_id} onChange={v=>setF(x=>({...x,chapter_id:v}))} placeholder="— All Chapters —" options={chapters.map(c=>({value:String(c.id),label:c.name}))}/></Field>
-            <Field label="Sport"><Select value={f.sport_id} onChange={v=>setF(x=>({...x,sport_id:v}))} placeholder="— All Sports —" options={sports.map(s=>({value:String(s.id),label:s.name}))}/></Field>
-          </div>
-        </Modal>
-      )}
-    </div>
-  );
-}
-
-// ── Settings ──────────────────────────────────────────────────────────────────
-function Settings({ chapters, sports, onRefresh }) {
-  const [settings, setSettings] = useState({});
-  const [newChapter, setNewChapter] = useState('');
-  const [newSport, setNewSport] = useState('');
-  const [saving, setSaving] = useState(false);
-
-  useEffect(() => { api('/api/settings').then(setSettings); }, []);
-
-  const saveSettings = async () => {
-    setSaving(true);
-    const r = await api('/api/settings', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify(settings) });
-    setSaving(false);
-    if (r.ok) toast('Settings saved!'); else toast('Error','err');
-  };
-
-  const addChapter = async () => {
-    if (!newChapter.trim()) return;
-    await fetch('/api/chapters', { method:'POST', headers:{'content-type':'application/json','x-admin-token':TOKEN()}, body:JSON.stringify({name:newChapter.trim()}) });
-    setNewChapter(''); toast('Chapter added!'); onRefresh?.();
-  };
-
-  const addSport = async () => {
-    if (!newSport.trim()) return;
-    await fetch('/api/sports', { method:'POST', headers:{'content-type':'application/json','x-admin-token':TOKEN()}, body:JSON.stringify({name:newSport.trim()}) });
-    setNewSport(''); toast('Sport added!'); onRefresh?.();
-  };
-
-  return (
-    <div className="view">
-      <div>
-        <div className="ts-eyebrow">⚙️ Config</div>
-        <h1 className="ts-h1">Settings</h1>
-      </div>
-      <div className="ts-settings-grid">
-        <div className="ts-setcard">
-          <h3>Organization</h3>
-          <div style={{display:'flex',flexDirection:'column',gap:'14px'}}>
-            <Field label="Organization Name"><input className="ui-input" value={settings.org_name||''} onChange={e=>setSettings(s=>({...s,org_name:e.target.value}))}/></Field>
-            <Field label="Contact Email"><input className="ui-input" type="email" value={settings.contact_email||''} onChange={e=>setSettings(s=>({...s,contact_email:e.target.value}))}/></Field>
-            <button className="ui-btn ui-btn--primary" style={{alignSelf:'flex-start'}} onClick={saveSettings} disabled={saving}>{saving?'Saving…':'Save'}</button>
-          </div>
-        </div>
-        <div className="ts-setcard">
-          <h3>Chapters</h3>
-          <div style={{display:'flex',flexDirection:'column',gap:'8px',marginBottom:'14px'}}>
-            {chapters.map(c=><div key={c.id} style={{fontSize:'13.5px',padding:'6px 0',borderBottom:'1px solid var(--border)'}}>{c.name}</div>)}
-          </div>
-          <div style={{display:'flex',gap:'8px'}}>
-            <input className="ui-input" placeholder="New chapter name" value={newChapter} onChange={e=>setNewChapter(e.target.value)} onKeyDown={e=>e.key==='Enter'&&addChapter()}/>
-            <button className="ui-btn ui-btn--primary" onClick={addChapter}>Add</button>
-          </div>
-        </div>
-        <div className="ts-setcard">
-          <h3>Sports</h3>
-          <div style={{display:'flex',flexDirection:'column',gap:'8px',marginBottom:'14px'}}>
-            {sports.map(s=><div key={s.id} style={{fontSize:'13.5px',padding:'6px 0',borderBottom:'1px solid var(--border)'}}>{s.name}</div>)}
-          </div>
-          <div style={{display:'flex',gap:'8px'}}>
-            <input className="ui-input" placeholder="New sport name" value={newSport} onChange={e=>setNewSport(e.target.value)} onKeyDown={e=>e.key==='Enter'&&addSport()}/>
-            <button className="ui-btn ui-btn--primary" onClick={addSport}>Add</button>
-          </div>
-        </div>
-        <div className="ts-setcard">
-          <h3>Coach Portal</h3>
-          <p style={{fontSize:'13.5px',color:'var(--muted)',lineHeight:1.6,marginBottom:'12px'}}>Share this link with coaches to log sessions, submit testimonials, and upload photos without admin access.</p>
-          <div style={{background:'var(--surface-2)',borderRadius:'10px',padding:'11px 14px',fontFamily:'monospace',fontSize:'13px',wordBreak:'break-all'}}>
-            {window.location.origin}/coach.html
-          </div>
-          <button className="ui-btn ui-btn--ghost ui-btn--sm" style={{marginTop:'10px'}} onClick={()=>{navigator.clipboard.writeText(window.location.origin+'/coach.html');toast('Link copied!')}}>Copy Link</button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── App shell ─────────────────────────────────────────────────────────────────
-function App() {
-  const [authed, setAuthed] = useState(!!localStorage.getItem('ts_tok'));
-  const [pw, setPw] = useState('');
-  const [pwErr, setPwErr] = useState('');
-  const [view, setView] = useState('overview');
-  const [chapters, setChapters] = useState([]);
-  const [sports, setSports] = useState([]);
-  const [coaches, setCoaches] = useState([]);
-  const [stats, setStats] = useState({});
-
-  const loadRef = useCallback(async () => {
-    const [ch, sp, co, st] = await Promise.all([
-      api('/api/chapters'), api('/api/sports'), api('/api/coaches'), api('/api/stats')
-    ]);
-    setChapters(ch); setSports(sp); setCoaches(co); setStats(st);
-  }, []);
-
-  useEffect(() => { if (authed) loadRef(); }, [authed, loadRef]);
-
-  const login = async () => {
-    const r = await fetch('/api/auth', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({password:pw}) }).then(x=>x.json());
-    if (r.ok) { localStorage.setItem('ts_tok', pw); setPwErr(''); setAuthed(true); }
-    else setPwErr('Incorrect password');
-  };
-
-  const logout = () => { localStorage.removeItem('ts_tok'); setAuthed(false); };
-
-  if (!authed) return (
-    <div className="login-wrap">
-      <div className="login-card">
-        <div className="login-logo">TS</div>
-        <h2>Together Sports</h2>
-        <p>Internal Operations Dashboard</p>
-        <input type="password" placeholder="Password" value={pw} onChange={e=>setPw(e.target.value)} onKeyDown={e=>e.key==='Enter'&&login()}/>
-        <button onClick={login}>Sign In</button>
-        {pwErr && <div className="login-err">{pwErr}</div>}
-      </div>
-    </div>
-  );
-
-  const pending = (stats.pending_testimonials||0) + (stats.pending_photos||0);
-  const views = { overview:Overview, sessions:Sessions, volunteer:VolunteerLogs, roster:Roster, 'add-session':AddSession, coaches:ManageCoaches, testimonials:Testimonials, gallery:Gallery, settings:Settings };
-  const ViewComp = views[view] || Overview;
-
-  return (
-    <div className="app">
-      <aside className="ts-sb">
-        <div className="ts-brand">
-          <div className="ts-logo">TS</div>
-          <div>
-            <div className="ts-brandname">Together Sports</div>
-            <div className="ts-brandsub">Admin</div>
-          </div>
-        </div>
-        <nav className="ts-nav">
-          {NAV.map(n => {
-            const badgeCount = n.badge === 'pending_testimonials' ? (stats.pending_testimonials||0)
-              : n.badge === 'pending_photos' ? (stats.pending_photos||0) : 0;
-            return (
-              <button key={n.id} className={`ts-navitem${view===n.id?' active':''}`} onClick={()=>setView(n.id)}>
-                <span>{n.icon}</span> {n.label}
-                {badgeCount > 0 && <span className="ts-nav-badge">{badgeCount}</span>}
-              </button>
-            );
-          })}
-        </nav>
-        <div className="ts-sbfoot">
-          {stats.total_sessions > 0 && (
-            <div className="ts-sbcard">
-              <div className="ts-sbcard-k">Sessions</div>
-              <div className="ts-sbcard-v">{stats.total_sessions}</div>
-              <div className="ts-sbcard-bar"><span style={{width:`${Math.min((stats.total_sessions/100)*100,100)}%`}}/></div>
-              <div className="ts-sbcard-sub">{stats.total_participants||0} participants reached</div>
-            </div>
-          )}
-          <button className="ts-logout" onClick={logout}>🚪 Sign Out</button>
-        </div>
-      </aside>
-      <main className="ts-main">
-        <div className="ts-top">
-          <div className="ts-top-title">{NAV.find(n=>n.id===view)?.label||'Dashboard'}</div>
-          <div className="ts-topright">
-            <a href="/coach.html" target="_blank" className="ui-btn ui-btn--ghost ui-btn--sm">Coach Portal ↗</a>
-            <div style={{display:'flex',alignItems:'center',gap:'9px'}}>
-              {av('Admin',34)}
-              <div><div className="ts-username">Admin</div><div className="ts-userrole">Full Access</div></div>
-            </div>
-          </div>
-        </div>
-        <div className="ts-content">
-          <div className="ts-content-inner">
-            <ViewComp chapters={chapters} sports={sports} coaches={coaches} onSaved={loadRef} onRefresh={loadRef}/>
-          </div>
-        </div>
-      </main>
-    </div>
-  );
-}
-
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<ToastProvider><App/></ToastProvider>);
-</script>
+  <style>@keyframes tsspin{to{transform:rotate(360deg)}}</style>
+</div>
+
+<script src="vendor/react.js"></script>
+<script src="vendor/react-dom.js"></script>
+<script src="vendor/babel.min.js"></script>
+
+<script type="text/babel" src="app/data.jsx"></script>
+<script type="text/babel" src="app/ui.jsx"></script>
+<script type="text/babel" src="app/shell.jsx"></script>
+<script type="text/babel" src="app/palette.jsx"></script>
+<script type="text/babel" src="app/view_overview.jsx"></script>
+<script type="text/babel" src="app/view_sessions.jsx"></script>
+<script type="text/babel" src="app/view_volunteer.jsx"></script>
+<script type="text/babel" src="app/view_participants.jsx"></script>
+<script type="text/babel" src="app/view_roster.jsx"></script>
+<script type="text/babel" src="app/view_manage.jsx"></script>
+<script type="text/babel" src="app/view_add.jsx"></script>
+<script type="text/babel" src="app/view_gallery.jsx"></script>
+<script type="text/babel" src="app/view_approvals.jsx"></script>
+<script type="text/babel" src="app/view_settings.jsx"></script>
+<script type="text/babel" src="app/app.jsx"></script>
 </body>
 </html>
