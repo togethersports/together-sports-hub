@@ -19,6 +19,7 @@ no build tooling.
 | Admin dashboard | `http://localhost:3000/admin.html` (also `/`) | admin password |
 | Coach portal | `http://localhost:3000/coach.html` | per-coach access code |
 | Outreach HQ (per coach, AI-assisted) | `http://localhost:3000/outreach.html` | per-coach access code |
+| Impact Viewer (read-only, full depth) | `http://localhost:3000/viewer.html` | shareable link, admin-issued |
 | Public impact page | `http://localhost:3000/impact.html` | open |
 | Testimonial form | `http://localhost:3000/submit.html` | open |
 
@@ -82,6 +83,25 @@ Get a key at https://platform.claude.com. Without the key everything else
 works and the AI buttons explain what's missing. Optional:
 `ANTHROPIC_MODEL` overrides the default model (`claude-opus-4-8`). AI usage
 is rate-limited to 25 drafts per coach per hour.
+
+## Impact Viewer (shareable, read-only)
+
+For someone outside the coach team — a board member, funder, or a college
+counselor — who should see everything the admin dashboard sees but never be
+able to change it: Admin → Settings → **Shareable view-only links** → give it
+a label and hit **Create link**. That copies a URL like
+`/viewer.html?key=…` to the clipboard; send it to them directly.
+
+Opening the link signs them into `/viewer.html`, a separate read-only app
+showing the same depth as the admin dashboard — sessions, kids reached,
+parent contacts, volunteer logs, stories, photos, and the coach roster —
+across every chapter, with tabs and search but no create/edit/delete
+anywhere. No write endpoint on the server accepts a view key, so the link
+can never be used to change data, no matter what's clicked. Coach access
+codes are never included in the response.
+
+Revoke a link any time from the same Settings card — it stops working
+immediately, no matter how many people have it.
 
 ## Deploying
 

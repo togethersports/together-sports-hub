@@ -4,6 +4,7 @@ const express = require('express');
 const multer  = require('multer');
 const path    = require('path');
 const fs      = require('fs');
+const crypto  = require('crypto');
 const Database = require('better-sqlite3');
 const Anthropic = require('@anthropic-ai/sdk');
 
@@ -145,6 +146,14 @@ db.exec(`
     notes TEXT,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
+  CREATE TABLE IF NOT EXISTS view_keys (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    label TEXT NOT NULL,
+    key_code TEXT UNIQUE NOT NULL,
+    active INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    last_used_at TEXT
+  );
 `);
 
 // Migrate existing DBs — each guarded individually so an old copy of
@@ -229,6 +238,31 @@ function requireCoach(req, res, next) {
   req.coach = coach;
   req.isAdmin = false;
   next();
+}
+
+// Read-only viewer auth: a shareable key (Settings → Shareable links), or the
+// admin token. Grants read access to the same depth as the admin dashboard —
+// including participant/parent contact info — but no write endpoint accepts
+// a view key, so a viewer can never create, edit, or delete anything.
+function requireViewer(req, res, next) {
+  const t = req.headers['x-admin-token'] || req.query.token;
+  if (t === ADMIN_PASSWORD) { req.isAdmin = true; return next(); }
+  const key = req.headers['x-view-key'] || req.query.view_key;
+  if (!key) return res.status(401).json({ error: 'Unauthorized' });
+  const vk = get('SELECT * FROM view_keys WHERE key_code=? AND active=1', [String(key).trim()]);
+  if (!vk) return res.status(401).json({ error: 'Invalid or revoked key' });
+  run("UPDATE view_keys SET last_used_at=datetime('now') WHERE id=?", [vk.id]);
+  req.isAdmin = false;
+  req.viewKey = vk;
+  next();
+}
+
+function genViewKey() {
+  const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  const buf = crypto.randomBytes(24);
+  let out = '';
+  for (let i = 0; i < 24; i++) out += chars[buf[i] % chars.length];
+  return out;
 }
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
@@ -585,6 +619,92 @@ app.post('/api/settings', requireAdmin, (req, res) => {
     if (k !== 'seeded') run('INSERT OR REPLACE INTO settings VALUES (?,?)', [k, v]);
   }
   res.json({ ok: true });
+});
+
+// ── Shareable view-only links ───────────────────────────────────────────────
+// Admin-managed keys that unlock the read-only viewer dashboard (viewer.html)
+// — full depth (sessions, participants, parent contacts, coaches, stories,
+// photos) but no create/edit/delete: no write route accepts a view key.
+app.get('/api/view-keys', requireAdmin, (req, res) => {
+  res.json(all('SELECT id,label,key_code,active,created_at,last_used_at FROM view_keys ORDER BY created_at DESC'));
+});
+app.post('/api/view-keys', requireAdmin, (req, res) => {
+  const { label } = req.body;
+  if (!label || !label.trim()) return res.status(400).json({ error: 'Label required' });
+  const key_code = genViewKey();
+  const r = run('INSERT INTO view_keys (label,key_code) VALUES (?,?)', [label.trim(), key_code]);
+  res.json({ id: r.lastInsertRowid, label: label.trim(), key_code, active: 1 });
+});
+app.delete('/api/view-keys/:id', requireAdmin, (req, res) => {
+  run('DELETE FROM view_keys WHERE id=?', [req.params.id]);
+  res.json({ ok: true });
+});
+
+// ── Viewer dashboard data (read-only) ───────────────────────────────────────
+app.get('/api/viewer/bundle', requireViewer, (req, res) => {
+  const sessions = all(`
+    SELECT s.id, s.session_date, s.duration_minutes, s.participants, s.location, s.notes,
+           c.name AS coach, ch.name AS chapter, sp.name AS sport
+    FROM sessions s
+    LEFT JOIN coaches c ON s.coach_id=c.id
+    LEFT JOIN chapters ch ON s.chapter_id=ch.id
+    LEFT JOIN sports sp ON s.sport_id=sp.id
+    ORDER BY s.session_date DESC, s.id DESC
+  `);
+  const participants = all(`
+    SELECT p.id, p.name, p.parent_name, p.parent_contact,
+           s.session_date, s.location, ch.name AS chapter, sp.name AS sport, c.name AS coach
+    FROM participants p
+    LEFT JOIN sessions s ON p.session_id=s.id
+    LEFT JOIN coaches c ON s.coach_id=c.id
+    LEFT JOIN chapters ch ON s.chapter_id=ch.id
+    LEFT JOIN sports sp ON s.sport_id=sp.id
+    ORDER BY p.created_at DESC
+  `);
+  const volunteerLogs = all(`
+    SELECT v.id, v.log_date, v.activity_type, v.description, v.people_helped, v.hours,
+           c.name AS coach, ch.name AS chapter
+    FROM volunteer_logs v
+    LEFT JOIN coaches c ON v.coach_id=c.id
+    LEFT JOIN chapters ch ON v.chapter_id=ch.id
+    ORDER BY v.log_date DESC, v.id DESC
+  `);
+  const testimonials = all(`
+    SELECT t.id, t.coach_name, t.quote, t.parent_name, t.parent_contact, t.child_name,
+           t.approved, t.public, t.photo_filename, ch.name AS chapter, sp.name AS sport, t.created_at
+    FROM testimonials t
+    LEFT JOIN chapters ch ON t.chapter_id=ch.id
+    LEFT JOIN sports sp ON t.sport_id=sp.id
+    ORDER BY t.created_at DESC
+  `).map(r => ({ ...r, photo_url: r.photo_filename ? `/uploads/${r.photo_filename}` : null }));
+  const photos = all(`
+    SELECT p.id, p.filename, p.caption, p.approved, p.uploaded_at, ch.name AS chapter, sp.name AS sport
+    FROM photos p
+    LEFT JOIN chapters ch ON p.chapter_id=ch.id
+    LEFT JOIN sports sp ON p.sport_id=sp.id
+    ORDER BY p.uploaded_at DESC
+  `).map(r => ({ ...r, url: `/uploads/${r.filename}` }));
+  const coaches = all(`
+    SELECT c.id, c.name, c.email, c.phone, c.bio, c.active, ch.name AS chapter, sp.name AS sport
+    FROM coaches c
+    LEFT JOIN chapters ch ON c.chapter_id=ch.id
+    LEFT JOIN sports sp ON c.sport_id=sp.id
+    WHERE c.name != 'Coach TBD'
+    ORDER BY c.name
+  `);
+  const stats = {
+    total_sessions:      get('SELECT COUNT(*) n FROM sessions').n,
+    total_participants:  get('SELECT COALESCE(SUM(participants),0) n FROM sessions').n,
+    active_coaches:      get("SELECT COUNT(*) n FROM coaches WHERE active=1 AND name!='Coach TBD'").n,
+    total_hours:         get('SELECT COALESCE(SUM(hours),0) n FROM volunteer_logs').n,
+    by_chapter: all(`SELECT ch.name, COUNT(*) sessions, COALESCE(SUM(s.participants),0) participants
+                     FROM sessions s JOIN chapters ch ON s.chapter_id=ch.id GROUP BY ch.id ORDER BY sessions DESC`),
+    by_sport:   all(`SELECT sp.name, COUNT(*) sessions FROM sessions s JOIN sports sp ON s.sport_id=sp.id GROUP BY sp.id ORDER BY sessions DESC`),
+  };
+  res.json({
+    org_label: req.isAdmin ? 'Admin preview' : req.viewKey.label,
+    stats, sessions, participants, volunteerLogs, testimonials, photos, coaches,
+  });
 });
 
 // ── Outreach (per-chapter, coach-facing) ──────────────────────────────────────
