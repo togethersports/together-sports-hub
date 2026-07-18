@@ -3,7 +3,7 @@
 (() => {
   const TS = window.TS;
   const { useState, useEffect } = React;
-  const { Ic, Btn, IconBtn, PageHead, Field, Input, Confirm, useToast } = TS.ui;
+  const { Ic, Btn, IconBtn, PageHead, Field, Input, Confirm, Toggle, useToast } = TS.ui;
 
   const SWATCHES = [
     { name: 'Ink', hex: '#0A0D28' },
@@ -20,7 +20,7 @@
     const set = (k) => (e) => setF((x) => ({ ...x, [k]: e.target.value }));
 
     const change = async () => {
-      if (f.next !== f.confirm) { toast('New passwords don’t match', { error: true }); return; }
+      if (f.next !== f.confirm) { toast("New passwords don't match", { error: true }); return; }
       if (f.next.length < 8) { toast('New password must be at least 8 characters', { error: true }); return; }
       setBusy(true);
       try {
@@ -81,7 +81,7 @@
 
     const copy = async (text, what) => {
       try { await navigator.clipboard.writeText(text); toast(`${what} copied`); }
-      catch { toast('Couldn’t copy — select and copy manually', { error: true }); }
+      catch { toast("Couldn't copy — select and copy manually", { error: true }); }
     };
 
     const create = async () => {
@@ -99,7 +99,7 @@
     const revoke = async (row) => {
       try {
         await TS.api(`/api/view-keys/${row.id}`, { method: 'DELETE' });
-        toast(`Revoked “${row.label}” — that link no longer works`);
+        toast(`Revoked "${row.label}" — that link no longer works`);
         setRevoking(null);
         load();
       } catch (e) { toast(e.message, { error: true }); }
@@ -154,7 +154,7 @@
         )}
 
         {revoking && (
-          <Confirm title={`Revoke “${revoking.label}”?`}
+          <Confirm title={`Revoke "${revoking.label}"?`}
             body="This link stops working immediately. Anyone who has it will be signed out next time they load the page."
             confirmLabel="Revoke link"
             onConfirm={() => revoke(revoking)} onClose={() => setRevoking(null)} />
@@ -170,13 +170,14 @@
       contact_email: data.settings.contact_email || '',
       monthly_goal: data.settings.monthly_goal || '20',
       dollars_raised: data.settings.dollars_raised || '',
+      public_site_enabled: (data.settings.public_site_enabled !== '0'),
     });
     const [busy, setBusy] = useState(false);
 
     const save = async () => {
       setBusy(true);
       try {
-        await TS.api('/api/settings', { method: 'POST', body: f });
+        await TS.api('/api/settings', { method: 'POST', body: { ...f, public_site_enabled: f.public_site_enabled ? '1' : '0' } });
         toast('Settings saved');
         reload();
       } catch (e) { toast(e.message, { error: true }); }
@@ -251,11 +252,18 @@
               <Field label="Monthly session goal" hint="Drives the progress bar in the sidebar.">
                 <Input type="number" min="1" value={f.monthly_goal} onChange={(e) => setF({ ...f, monthly_goal: e.target.value })} />
               </Field>
-              <Field label="Total dollars raised" hint="Shown as the “dollars raised” metric on the shared Impact Viewer. Numbers only.">
+              <Field label="Total dollars raised" hint={'Shown as the "dollars raised" metric on the shared Impact Viewer. Numbers only.'}>
                 <Input type="number" min="0" step="1" value={f.dollars_raised} placeholder="e.g. 4500"
                        onChange={(e) => setF({ ...f, dollars_raised: e.target.value })} />
               </Field>
-              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, justifyContent: 'space-between' }}>
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: '.95rem' }}>Public impact page</div>
+                  <div style={{ fontSize: '.82rem', color: 'var(--muted)', marginTop: 2 }}>Enable or disable the public /impact.html page</div>
+                </div>
+                <Toggle on={f.public_site_enabled} onChange={(v) => setF({ ...f, public_site_enabled: v })} label="Public impact page" />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
                 <Btn kind="primary" icon="check" onClick={save} disabled={busy}>{busy ? 'Saving…' : 'Save settings'}</Btn>
               </div>
             </div>
