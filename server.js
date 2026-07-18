@@ -472,8 +472,14 @@ app.get('/api/impact-stats', (req, res) => {
     total_people_helped: get('SELECT COALESCE(SUM(people_helped),0) n FROM volunteer_logs').n,
     active_coaches:      get("SELECT COUNT(*) n FROM coaches WHERE active=1 AND name!='Coach TBD'").n,
     chapters_active:     get("SELECT COUNT(DISTINCT chapter_id) n FROM sessions WHERE chapter_id IS NOT NULL").n,
-    by_chapter: all(`SELECT ch.name, COUNT(*) sessions, COALESCE(SUM(s.participants),0) participants
-                     FROM sessions s JOIN chapters ch ON s.chapter_id=ch.id GROUP BY ch.id ORDER BY sessions DESC`),
+    // Per-chapter reach counts session participants plus people helped in volunteer activities.
+    by_chapter: all(`SELECT * FROM (
+                       SELECT ch.name,
+                         (SELECT COUNT(*) FROM sessions s WHERE s.chapter_id=ch.id) sessions,
+                         (SELECT COALESCE(SUM(s.participants),0) FROM sessions s WHERE s.chapter_id=ch.id)
+                       + (SELECT COALESCE(SUM(v.people_helped),0) FROM volunteer_logs v WHERE v.chapter_id=ch.id) participants
+                       FROM chapters ch
+                     ) WHERE sessions > 0 OR participants > 0 ORDER BY sessions DESC`),
   });
 });
 
@@ -774,7 +780,9 @@ app.get('/api/viewer/bundle', requireViewer, (req, res) => {
   ).replace(/[^0-9.]/g, '')) || 0;
   const stats = {
     total_sessions:      get('SELECT COUNT(*) n FROM sessions').n,
-    total_participants:  get('SELECT COALESCE(SUM(participants),0) n FROM sessions').n,
+    // Kids served = session participants + people helped through volunteer activities.
+    total_participants:  get('SELECT COALESCE(SUM(participants),0) n FROM sessions').n
+                       + get('SELECT COALESCE(SUM(people_helped),0) n FROM volunteer_logs').n,
     active_coaches:      get("SELECT COUNT(*) n FROM coaches WHERE active=1 AND name!='Coach TBD'").n,
     total_hours:         get('SELECT COALESCE(SUM(hours),0) n FROM volunteer_logs').n,
     dollars_raised:      dollarsRaised,

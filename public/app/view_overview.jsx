@@ -13,7 +13,8 @@
     const sessions = data.sessions.filter(inChapter);
     const vols = data.volunteerLogs.filter(inChapter);
 
-    const kidsReached = sessions.reduce((n, s) => n + (Number(s.participants) || 0), 0);
+    const kidsReached = sessions.reduce((n, s) => n + (Number(s.participants) || 0), 0)
+                      + vols.reduce((n, v) => n + (Number(v.people_helped) || 0), 0);
     const volHours = vols.reduce((n, v) => n + (Number(v.hours) || 0), 0);
     const activeCoaches = data.coaches.filter((c) =>
       c.active && c.name !== 'Coach TBD' && (chapterFilter == null || c.chapter_id === chapterFilter)).length;
@@ -29,15 +30,17 @@
       for (let i = 6; i >= 0; i--) {
         const date = TS.daysAgo(i);
         const rows = sessions.filter((s) => (s.session_date || '').slice(0, 10) === date);
+        const vrows = vols.filter((v) => (v.log_date || '').slice(0, 10) === date);
         days.push({
           date,
           label: i === 0 ? 'Today' : TS.fmtDate(date),
-          kids: rows.reduce((n, s) => n + (Number(s.participants) || 0), 0),
+          kids: rows.reduce((n, s) => n + (Number(s.participants) || 0), 0)
+              + vrows.reduce((n, v) => n + (Number(v.people_helped) || 0), 0),
           count: rows.length,
         });
       }
       return days;
-    }, [data.sessions, chapterFilter]);
+    }, [data.sessions, data.volunteerLogs, chapterFilter]);
     const weekMax = Math.max(1, ...week.map((d) => d.kids));
     const weekKids = week.reduce((n, d) => n + d.kids, 0);
     const weekCount = week.reduce((n, d) => n + d.count, 0);
@@ -94,7 +97,7 @@
           <div className="ts-stat">
             <span className="ts-stat-label">Kids reached</span>
             <span className="ts-stat-value">{kidsReached}</span>
-            <div className="ts-stat-foot"><span className="ts-stat-sub">across all logged sessions</span></div>
+            <div className="ts-stat-foot"><span className="ts-stat-sub">sessions + volunteer activities</span></div>
           </div>
           <div className="ts-stat">
             <span className="ts-stat-label">Volunteer hours</span>
