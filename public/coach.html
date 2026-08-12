@@ -710,8 +710,8 @@ async function loadMyActivity() {
 
   document.getElementById('my-stats').innerHTML = `
     <div class="stat-box"><div class="num">${totalSessions}</div><div class="lbl">Sessions</div></div>
-    <div class="stat-box"><div class="num">${totalKids}</div><div class="lbl">Kids Coached</div></div>
-    <div class="stat-box"><div class="num">${totalPeople}</div><div class="lbl">People Helped</div></div>
+    <div class="stat-box"><div class="num">${totalKids + totalPeople}</div><div class="lbl">Kids Coached</div></div>
+    <div class="stat-box"><div class="num">${vlogs.length}</div><div class="lbl">Volunteer Activities</div></div>
     <div class="stat-box"><div class="num">${totalHours}</div><div class="lbl">Hours Volunteered</div></div>
   `;
 
