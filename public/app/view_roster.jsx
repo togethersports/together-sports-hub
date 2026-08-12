@@ -8,9 +8,10 @@
   const CoachProfile = ({ coach, data, onClose, onEdit, setView }) => {
     const toast = useToast();
     const sessions = data.sessions.filter((s) => s.coach_id === coach.id);
-    const kids = sessions.reduce((n, s) => n + (Number(s.participants) || 0), 0);
-    const volHours = data.volunteerLogs.filter((v) => v.coach_id === coach.id)
-      .reduce((n, v) => n + (Number(v.hours) || 0), 0);
+    const vols = data.volunteerLogs.filter((v) => v.coach_id === coach.id);
+    const kids = sessions.reduce((n, s) => n + (Number(s.participants) || 0), 0)
+               + vols.reduce((n, v) => n + (Number(v.people_helped) || 0), 0);
+    const volHours = vols.reduce((n, v) => n + (Number(v.hours) || 0), 0);
 
     const copyCode = () => {
       navigator.clipboard?.writeText(coach.access_code)
@@ -87,9 +88,11 @@
 
     const statsFor = (c) => {
       const ss = data.sessions.filter((s) => s.coach_id === c.id);
+      const vv = data.volunteerLogs.filter((v) => v.coach_id === c.id);
       return {
         sessions: ss.length,
-        kids: ss.reduce((n, s) => n + (Number(s.participants) || 0), 0),
+        kids: ss.reduce((n, s) => n + (Number(s.participants) || 0), 0)
+            + vv.reduce((n, v) => n + (Number(v.people_helped) || 0), 0),
         last: ss[0]?.session_date,
       };
     };
