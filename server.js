@@ -167,6 +167,53 @@ db.exec(`
     notes TEXT,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
+  -- Data Hub (hidden admin page): per-site cost & retention records.
+  CREATE TABLE IF NOT EXISTS sites (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    city TEXT, sport TEXT, neighborhood TEXT,
+    coach_name TEXT, coach_start TEXT,
+    first_session TEXT,
+    facility_type TEXT NOT NULL DEFAULT 'Public permit',
+    match_location TEXT,
+    notes TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE TABLE IF NOT EXISTS extra_sessions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    site_id INTEGER REFERENCES sites(id),
+    session_date TEXT NOT NULL,
+    sport TEXT, coach_name TEXT,
+    scheduled_headcount INTEGER DEFAULT 0,
+    actual_headcount INTEGER DEFAULT 0,
+    held INTEGER NOT NULL DEFAULT 1,
+    cancel_reason TEXT,
+    checkins TEXT,
+    notes TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE TABLE IF NOT EXISTS site_expenses (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    site_id INTEGER REFERENCES sites(id),
+    expense_date TEXT NOT NULL,
+    amount REAL NOT NULL DEFAULT 0,
+    category TEXT NOT NULL DEFAULT 'facility',
+    paid_rental INTEGER NOT NULL DEFAULT 0,
+    notes TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE TABLE IF NOT EXISTS site_decisions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    site_id INTEGER REFERENCES sites(id),
+    flag_date TEXT,
+    trigger_reason TEXT,
+    conversation TEXT,
+    decision TEXT,
+    rationale TEXT,
+    check_90 TEXT,
+    check_180 TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
 `);
 
 // Migrate existing DBs — each guarded individually so an old copy of
@@ -714,6 +761,128 @@ app.put('/api/partners/:id', requireAdmin, (req, res) => {
 app.delete('/api/partners/:id', requireAdmin, (req, res) => {
   run('DELETE FROM partners WHERE id=?', [req.params.id]);
   res.json({ ok: true });
+});
+
+// ── Data Hub (hidden admin page) ──────────────────────────────────────────────
+// Per-site records layered on top of hub session logs: extra sessions with
+// scheduled-vs-actual headcounts and cancellations, site-attributed expenses,
+// and a decision log with 90/180-day check-backs. All admin-only.
+
+const dhCrud = (route, table, cols) => {
+  app.get(`/api/${route}`, requireAdmin, (req, res) => {
+    res.json(all(`SELECT t.*, s.name AS site FROM ${table} t LEFT JOIN sites s ON t.site_id=s.id ORDER BY t.id DESC`));
+  });
+  app.post(`/api/${route}`, requireAdmin, (req, res) => {
+    const vals = cols.map((c) => req.body[c] ?? null);
+    const r = run(`INSERT INTO ${table} (${cols.join(',')}) VALUES (${cols.map(() => '?').join(',')})`, vals);
+    res.json({ id: r.lastInsertRowid });
+  });
+  app.put(`/api/${route}/:id`, requireAdmin, (req, res) => {
+    const vals = cols.map((c) => req.body[c] ?? null);
+    run(`UPDATE ${table} SET ${cols.map((c) => `${c}=?`).join(',')} WHERE id=?`, [...vals, req.params.id]);
+    res.json({ ok: true });
+  });
+  app.delete(`/api/${route}/:id`, requireAdmin, (req, res) => {
+    run(`DELETE FROM ${table} WHERE id=?`, [req.params.id]);
+    res.json({ ok: true });
+  });
+};
+
+app.get('/api/sites', requireAdmin, (req, res) => {
+  res.json(all('SELECT * FROM sites ORDER BY name COLLATE NOCASE'));
+});
+app.post('/api/sites', requireAdmin, (req, res) => {
+  const { name, city, sport, neighborhood, coach_name, coach_start, first_session, facility_type, match_location, notes } = req.body;
+  if (!name || !name.trim()) return res.status(400).json({ error: 'Site name required' });
+  const r = run('INSERT INTO sites (name,city,sport,neighborhood,coach_name,coach_start,first_session,facility_type,match_location,notes) VALUES (?,?,?,?,?,?,?,?,?,?)',
+    [name.trim(), city||null, sport||null, neighborhood||null, coach_name||null, coach_start||null, first_session||null, facility_type||'Public permit', match_location||null, notes||null]);
+  res.json({ id: r.lastInsertRowid });
+});
+app.put('/api/sites/:id', requireAdmin, (req, res) => {
+  const { name, city, sport, neighborhood, coach_name, coach_start, first_session, facility_type, match_location, notes } = req.body;
+  if (!name || !name.trim()) return res.status(400).json({ error: 'Site name required' });
+  run('UPDATE sites SET name=?,city=?,sport=?,neighborhood=?,coach_name=?,coach_start=?,first_session=?,facility_type=?,match_location=?,notes=? WHERE id=?',
+    [name.trim(), city||null, sport||null, neighborhood||null, coach_name||null, coach_start||null, first_session||null, facility_type||'Public permit', match_location||null, notes||null, req.params.id]);
+  res.json({ ok: true });
+});
+app.delete('/api/sites/:id', requireAdmin, (req, res) => {
+  run('DELETE FROM extra_sessions WHERE site_id=?', [req.params.id]);
+  run('DELETE FROM site_expenses WHERE site_id=?', [req.params.id]);
+  run('DELETE FROM site_decisions WHERE site_id=?', [req.params.id]);
+  run('DELETE FROM sites WHERE id=?', [req.params.id]);
+  res.json({ ok: true });
+});
+
+dhCrud('extra-sessions', 'extra_sessions',
+  ['site_id','session_date','sport','coach_name','scheduled_headcount','actual_headcount','held','cancel_reason','checkins','notes']);
+dhCrud('site-expenses', 'site_expenses',
+  ['site_id','expense_date','amount','category','paid_rental','notes']);
+dhCrud('site-decisions', 'site_decisions',
+  ['site_id','flag_date','trigger_reason','conversation','decision','rationale','check_90','check_180']);
+
+// One row per site: hub sessions (matched by location) + extra sessions,
+// spend by category, unique kids, kid-visits, cancellations, roster churn.
+app.get('/api/datahub/summary', requireAdmin, (req, res) => {
+  const sites = all('SELECT * FROM sites ORDER BY name COLLATE NOCASE');
+  const hubSessions = all(`
+    SELECT s.id, s.session_date, s.participants, s.location, sp.name AS sport, c.name AS coach
+    FROM sessions s LEFT JOIN sports sp ON s.sport_id=sp.id LEFT JOIN coaches c ON s.coach_id=c.id`);
+  const hubKids = all(`SELECT p.name, p.session_id FROM participants p WHERE p.session_id IS NOT NULL`);
+  const rows = sites.map((site) => {
+    const match = (site.match_location || site.name).toLowerCase();
+    const hub = hubSessions.filter((s) => (s.location || '').toLowerCase().includes(match));
+    const extras = all('SELECT * FROM extra_sessions WHERE site_id=? ORDER BY session_date', [site.id]);
+    const held = extras.filter((e) => e.held);
+    const cancelled = extras.filter((e) => !e.held);
+    const cancelReasons = {};
+    for (const e of cancelled) cancelReasons[e.cancel_reason || 'unknown'] = (cancelReasons[e.cancel_reason || 'unknown'] || 0) + 1;
+
+    // Session dates across hub + extra (held only)
+    const dates = [...hub.map((s) => s.session_date), ...held.map((e) => e.session_date)].filter(Boolean).sort();
+
+    // Kid-visits: hub participants counts + extra actual headcounts
+    const kidVisits = hub.reduce((n, s) => n + (Number(s.participants) || 0), 0)
+                    + held.reduce((n, e) => n + (Number(e.actual_headcount) || 0), 0);
+
+    // Unique kids: named check-ins (hub participant names + extra session check-in lists)
+    const names = new Set();
+    const hubIds = new Set(hub.map((s) => s.id));
+    for (const k of hubKids) if (hubIds.has(k.session_id) && k.name) names.add(k.name.trim().toLowerCase());
+    const perSessionCheckins = held.map((e) =>
+      (e.checkins || '').split(/[,\n;]/).map((x) => x.trim().toLowerCase()).filter(Boolean));
+    for (const list of perSessionCheckins) for (const n of list) names.add(n);
+
+    // Roster churn: of kids checked in at session 1, how many were still at session 10
+    let churn = null;
+    if (perSessionCheckins.length >= 10 && perSessionCheckins[0].length) {
+      const first = perSessionCheckins[0];
+      const tenth = new Set(perSessionCheckins[9]);
+      churn = { session_one: first.length, still_at_ten: first.filter((n) => tenth.has(n)).length };
+    }
+
+    const spend = { facility: 0, equipment: 0, travel: 0, overhead: 0 };
+    for (const e of all('SELECT category, amount FROM site_expenses WHERE site_id=?', [site.id]))
+      spend[e.category in spend ? e.category : 'overhead'] += Number(e.amount) || 0;
+
+    return {
+      site_id: site.id, site: site.name, city: site.city, sport: site.sport,
+      neighborhood: site.neighborhood, coach: site.coach_name, coach_start: site.coach_start,
+      facility_type: site.facility_type,
+      first_session: site.first_session || dates[0] || null,
+      last_session: dates[dates.length - 1] || null,
+      sessions_held: hub.length + held.length,
+      hub_sessions: hub.length, extra_sessions: held.length,
+      sessions_cancelled: cancelled.length, cancel_reasons: cancelReasons,
+      unique_kids: names.size, kid_visits: kidVisits,
+      facility_spend: spend.facility, equipment_spend: spend.equipment,
+      travel_spend: spend.travel, overhead_spend: spend.overhead,
+      cost_per_kid_visit: kidVisits ? +(((spend.facility + spend.equipment + spend.travel) / kidVisits).toFixed(2)) : null,
+      churn,
+    };
+  });
+  // Overhead bucket: expenses not assigned to any site stay out of site math.
+  const unassigned = get('SELECT COALESCE(SUM(amount),0) n FROM site_expenses WHERE site_id IS NULL').n;
+  res.json({ sites: rows, unassigned_overhead: unassigned });
 });
 
 // ── Viewer dashboard data (read-only) ───────────────────────────────────────

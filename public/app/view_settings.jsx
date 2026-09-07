@@ -315,6 +315,9 @@
               <a href="/submit.html" target="_blank" rel="noopener">
                 <Ic name="quote" size={16} /> Testimonial form <span>for families</span>
               </a>
+              <a href="/datahub.html" target="_blank" rel="noopener">
+                <Ic name="shield" size={16} /> Data Hub <span>internal — per-site costs &amp; decisions</span>
+              </a>
             </div>
             <div className="ts-notifrow" style={{ borderBottom: 0, marginTop: 6 }}>
               <div>

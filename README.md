@@ -121,6 +121,30 @@ Partner Log.
 Revoke a link any time from the same Settings card — it stops working
 immediately, no matter how many people have it.
 
+## Data Hub (hidden, internal)
+
+`/datahub.html` is an unlinked, admin-password-gated page for per-site cost
+and retention records — the data that makes cost-per-kid computable:
+
+- **Sites** — set once: city, sport, neighborhood, coach + coach start date,
+  first session date, public permit vs. paid rental. A "match text" links hub
+  session logs to the site by location, so hub numbers roll in automatically.
+- **Session log** — extra sessions on top of the hub's coach logs: scheduled
+  vs. actual headcount, held/cancelled with a reason (weather, permit, no
+  coach, no kids, facility closed), and individual kid check-ins by name —
+  which makes retention and roster churn computable.
+- **Expenses** — amount, date, category (facility/equipment/travel), site,
+  and a public-permit vs. paid-rental flag. Expenses with no site land in an
+  overhead bucket that stays out of the site math.
+- **Decision log** — when a site crosses the review threshold: the flag, the
+  coach conversation, the call and rationale, and 90/180-day check-backs.
+- **Per-site summary** — one row per site (first/last session, sessions held
+  and cancelled, unique kids, kid-visits, spend by category, cost per
+  kid-visit, churn from session 1 to 10), downloadable as CSV along with
+  each raw table.
+
+The only link to it is in Admin → Settings → Quick links.
+
 ## Deploying
 
 The repo ships a `Dockerfile` (Node 20 + build tools for `better-sqlite3`)
