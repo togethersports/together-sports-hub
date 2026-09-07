@@ -359,7 +359,11 @@ function rSites(){
     </div>
     <div class="card">
       <div class="cardhead"><div><h2>Sites</h2><p class="sub">${DATA.sites.length} sites</p></div>
-        <button class="btn sec" onclick="importSites()">Import from hub sessions</button></div>
+        <div class="actions">
+          <button class="btn sec" onclick="importSites()">Import from hub sessions</button>
+          <button class="btn sec" onclick="loadSample()">Load sample data</button>
+          <button class="btn danger" onclick="clearSample()">Delete sample data</button>
+        </div></div>
       <div class="tablewrap"><table><thead><tr>
         <th>Site</th><th>City</th><th>Sport</th><th>Neighborhood</th><th>Coach</th><th>Coach since</th><th>First session</th><th>Facility</th><th>Notes</th><th></th>
       </tr></thead><tbody>
@@ -396,6 +400,72 @@ async function importSites(){
       coach_name: v.coach_name, first_session: v.first, facility_type: 'Public permit', match_location: v.name } });
   }
   await loadAll(); render(); toast(`${byLoc.size} site(s) created — hub sessions now roll into the summary`);
+}
+
+// Demo rows for exploring the page — every row is tagged [SAMPLE] in its
+// notes so "Delete sample data" can wipe exactly these and nothing else.
+const SAMPLE_TAG = '[SAMPLE]';
+async function loadSample(){
+  if (!confirm('Add sample sites, sessions, expenses and decisions? They are tagged [SAMPLE] and can be removed with "Delete sample data".')) return;
+  const post = (route, body) => api('/api/' + route, { method: 'POST', body });
+  const KIDS = ['Maya R','Jonah K','Leo P','Ava T','Noah S','Ella G','Sam W','Zoe L','Max D','Lily C','Ben H','Mia F','Eli V','Ruby N'];
+  const stadium = (await post('sites', { name: 'Sample: Stadium Tennis', city: 'Bronx, NY', sport: 'Tennis',
+    neighborhood: 'Mott Haven', coach_name: 'Ron Slutsky', coach_start: '2026-01-10', first_session: '2026-02-01',
+    facility_type: 'Paid rental', match_location: 'zzz-no-match', notes: SAMPLE_TAG + ' anchor site, kept on override' })).id;
+  const golf = (await post('sites', { name: 'Sample: Golf Range', city: 'Bronx, NY', sport: 'Golf',
+    neighborhood: 'Norwood', coach_name: 'Sheldon Heyman', coach_start: '2026-03-01', first_session: '2026-03-15',
+    facility_type: 'Paid rental', match_location: 'zzz-no-match', notes: SAMPLE_TAG + ' anchor site, wound down' })).id;
+  // 12 held Sundays at Stadium with named check-ins (makes churn computable), 1 weather cancel
+  for (let i = 0; i < 12; i++) {
+    const kids = [...KIDS.slice(0, 8).filter((_, k) => !(i >= 6 && k >= 6)), ...KIDS.slice(8, 8 + Math.min(6, Math.floor(i / 2)))];
+    await post('extra-sessions', { site_id: stadium, session_date: new Date(2026, 1, 1 + i * 7).toISOString().slice(0, 10),
+      sport: 'Tennis', coach_name: 'Ron Slutsky', scheduled_headcount: 10, actual_headcount: kids.length,
+      held: 1, cancel_reason: null, checkins: kids.join(', '), notes: SAMPLE_TAG });
+  }
+  await post('extra-sessions', { site_id: stadium, session_date: '2026-03-08', sport: 'Tennis', coach_name: 'Ron Slutsky',
+    scheduled_headcount: 10, actual_headcount: 0, held: 0, cancel_reason: 'weather', checkins: '', notes: SAMPLE_TAG });
+  // 6 small-turnout golf sessions + 2 cancels
+  const turnout = [4, 5, 3, 6, 4, 3];
+  for (let i = 0; i < 6; i++)
+    await post('extra-sessions', { site_id: golf, session_date: new Date(2026, 2, 15 + i * 7).toISOString().slice(0, 10),
+      sport: 'Golf', coach_name: 'Sheldon Heyman', scheduled_headcount: 8, actual_headcount: turnout[i],
+      held: 1, cancel_reason: null, checkins: KIDS.slice(8, 8 + turnout[i]).join(', '), notes: SAMPLE_TAG });
+  for (const [d, r] of [['2026-04-26','no kids'], ['2026-05-03','no coach']])
+    await post('extra-sessions', { site_id: golf, session_date: d, sport: 'Golf', coach_name: 'Sheldon Heyman',
+      scheduled_headcount: 8, actual_headcount: 0, held: 0, cancel_reason: r, checkins: '', notes: SAMPLE_TAG });
+  // expenses
+  for (const m of [2, 3, 4]) await post('site-expenses', { site_id: stadium, expense_date: `2026-0${m}-28`,
+    amount: 480, category: 'facility', paid_rental: 1, notes: SAMPLE_TAG + ' court rental 4 Sundays @ $120' });
+  await post('site-expenses', { site_id: stadium, expense_date: '2026-02-05', amount: 210, category: 'equipment', paid_rental: 0, notes: SAMPLE_TAG + ' rackets + balls' });
+  for (const m of [3, 4]) await post('site-expenses', { site_id: golf, expense_date: `2026-0${m}-30`,
+    amount: 340, category: 'facility', paid_rental: 1, notes: SAMPLE_TAG + ' bay rental $85/hr' });
+  await post('site-expenses', { site_id: null, expense_date: '2026-03-01', amount: 65, category: 'overhead', paid_rental: 0, notes: SAMPLE_TAG + ' insurance, not site-attributable' });
+  // decisions with 90-day outcomes
+  await post('site-decisions', { site_id: golf, flag_date: '2026-04-20',
+    trigger_reason: 'Cost per kid-visit over $25 for two months; turnout never above 6',
+    conversation: 'Coach agreed the range fee made no sense at this turnout.',
+    decision: 'Wind down', rationale: SAMPLE_TAG + ' $85/hr rental vs ~4 kids; budget moved to gym slot',
+    check_90: '5 of 6 regulars absorbed into Saturday gym slot', check_180: '' });
+  await post('site-decisions', { site_id: stadium, flag_date: '2026-04-20',
+    trigger_reason: 'Same review — $480/mo rental crossed the threshold',
+    conversation: 'Coach: attendance climbing weekly (6 → 12), families said it is the only structured sport their kids do.',
+    decision: 'Override — keep despite numbers',
+    rationale: SAMPLE_TAG + ' trajectory not level: 6 of 8 originals still at session 10, cost per visit falling',
+    check_90: '12–14 kids per session, cost per kid-visit under $9', check_180: '' });
+  await loadAll(); render(); toast('Sample data loaded — every row is tagged [SAMPLE]');
+}
+async function clearSample(){
+  const isSample = (x) => (x.notes || x.rationale || '').includes(SAMPLE_TAG) || (x.name || '').startsWith('Sample:');
+  const hits = [
+    ...DATA.decisions.filter(isSample).map((x) => ['site-decisions', x.id]),
+    ...DATA.expenses.filter(isSample).map((x) => ['site-expenses', x.id]),
+    ...DATA.extras.filter(isSample).map((x) => ['extra-sessions', x.id]),
+    ...DATA.sites.filter(isSample).map((x) => ['sites', x.id]),
+  ];
+  if (!hits.length) { toast('No sample rows found'); return; }
+  if (!confirm(`Delete ${hits.length} sample row(s)? Rows without the [SAMPLE] tag are untouched.`)) return;
+  for (const [route, id] of hits) await api(`/api/${route}/${id}`, { method: 'DELETE' });
+  await loadAll(); render(); toast('Sample data removed');
 }
 
 function saveSite(id){
