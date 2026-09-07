@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="robots" content="noindex,nofollow"/>
+<title>Together Sports · Data Hub</title>
+<link rel="icon" href="assets/ts-mark.png"/>
+<style>
+:root{
+  --display:"League Spartan",system-ui,sans-serif;
+  --body:"Montserrat",system-ui,sans-serif;
+  --bg:#F5F4EC;--surface:#FFF;--surface-2:#ECEFE1;--border:#E2E5D4;
+  --text:#1f223f;--muted:#7d816f;--accent:#285400;--accent-soft:#E7F1D7;
+  --lime:#87cb4a;--danger:#B3261E;--danger-soft:#F7E4E2;--radius:12px;
+  --shadow:0 4px 16px rgba(31,34,63,.07);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--body);color:var(--text);background:var(--bg);-webkit-font-smoothing:antialiased;font-size:14px}
+button{font:inherit;cursor:pointer}
+input,select,textarea{font:inherit;color:inherit;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px;width:100%}
+textarea{min-height:64px;resize:vertical}
+label{display:block;font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.field{margin-bottom:12px}
+.nav{background:var(--accent);padding:0 24px;display:flex;align-items:center;gap:12px;height:58px;color:#fff}
+.nav b{font-family:var(--display);font-size:1.15rem;font-weight:800}
+.nav .tag{background:rgba(255,255,255,.15);font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:99px;letter-spacing:.05em}
+.nav .right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.nav button{background:rgba(255,255,255,.12);border:0;color:#fff;padding:6px 14px;border-radius:8px;font-size:.82rem;font-weight:600}
+.page{max-width:1240px;margin:0 auto;padding:24px}
+.tabs{display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap}
+.tabs button{background:var(--surface);border:1px solid var(--border);padding:8px 16px;border-radius:99px;font-weight:600;font-size:.85rem;color:var(--muted)}
+.tabs button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;margin-bottom:18px}
+.card h2{font-family:var(--display);font-size:1.15rem;font-weight:800;margin-bottom:4px}
+.card .sub{font-size:.82rem;color:var(--muted);margin-bottom:14px}
+.cardhead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center}
+.stat b{display:block;font-family:var(--display);font-size:1.7rem;font-weight:900;color:var(--accent)}
+.stat span{font-size:.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.82rem;white-space:nowrap}
+th{text-align:left;font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding:8px 10px;border-bottom:2px solid var(--border);position:sticky;top:0;background:var(--surface)}
+td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+td.wrap{white-space:normal;min-width:180px;max-width:320px}
+tr:hover td{background:var(--surface-2)}
+.btn{background:var(--accent);color:#fff;border:0;padding:8px 16px;border-radius:8px;font-weight:700;font-size:.85rem}
+.btn.sec{background:var(--surface-2);color:var(--text);border:1px solid var(--border)}
+.btn.sm{padding:4px 10px;font-size:.75rem}
+.btn.danger{background:var(--danger-soft);color:var(--danger)}
+.formgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.formgrid .wide{grid-column:1/-1}
+.pill{display:inline-block;background:var(--accent-soft);color:var(--accent);font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:99px}
+.pill.red{background:var(--danger-soft);color:var(--danger)}
+.pill.gray{background:var(--surface-2);color:var(--muted)}
+.login{max-width:360px;margin:80px auto;text-align:center}
+.login .card{padding:28px}
+.muted{color:var(--muted)}
+.actions{display:flex;gap:6px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:10px 20px;border-radius:99px;font-size:.85rem;opacity:0;transition:opacity .2s;pointer-events:none;z-index:99}
+.toast.show{opacity:1}
+@media(max-width:700px){.page{padding:14px}}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <img src="assets/ts-mark.png" alt="" style="width:30px;height:30px;background:#fff;border-radius:8px;padding:2px"/>
+  <b>Data Hub</b><span class="tag">INTERNAL</span>
+  <div class="right" id="nav-right" hidden>
+    <button onclick="location.href='/admin.html'">Admin</button>
+    <button onclick="logout()">Sign out</button>
+  </div>
+</nav>
+
+<div class="login" id="login">
+  <div class="card">
+    <h2>Internal data hub</h2>
+    <p class="sub">Admin password required.</p>
+    <div class="field"><input type="password" id="pw" placeholder="Admin password" onkeydown="if(event.key==='Enter')signin()"/></div>
+    <button class="btn" style="width:100%" onclick="signin()">Sign in</button>
+    <p class="muted" id="login-err" style="margin-top:10px;font-size:.8rem"></p>
+  </div>
+</div>
+
+<div class="page" id="app" hidden>
+  <div class="tabs" id="tabs"></div>
+  <div id="content"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const money = (n) => '$' + Number(n||0).toLocaleString('en-US',{maximumFractionDigits:0});
+let TOKEN = localStorage.getItem('ts_tok') || '';
+let DATA = { sites: [], extras: [], expenses: [], decisions: [], summary: null };
+let TAB = 'summary';
+let EDITING = {};   // per-tab id being edited
+
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); }
+
+async function api(path, opts={}) {
+  const r = await fetch(path, { ...opts,
+    headers: { 'content-type':'application/json', 'x-admin-token': TOKEN, ...(opts.headers||{}) },
+    body: opts.body ? JSON.stringify(opts.body) : undefined });
+  if (r.status === 401) { logout(); throw new Error('Signed out'); }
+  const j = await r.json().catch(()=>({}));
+  if (!r.ok) throw new Error(j.error || 'Request failed');
+  return j;
+}
+
+async function signin(){
+  TOKEN = $('pw').value;
+  try { await api('/api/sites'); localStorage.setItem('ts_tok', TOKEN); boot(); }
+  catch(e){ $('login-err').textContent = 'Wrong password.'; }
+}
+function logout(){ localStorage.removeItem('ts_tok'); location.reload(); }
+
+async function loadAll(){
+  const [sites, extras, expenses, decisions, summary] = await Promise.all([
+    api('/api/sites'), api('/api/extra-sessions'), api('/api/site-expenses'),
+    api('/api/site-decisions'), api('/api/datahub/summary'),
+  ]);
+  DATA = { sites, extras, expenses, decisions, summary };
+}
+
+// ── CSV ──────────────────────────────────────────────────
+function downloadCsv(name, headers, rows){
+  const cell = (v) => { v = String(v ?? ''); return /[",\n]/.test(v) ? '"' + v.replace(/"/g,'""') + '"' : v; };
+  const csv = [headers, ...rows].map((r) => r.map(cell).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type:'text/csv' }));
+  a.download = name; a.click(); URL.revokeObjectURL(a.href);
+  toast(name + ' downloaded');
+}
+
+// ── Tab shell ────────────────────────────────────────────
+const TABS = [
+  ['summary','Per-site summary'], ['sessions','Session log'], ['expenses','Expenses'],
+  ['sites','Sites'], ['decisions','Decision log'],
+];
+function renderTabs(){
+  $('tabs').innerHTML = TABS.map(([id,label]) =>
+    `<button class="${TAB===id?'on':''}" onclick="setTab('${id}')">${label}</button>`).join('');
+}
+function setTab(t){ TAB = t; EDITING = {}; render(); }
+function render(){ renderTabs(); ({summary:rSummary, sessions:rSessions, expenses:rExpenses, sites:rSites, decisions:rDecisions})[TAB](); }
+
+const siteOpts = (sel) => '<option value="">— no site —</option>' + DATA.sites.map((s) =>
+  `<option value="${s.id}" ${String(sel)===String(s.id)?'selected':''}>${esc(s.name)}</option>`).join('');
+
+// ── Summary ──────────────────────────────────────────────
+function rSummary(){
+  const S = DATA.summary; if (!S) return;
+  const t = S.sites;
+  const totals = t.reduce((a,r)=>({held:a.held+r.sessions_held, kids:a.kids+r.kid_visits, uniq:a.uniq+r.unique_kids,
+    spend:a.spend+r.facility_spend+r.equipment_spend+r.travel_spend}), {held:0,kids:0,uniq:0,spend:0});
+  $('content').innerHTML = `
+    <div class="stats">
+      <div class="stat"><b>${t.length}</b><span>sites</span></div>
+      <div class="stat"><b>${totals.held}</b><span>sessions held</span></div>
+      <div class="stat"><b>${totals.kids}</b><span>kid-visits</span></div>
+      <div class="stat"><b>${totals.uniq}</b><span>unique kids (named)</span></div>
+      <div class="stat"><b>${money(totals.spend)}</b><span>site-attributed spend</span></div>
+      <div class="stat"><b>${money(S.unassigned_overhead)}</b><span>overhead (no site)</span></div>
+    </div>
+    <div class="card">
+      <div class="cardhead"><div>
+        <h2>One row per site</h2>
+        <p class="sub">Hub session logs matched to each site by location, plus everything logged here. Cost per kid-visit uses site-attributed spend only — unassigned expenses stay in the overhead bucket.</p>
+      </div><button class="btn" onclick="csvSummary()">Download CSV</button></div>
+      <div class="tablewrap"><table><thead><tr>
+        <th>Site</th><th>City</th><th>Sport</th><th>Coach</th><th>Coach since</th><th>Facility</th>
+        <th>First</th><th>Last</th><th>Held</th><th>Cancelled</th><th>Unique kids</th><th>Kid-visits</th>
+        <th>Facility $</th><th>Equipment $</th><th>Travel $</th><th>$/kid-visit</th><th>Churn (s1→s10)</th>
+      </tr></thead><tbody>
+      ${t.map((r)=>`<tr>
+        <td><b>${esc(r.site)}</b></td><td>${esc(r.city)}</td><td>${esc(r.sport)}</td>
+        <td>${esc(r.coach)}</td><td>${esc(r.coach_start)}</td>
+        <td><span class="pill ${/paid/i.test(r.facility_type||'')?'red':''}">${esc(r.facility_type)}</span></td>
+        <td>${esc(r.first_session)}</td><td>${esc(r.last_session)}</td>
+        <td>${r.sessions_held} <span class="muted">(${r.hub_sessions}+${r.extra_sessions})</span></td>
+        <td>${r.sessions_cancelled ? r.sessions_cancelled + ' <span class="muted">' +
+             esc(Object.entries(r.cancel_reasons).map(([k,v])=>`${k}×${v}`).join(', ')) + '</span>' : '0'}</td>
+        <td>${r.unique_kids}</td><td>${r.kid_visits}</td>
+        <td>${money(r.facility_spend)}</td><td>${money(r.equipment_spend)}</td><td>${money(r.travel_spend)}</td>
+        <td>${r.cost_per_kid_visit == null ? '—' : '$'+r.cost_per_kid_visit}</td>
+        <td>${r.churn ? r.churn.still_at_ten + ' of ' + r.churn.session_one : '—'}</td>
+      </tr>`).join('')}
+      </tbody></table></div>
+      ${t.length===0?'<p class="muted" style="padding:16px">No sites yet — add them in the Sites tab.</p>':''}
+    </div>`;
+}
+function csvSummary(){
+  downloadCsv('site-summary.csv',
+    ['Site','City','Sport','Neighborhood','Coach','Coach start','Facility type','First session','Last session',
+     'Sessions held','Hub sessions','Extra sessions','Sessions cancelled','Cancel reasons','Unique kids','Kid-visits',
+     'Facility spend','Equipment spend','Travel spend','Cost per kid-visit','Kids at session 1','Still at session 10'],
+    DATA.summary.sites.map((r)=>[r.site,r.city,r.sport,r.neighborhood,r.coach,r.coach_start,r.facility_type,
+      r.first_session,r.last_session,r.sessions_held,r.hub_sessions,r.extra_sessions,r.sessions_cancelled,
+      Object.entries(r.cancel_reasons).map(([k,v])=>`${k}:${v}`).join('; '),
+      r.unique_kids,r.kid_visits,r.facility_spend,r.equipment_spend,r.travel_spend,
+      r.cost_per_kid_visit ?? '', r.churn?.session_one ?? '', r.churn?.still_at_ten ?? '']));
+}
+
+// ── Generic CRUD helpers ─────────────────────────────────
+async function saveRow(route, id, body){
+  try {
+    if (id) await api(`/api/${route}/${id}`, { method:'PUT', body });
+    else await api(`/api/${route}`, { method:'POST', body });
+    EDITING = {}; await loadAll(); render(); toast('Saved');
+  } catch(e){ toast(e.message); }
+}
+async function delRow(route, id, what){
+  if (!confirm(`Delete this ${what}?`)) return;
+  try { await api(`/api/${route}/${id}`, { method:'DELETE' }); await loadAll(); render(); toast('Deleted'); }
+  catch(e){ toast(e.message); }
+}
+function editRow(tab, id){ EDITING[tab] = id; render(); window.scrollTo(0,0); }
+
+// ── Sessions (extra) ─────────────────────────────────────
+const CANCEL_REASONS = ['weather','permit','no coach','no kids','facility closed'];
+function rSessions(){
+  const ed = DATA.extras.find((x)=>x.id===EDITING.sessions) || {};
+  $('content').innerHTML = `
+    <div class="card">
+      <h2>${ed.id?'Edit session':'Log a session'}</h2>
+      <p class="sub">Extra sessions on top of the hub's coach logs — scheduled vs. actual headcount, cancellations with a reason, and individual kid check-ins (the highest-value field: it makes retention and churn computable).</p>
+      <div class="formgrid">
+        <div class="field"><label>Site</label><select id="f-site">${siteOpts(ed.site_id)}</select></div>
+        <div class="field"><label>Date</label><input type="date" id="f-date" value="${esc(ed.session_date)}"/></div>
+        <div class="field"><label>Sport</label><input id="f-sport" value="${esc(ed.sport)}"/></div>
+        <div class="field"><label>Coach</label><input id="f-coach" value="${esc(ed.coach_name)}"/></div>
+        <div class="field"><label>Scheduled headcount</label><input type="number" min="0" id="f-sched" value="${esc(ed.scheduled_headcount)}"/></div>
+        <div class="field"><label>Actual headcount</label><input type="number" min="0" id="f-actual" value="${esc(ed.actual_headcount)}"/></div>
+        <div class="field"><label>Status</label><select id="f-held">
+          <option value="1" ${ed.held!==0?'selected':''}>Held</option>
+          <option value="0" ${ed.held===0?'selected':''}>Cancelled</option></select></div>
+        <div class="field"><label>Cancellation reason</label><select id="f-reason">
+          <option value="">—</option>
+          ${CANCEL_REASONS.map((r)=>`<option ${ed.cancel_reason===r?'selected':''}>${r}</option>`).join('')}</select></div>
+        <div class="field wide"><label>Kid check-ins (names, comma or line separated)</label>
+          <textarea id="f-checkins" placeholder="Maya R, Jonah K, Leo P…">${esc(ed.checkins)}</textarea></div>
+        <div class="field wide"><label>Notes</label><input id="f-notes" value="${esc(ed.notes)}"/></div>
+      </div>
+      <button class="btn" onclick="saveSession(${ed.id||'null'})">${ed.id?'Save changes':'Add session'}</button>
+      ${ed.id?'<button class="btn sec" style="margin-left:8px" onclick="EDITING={};render()">Cancel</button>':''}
+    </div>
+    <div class="card">
+      <div class="cardhead"><div><h2>Logged sessions</h2><p class="sub">${DATA.extras.length} rows</p></div>
+        <button class="btn sec" onclick="csvSessions()">Download CSV</button></div>
+      <div class="tablewrap"><table><thead><tr>
+        <th>Date</th><th>Site</th><th>Sport</th><th>Coach</th><th>Sched</th><th>Actual</th><th>Status</th><th>Check-ins</th><th></th>
+      </tr></thead><tbody>
+      ${DATA.extras.map((x)=>`<tr>
+        <td>${esc(x.session_date)}</td><td>${esc(x.site)}</td><td>${esc(x.sport)}</td><td>${esc(x.coach_name)}</td>
+        <td>${x.scheduled_headcount??''}</td><td>${x.actual_headcount??''}</td>
+        <td>${x.held?'<span class="pill">Held</span>':'<span class="pill red">Cancelled · '+esc(x.cancel_reason||'?')+'</span>'}</td>
+        <td class="wrap">${esc(x.checkins)}</td>
+        <td class="actions"><button class="btn sec sm" onclick="editRow('sessions',${x.id})">Edit</button>
+            <button class="btn danger sm" onclick="delRow('extra-sessions',${x.id},'session')">Del</button></td>
+      </tr>`).join('')}
+      </tbody></table></div>
+    </div>`;
+}
+function saveSession(id){
+  saveRow('extra-sessions', id, {
+    site_id: $('f-site').value || null, session_date: $('f-date').value,
+    sport: $('f-sport').value, coach_name: $('f-coach').value,
+    scheduled_headcount: +$('f-sched').value || 0, actual_headcount: +$('f-actual').value || 0,
+    held: +$('f-held').value, cancel_reason: +$('f-held').value ? null : ($('f-reason').value || null),
+    checkins: $('f-checkins').value, notes: $('f-notes').value });
+}
+function csvSessions(){
+  downloadCsv('session-log.csv',
+    ['Date','Site','Sport','Coach','Scheduled','Actual','Held','Cancel reason','Check-ins','Notes'],
+    DATA.extras.map((x)=>[x.session_date,x.site,x.sport,x.coach_name,x.scheduled_headcount,x.actual_headcount,
+      x.held?'yes':'no',x.cancel_reason,x.checkins,x.notes]));
+}
+
+// ── Expenses ─────────────────────────────────────────────
+function rExpenses(){
+  const ed = DATA.expenses.find((x)=>x.id===EDITING.expenses) || {};
+  $('content').innerHTML = `
+    <div class="card">
+      <h2>${ed.id?'Edit expense':'Log an expense'}</h2>
+      <p class="sub">Every expense gets a site so cost per kid is computable. If it can't be assigned to a site, leave the site blank — it lands in the overhead bucket and stays out of the site math.</p>
+      <div class="formgrid">
+        <div class="field"><label>Site</label><select id="e-site">${siteOpts(ed.site_id)}</select></div>
+        <div class="field"><label>Date</label><input type="date" id="e-date" value="${esc(ed.expense_date)}"/></div>
+        <div class="field"><label>Amount ($)</label><input type="number" min="0" step="0.01" id="e-amount" value="${esc(ed.amount)}"/></div>
+        <div class="field"><label>Category</label><select id="e-cat">
+          ${['facility','equipment','travel','overhead'].map((c)=>`<option ${ed.category===c?'selected':''}>${c}</option>`).join('')}</select></div>
+        <div class="field"><label>Facility payment type</label><select id="e-rental">
+          <option value="0" ${!ed.paid_rental?'selected':''}>Public permit / free</option>
+          <option value="1" ${ed.paid_rental?'selected':''}>Paid rental</option></select></div>
+        <div class="field wide"><label>Notes</label><input id="e-notes" value="${esc(ed.notes)}"/></div>
+      </div>
+      <button class="btn" onclick="saveExpense(${ed.id||'null'})">${ed.id?'Save changes':'Add expense'}</button>
+      ${ed.id?'<button class="btn sec" style="margin-left:8px" onclick="EDITING={};render()">Cancel</button>':''}
+    </div>
+    <div class="card">
+      <div class="cardhead"><div><h2>Expenses</h2><p class="sub">${DATA.expenses.length} rows · ${money(DATA.expenses.reduce((n,x)=>n+(+x.amount||0),0))} total</p></div>
+        <button class="btn sec" onclick="csvExpenses()">Download CSV</button></div>
+      <div class="tablewrap"><table><thead><tr>
+        <th>Date</th><th>Site</th><th>Amount</th><th>Category</th><th>Facility</th><th>Notes</th><th></th>
+      </tr></thead><tbody>
+      ${DATA.expenses.map((x)=>`<tr>
+        <td>${esc(x.expense_date)}</td><td>${esc(x.site)||'<span class="pill gray">overhead</span>'}</td>
+        <td><b>${money(x.amount)}</b></td><td>${esc(x.category)}</td>
+        <td>${x.paid_rental?'<span class="pill red">Paid rental</span>':'<span class="pill">Public permit</span>'}</td>
+        <td class="wrap">${esc(x.notes)}</td>
+        <td class="actions"><button class="btn sec sm" onclick="editRow('expenses',${x.id})">Edit</button>
+            <button class="btn danger sm" onclick="delRow('site-expenses',${x.id},'expense')">Del</button></td>
+      </tr>`).join('')}
+      </tbody></table></div>
+    </div>`;
+}
+function saveExpense(id){
+  saveRow('site-expenses', id, {
+    site_id: $('e-site').value || null, expense_date: $('e-date').value,
+    amount: +$('e-amount').value || 0, category: $('e-cat').value,
+    paid_rental: +$('e-rental').value, notes: $('e-notes').value });
+}
+function csvExpenses(){
+  downloadCsv('expenses.csv',
+    ['Date','Site','Amount','Category','Facility type','Notes'],
+    DATA.expenses.map((x)=>[x.expense_date,x.site||'(overhead)',x.amount,x.category,
+      x.paid_rental?'paid rental':'public permit',x.notes]));
+}
+
+// ── Sites ────────────────────────────────────────────────
+function rSites(){
+  const ed = DATA.sites.find((x)=>x.id===EDITING.sites) || {};
+  $('content').innerHTML = `
+    <div class="card">
+      <h2>${ed.id?'Edit site':'Add a site'}</h2>
+      <p class="sub">Set once, updated rarely. First session date, coach start date and facility type give you site age and coach tenure. "Match text" links hub session logs to this site: any hub session whose location contains it counts here.</p>
+      <div class="formgrid">
+        <div class="field"><label>Site name *</label><input id="s-name" value="${esc(ed.name)}"/></div>
+        <div class="field"><label>City</label><input id="s-city" value="${esc(ed.city)}"/></div>
+        <div class="field"><label>Sport</label><input id="s-sport" value="${esc(ed.sport)}"/></div>
+        <div class="field"><label>Neighborhood</label><input id="s-hood" value="${esc(ed.neighborhood)}"/></div>
+        <div class="field"><label>Coach</label><input id="s-coach" value="${esc(ed.coach_name)}"/></div>
+        <div class="field"><label>Coach start date</label><input type="date" id="s-cstart" value="${esc(ed.coach_start)}"/></div>
+        <div class="field"><label>First session date</label><input type="date" id="s-first" value="${esc(ed.first_session)}"/></div>
+        <div class="field"><label>Facility type</label><select id="s-ftype">
+          <option ${ed.facility_type!=='Paid rental'?'selected':''}>Public permit</option>
+          <option ${ed.facility_type==='Paid rental'?'selected':''}>Paid rental</option></select></div>
+        <div class="field"><label>Match text (hub session location)</label><input id="s-match" placeholder="defaults to site name" value="${esc(ed.match_location)}"/></div>
+        <div class="field wide"><label>Notes</label><textarea id="s-notes">${esc(ed.notes)}</textarea></div>
+      </div>
+      <button class="btn" onclick="saveSite(${ed.id||'null'})">${ed.id?'Save changes':'Add site'}</button>
+      ${ed.id?'<button class="btn sec" style="margin-left:8px" onclick="EDITING={};render()">Cancel</button>':''}
+    </div>
+    <div class="card">
+      <div class="cardhead"><div><h2>Sites</h2><p class="sub">${DATA.sites.length} sites</p></div></div>
+      <div class="tablewrap"><table><thead><tr>
+        <th>Site</th><th>City</th><th>Sport</th><th>Neighborhood</th><th>Coach</th><th>Coach since</th><th>First session</th><th>Facility</th><th>Notes</th><th></th>
+      </tr></thead><tbody>
+      ${DATA.sites.map((x)=>`<tr>
+        <td><b>${esc(x.name)}</b></td><td>${esc(x.city)}</td><td>${esc(x.sport)}</td><td>${esc(x.neighborhood)}</td>
+        <td>${esc(x.coach_name)}</td><td>${esc(x.coach_start)}</td><td>${esc(x.first_session)}</td>
+        <td><span class="pill ${x.facility_type==='Paid rental'?'red':''}">${esc(x.facility_type)}</span></td>
+        <td class="wrap">${esc(x.notes)}</td>
+        <td class="actions"><button class="btn sec sm" onclick="editRow('sites',${x.id})">Edit</button>
+            <button class="btn danger sm" onclick="delRow('sites',${x.id},'site (and its sessions, expenses and decisions)')">Del</button></td>
+      </tr>`).join('')}
+      </tbody></table></div>
+    </div>`;
+}
+function saveSite(id){
+  saveRow('sites', id, {
+    name: $('s-name').value, city: $('s-city').value, sport: $('s-sport').value,
+    neighborhood: $('s-hood').value, coach_name: $('s-coach').value, coach_start: $('s-cstart').value,
+    first_session: $('s-first').value, facility_type: $('s-ftype').value,
+    match_location: $('s-match').value, notes: $('s-notes').value });
+}
+
+// ── Decisions ────────────────────────────────────────────
+function rDecisions(){
+  const ed = DATA.decisions.find((x)=>x.id===EDITING.decisions) || {};
+  $('content').innerHTML = `
+    <div class="card">
+      <h2>${ed.id?'Edit decision':'Log a decision'}</h2>
+      <p class="sub">When a site crosses the review threshold: the flag, the conversation with the coach, the call you made and why — then what actually happened at 90 and 180 days. This is what turns a cost model into evidence you close the loop.</p>
+      <div class="formgrid">
+        <div class="field"><label>Site</label><select id="d-site">${siteOpts(ed.site_id)}</select></div>
+        <div class="field"><label>Flag date</label><input type="date" id="d-date" value="${esc(ed.flag_date)}"/></div>
+        <div class="field wide"><label>What triggered the review</label><input id="d-trigger" placeholder="e.g. cost per kid-visit over $12 for 2 months" value="${esc(ed.trigger_reason)}"/></div>
+        <div class="field wide"><label>Conversation with the coach</label><textarea id="d-conv">${esc(ed.conversation)}</textarea></div>
+        <div class="field"><label>Decision</label><select id="d-decision">
+          ${['Keep as is','Override — keep despite numbers','Change facility','Change schedule','Merge with another site','Wind down'].map((o)=>`<option ${ed.decision===o?'selected':''}>${o}</option>`).join('')}</select></div>
+        <div class="field wide"><label>Why (rationale)</label><textarea id="d-rationale">${esc(ed.rationale)}</textarea></div>
+        <div class="field wide"><label>90-day check — what happened</label><textarea id="d-90">${esc(ed.check_90)}</textarea></div>
+        <div class="field wide"><label>180-day check — what happened</label><textarea id="d-180">${esc(ed.check_180)}</textarea></div>
+      </div>
+      <button class="btn" onclick="saveDecision(${ed.id||'null'})">${ed.id?'Save changes':'Add decision'}</button>
+      ${ed.id?'<button class="btn sec" style="margin-left:8px" onclick="EDITING={};render()">Cancel</button>':''}
+    </div>
+    <div class="card">
+      <div class="cardhead"><div><h2>Decision log</h2><p class="sub">${DATA.decisions.length} decisions</p></div>
+        <button class="btn sec" onclick="csvDecisions()">Download CSV</button></div>
+      <div class="tablewrap"><table><thead><tr>
+        <th>Flagged</th><th>Site</th><th>Trigger</th><th>Decision</th><th>Rationale</th><th>90-day</th><th>180-day</th><th></th>
+      </tr></thead><tbody>
+      ${DATA.decisions.map((x)=>`<tr>
+        <td>${esc(x.flag_date)}</td><td><b>${esc(x.site)}</b></td>
+        <td class="wrap">${esc(x.trigger_reason)}</td>
+        <td><span class="pill ${/wind|merge/i.test(x.decision||'')?'red':/override/i.test(x.decision||'')?'gray':''}">${esc(x.decision)}</span></td>
+        <td class="wrap">${esc(x.rationale)}</td>
+        <td class="wrap">${esc(x.check_90)||'<span class="muted">pending</span>'}</td>
+        <td class="wrap">${esc(x.check_180)||'<span class="muted">pending</span>'}</td>
+        <td class="actions"><button class="btn sec sm" onclick="editRow('decisions',${x.id})">Edit</button>
+            <button class="btn danger sm" onclick="delRow('site-decisions',${x.id},'decision')">Del</button></td>
+      </tr>`).join('')}
+      </tbody></table></div>
+    </div>`;
+}
+function saveDecision(id){
+  saveRow('site-decisions', id, {
+    site_id: $('d-site').value || null, flag_date: $('d-date').value,
+    trigger_reason: $('d-trigger').value, conversation: $('d-conv').value,
+    decision: $('d-decision').value, rationale: $('d-rationale').value,
+    check_90: $('d-90').value, check_180: $('d-180').value });
+}
+function csvDecisions(){
+  downloadCsv('decision-log.csv',
+    ['Flag date','Site','Trigger','Conversation','Decision','Rationale','90-day check','180-day check'],
+    DATA.decisions.map((x)=>[x.flag_date,x.site,x.trigger_reason,x.conversation,x.decision,x.rationale,x.check_90,x.check_180]));
+}
+
+// ── Boot ─────────────────────────────────────────────────
+async function boot(){
+  try { await loadAll(); }
+  catch(e){ return; }
+  $('login').hidden = true; $('app').hidden = false; $('nav-right').hidden = false;
+  render();
+}
+if (TOKEN) boot();
+</script>
+</body>
+</html>
