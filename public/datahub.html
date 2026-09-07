@@ -192,7 +192,7 @@ function rSummary(){
         <td>${r.churn ? r.churn.still_at_ten + ' of ' + r.churn.session_one : '—'}</td>
       </tr>`).join('')}
       </tbody></table></div>
-      ${t.length===0?'<p class="muted" style="padding:16px">No sites yet — add them in the Sites tab.</p>':''}
+      ${t.length===0?'<p class="muted" style="padding:16px">No sites yet — open the Sites tab and hit "Import from hub sessions" to pull in your existing session logs, or add sites by hand.</p>':''}
     </div>`;
 }
 function csvSummary(){
@@ -358,7 +358,8 @@ function rSites(){
       ${ed.id?'<button class="btn sec" style="margin-left:8px" onclick="EDITING={};render()">Cancel</button>':''}
     </div>
     <div class="card">
-      <div class="cardhead"><div><h2>Sites</h2><p class="sub">${DATA.sites.length} sites</p></div></div>
+      <div class="cardhead"><div><h2>Sites</h2><p class="sub">${DATA.sites.length} sites</p></div>
+        <button class="btn sec" onclick="importSites()">Import from hub sessions</button></div>
       <div class="tablewrap"><table><thead><tr>
         <th>Site</th><th>City</th><th>Sport</th><th>Neighborhood</th><th>Coach</th><th>Coach since</th><th>First session</th><th>Facility</th><th>Notes</th><th></th>
       </tr></thead><tbody>
@@ -373,6 +374,30 @@ function rSites(){
       </tbody></table></div>
     </div>`;
 }
+// One-click bootstrap: create a site for every distinct location in the hub's
+// real session logs, so those sessions roll into the per-site summary.
+async function importSites(){
+  const sessions = await api('/api/sessions');
+  const have = DATA.sites.map((s) => (s.match_location || s.name).toLowerCase());
+  const byLoc = new Map();
+  for (const s of sessions) {
+    const loc = (s.location || '').trim();
+    if (!loc) continue;
+    if (have.some((m) => loc.toLowerCase().includes(m))) continue; // already matched by a site
+    const cur = byLoc.get(loc.toLowerCase());
+    if (!cur) byLoc.set(loc.toLowerCase(), { name: loc, city: s.chapter || '', sport: s.sport || '',
+      coach_name: s.coach || '', first: s.session_date });
+    else if (s.session_date && (!cur.first || s.session_date < cur.first)) cur.first = s.session_date;
+  }
+  if (byLoc.size === 0) { toast('Nothing to import — every hub session location already has a site (or has no location set)'); return; }
+  if (!confirm(`Create ${byLoc.size} site(s) from hub session locations?`)) return;
+  for (const v of byLoc.values()) {
+    await api('/api/sites', { method: 'POST', body: { name: v.name, city: v.city, sport: v.sport,
+      coach_name: v.coach_name, first_session: v.first, facility_type: 'Public permit', match_location: v.name } });
+  }
+  await loadAll(); render(); toast(`${byLoc.size} site(s) created — hub sessions now roll into the summary`);
+}
+
 function saveSite(id){
   saveRow('sites', id, {
     name: $('s-name').value, city: $('s-city').value, sport: $('s-sport').value,
